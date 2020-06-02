@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'select_page.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
 
@@ -337,8 +336,6 @@ class _User_Map_PageState extends State<User_Map_Page> {
           Center(child: _child),
           GestureDetector(
             onTap: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => Select_Page()));
             },
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),

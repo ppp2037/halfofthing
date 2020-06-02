@@ -30,11 +30,10 @@ dependencies:
   google_sign_in: ^4.0.14
   firebase_auth:
   cloud_firestore:
-  shared_preferences:
+  shared_preferences: 0.5.4+9
   firebase_storage:
   firebase_messaging:
   search_widget:
-
 
 dev_dependencies:
   flutter_test:

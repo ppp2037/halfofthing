@@ -1,4 +1,4 @@
-import '../select_region_page.dart';
+import '../add_account_page.dart';
 
 List<LeaderBoard> list = <LeaderBoard>[
   LeaderBoard('가톨릭대학교'),
