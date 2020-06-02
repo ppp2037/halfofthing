@@ -12,7 +12,7 @@ class Select_Region_Page extends StatefulWidget {
 
 class _Select_Region_PageState extends State<Select_Region_Page> {
   List<LeaderBoard> list = <LeaderBoard>[
-    LeaderBoard('가톨릭대학교'),
+    LeaderBoard('가톨릭학교'),
     LeaderBoard('건국대학교'),
     LeaderBoard('경기대학교'),
     LeaderBoard('경희대학교'),
