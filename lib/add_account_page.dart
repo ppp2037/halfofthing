@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
@@ -15,12 +16,17 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   bool _isItemSelected = false;
   bool _isRegionSelected = false;
 
+  final GlobalKey<FormState> _nameFormKey =
+      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final GlobalKey<FormState> _phoneNumberFormKey =
       GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final GlobalKey<FormState> _passwordFormKey =
       GlobalKey<FormState>(); //글로벌 키 => 이름 폼 키 생성
   final GlobalKey<FormState> _passwordCheckFormKey =
       GlobalKey<FormState>(); //글로벌 키 => 이름 폼 키 생성
+
+  final TextEditingController _nameController =
+      TextEditingController(); //컨트롤러 생성
   final TextEditingController _phoneNumberController =
       TextEditingController(); //컨트롤러 생성
   final TextEditingController _passwordController =
@@ -30,19 +36,24 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _phoneNumberController.dispose();
     _passwordController.dispose();
     _passwordCheckController.dispose();
     super.dispose();
   }
 
+  String _name;
   String _phoneNumber; // 사용자가 입력한 핸드폰번호 값
   String _password; // 사용자가 입력한 비밀번호 값
   String _passwordCheck;
 
+  String _comparePhoneNumber;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('회원가입'),
         centerTitle: true,
@@ -51,6 +62,44 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 40, right: 40, bottom: 20),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    elevation: 15,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(left: 15, top: 5, bottom: 5),
+                      child: Form(
+                        key: _nameFormKey,
+                        child: TextFormField(
+                          onChanged: (String str) {
+                            setState(() {
+                              _name = str;
+                            });
+                          },
+                          keyboardType: TextInputType.text,
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                              icon: Icon(Icons.account_circle),
+                              hintText: '이름',
+                              border: InputBorder.none),
+                          validator: (String value) {
+                            if (value.isEmpty) {
+                              return '이름을 입력해주세요';
+                            }
+                            if (value.length == 1) {
+                              return '올바른 이름을 입력해주세요';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Padding(
                   padding:
                       const EdgeInsets.only(left: 40, right: 40, bottom: 20),
@@ -163,23 +212,196 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    if (_phoneNumberFormKey.currentState.validate()) {
-                      if (_passwordFormKey.currentState.validate()) {
-                        if (_passwordCheckFormKey.currentState.validate()) {
-                          if (_password == _passwordCheck) {
-                            Fluttertoast.showToast(
-                                msg: '회원가입에 성공했어요',
-                                gravity: ToastGravity.CENTER,
-                                backgroundColor: Colors.pink,
-                                textColor: Colors.white);
-                            Navigator.pop(context);
-                          } else {
-                            Fluttertoast.showToast(
-                                msg: '비밀번호가 일치하지 않아요',
-                                gravity: ToastGravity.CENTER,
-                                backgroundColor: Colors.pink,
-                                textColor: Colors.white);
-                          }
+                    if (_nameFormKey.currentState.validate()) {
+                      if (_phoneNumberFormKey.currentState.validate()) {
+                        if (_passwordFormKey.currentState.validate()) {
+                          if (_passwordCheckFormKey.currentState.validate()) {
+                            if (_password == _passwordCheck) {
+                              Firestore.instance
+                                  .collection('사용자')
+                                  .where('핸드폰번호', isEqualTo: _phoneNumber)
+                                  .getDocuments()
+                                  .then((QuerySnapshot ds) {
+                                ds.documents.forEach((doc) =>
+                                    _comparePhoneNumber = doc['핸드폰번호']);
+                                if (_comparePhoneNumber != _phoneNumber) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              Text('회원가입',
+                                                  style: text_pink_20()),
+                                              Container(
+                                                height: 30,
+                                              ),
+                                              Row(
+                                                children: <Widget>[
+                                                  Text('이름 :',
+                                                      style: text_grey_15()),
+                                                  Container(
+                                                    width: 10,
+                                                  ),
+                                                  Text(_name,
+                                                      style: text_grey_15()),
+                                                ],
+                                              ),
+                                              Container(
+                                                height: 15,
+                                              ),
+                                              Row(
+                                                children: <Widget>[
+                                                  Text('핸드폰번호 :',
+                                                      style: text_grey_15()),
+                                                  Container(
+                                                    width: 10,
+                                                  ),
+                                                  Text(_phoneNumber,
+                                                      style: text_grey_15()),
+                                                ],
+                                              ),
+                                              Container(
+                                                height: 15,
+                                              ),
+                                              Row(
+                                                children: <Widget>[
+                                                  Text('위치 :',
+                                                      style: text_grey_15()),
+                                                  Container(
+                                                    width: 10,
+                                                  ),
+                                                  Text(_selectedItem.location,
+                                                      style: text_grey_15()),
+                                                ],
+                                              ),
+                                              Container(
+                                                height: 40,
+                                              ),
+                                              Text('위의 정보로 등록하시겠어요?',
+                                                  style: text_grey_15()),
+                                              Container(
+                                                height: 30,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                children: <Widget>[
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: Card(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20)),
+                                                      elevation: 5,
+                                                      color: Colors.white,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                left: 25,
+                                                                right: 25,
+                                                                top: 15,
+                                                                bottom: 15),
+                                                        child: Center(
+                                                          child: Text('취소',
+                                                              style:
+                                                                  text_grey_15()),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      Firestore.instance
+                                                          .collection('사용자')
+                                                          .document(
+                                                              _phoneNumber +
+                                                                  '_' +
+                                                                  _name)
+                                                          .setData({
+                                                        '이름': _name,
+                                                        '핸드폰번호': _phoneNumber,
+                                                        '위치': _selectedItem
+                                                            .location,
+                                                        '로그인여부': 'N',
+                                                        '인증여부': 'N',
+                                                        '이용횟수': 0,
+                                                      });
+                                                      Navigator.of(
+                                                          context)
+                                                          .popUntil((route) =>
+                                                      route
+                                                          .isFirst);
+                                                      Fluttertoast.showToast(
+                                                          msg: '회원가입에 성공했어요',
+                                                          gravity: ToastGravity
+                                                              .CENTER,
+                                                          backgroundColor:
+                                                              Colors.pink,
+                                                          textColor:
+                                                              Colors.white);
+                                                    },
+                                                    child: Card(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20)),
+                                                      elevation: 5,
+                                                      color: Colors.white,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                left: 25,
+                                                                right: 25,
+                                                                top: 15,
+                                                                bottom: 15),
+                                                        child: Center(
+                                                          child: Text('확인',
+                                                              style:
+                                                                  text_grey_15()),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                } else {
+                                  Fluttertoast.showToast(msg: '중복된 핸드폰번호입니다',
+                                      gravity: ToastGravity
+                                          .CENTER,
+                                      backgroundColor:
+                                      Colors.pink,
+                                      textColor:
+                                      Colors.white);
+                                }
+                              });
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: '비밀번호가 일치하지 않아요',
+                                  gravity: ToastGravity.CENTER,
+                                  backgroundColor: Colors.pink,
+                                  textColor: Colors.white);
+                            }
+                          } else {}
                         } else {}
                       } else {}
                     } else {}
@@ -216,7 +438,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                   },
                   child: Padding(
                     padding:
-                    const EdgeInsets.only(left: 40, right: 40, bottom: 20),
+                        const EdgeInsets.only(left: 40, right: 40, bottom: 20),
                     child: Card(
                       color: Colors.pink,
                       shape: RoundedRectangleBorder(
@@ -224,14 +446,14 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                       elevation: 15,
                       child: Padding(
                         padding:
-                        const EdgeInsets.only(left: 15, top: 5, bottom: 5),
+                            const EdgeInsets.only(left: 15, top: 5, bottom: 5),
                         child: Container(
                             height: 50,
                             child: Center(
                                 child: Text(
-                                  '테스트 인증하기',
-                                  style: text_white_20(),
-                                ))),
+                              '테스트 인증하기',
+                              style: text_white_20(),
+                            ))),
                       ),
                     ),
                   ),
@@ -254,7 +476,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                   listContainerHeight: MediaQuery.of(context).size.height / 2,
                   queryBuilder: (query, list) {
                     return list
-                        .where((item) => item.username
+                        .where((item) => item.location
                             .toLowerCase()
                             .contains(query.toLowerCase()))
                         .toList();
@@ -314,9 +536,9 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 }
 
 class LeaderBoard {
-  LeaderBoard(this.username);
+  LeaderBoard(this.location);
 
-  final String username;
+  final String location;
 }
 
 class SelectedItemWidget extends StatelessWidget {
@@ -343,7 +565,7 @@ class SelectedItemWidget extends StatelessWidget {
                 bottom: 8,
               ),
               child: Text(
-                selectedItem.username,
+                selectedItem.location,
                 style: const TextStyle(fontSize: 14),
               ),
             ),
@@ -433,7 +655,7 @@ class PopupListItemWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       child: Text(
-        item.username,
+        item.location,
         style: const TextStyle(fontSize: 16),
       ),
     );

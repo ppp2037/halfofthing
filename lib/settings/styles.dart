@@ -107,3 +107,38 @@ TextStyle text_grey_40() {
     fontSize: 40,
   );
 }
+
+TextStyle text_pink_10() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 10,
+  );
+}
+
+TextStyle text_pink_15() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 15,
+  );
+}
+
+TextStyle text_pink_20() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 20,
+  );
+}
+
+TextStyle text_pink_30() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 30,
+  );
+}
+
+TextStyle text_pink_40() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 40,
+  );
+}
