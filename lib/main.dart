@@ -1,9 +1,14 @@
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'background_page.dart';
 import 'login_page.dart';
+
+final FirebaseMessaging fcm = FirebaseMessaging();
 
 void main() => runApp(Phoenix(child: Halfofthing()));
 
@@ -28,6 +33,38 @@ class _HalfofthingState extends State<Halfofthing> {
         }
       });
     })();
+    firebaseCloudMessaging_Listeners();
+  }
+
+  void firebaseCloudMessaging_Listeners() {
+    if (Platform.isIOS) iOS_Permission();
+
+    fcm.getToken().then((token){
+      print('token:'+token);
+    });
+
+    fcm.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print('on message $message');
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print('on launch $message');
+      },
+    );
+  }
+
+  void iOS_Permission() {
+    fcm.requestNotificationPermissions(
+        IosNotificationSettings(sound: true, badge: true, alert: true)
+    );
+    fcm.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings)
+    {
+      print("Settings registered: $settings");
+    });
   }
 
   @override

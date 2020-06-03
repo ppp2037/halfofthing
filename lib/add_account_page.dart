@@ -460,8 +460,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
               ],
             )
           : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Container(
+                  height: 50,
+                ),
                 Text(
                   '학교를 선택해주세요',
                   style: text_grey_15(),
