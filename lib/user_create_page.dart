@@ -159,7 +159,12 @@ class _User_Create_pageState extends State<User_Create_page> {
                   '식당이름': _restaurant,
                   '주문시간': _time,
                   '위치': _userLocation,
-                  '핸드폰번호': _userPhoneNumber,
+                  '개설자핸드폰번호': _userPhoneNumber,
+                  '참가자핸드폰번호': '',
+                  '게시판이름': _userPhoneNumber +
+                      '_' +
+                      _userOrderId,
+                  '채팅중': 'Y',
                 });
                 _restaurantController.clear();
                 Fluttertoast.showToast(

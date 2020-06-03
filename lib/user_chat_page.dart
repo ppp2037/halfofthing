@@ -15,7 +15,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('반띵중...')),
+      appBar: AppBar(title: Text('반띵중'),
+      centerTitle: true,),
       body: _buildTextComposer(),
     );
   }
