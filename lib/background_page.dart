@@ -41,6 +41,7 @@ class _Background_PageState extends State<Background_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -68,6 +69,8 @@ class _Background_PageState extends State<Background_Page> {
         onWillPop: onWillPop,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
               icon: Icon(Icons.library_books), title: Text('게시판')),
@@ -77,6 +80,7 @@ class _Background_PageState extends State<Background_Page> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.pink,
+        selectedIconTheme: IconThemeData(size: 35),
         onTap: _onItemTapped,
       ),
     );

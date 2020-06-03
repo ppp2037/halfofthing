@@ -327,14 +327,13 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                       Firestore.instance
                                                           .collection('사용자')
                                                           .document(
-                                                              _phoneNumber +
-                                                                  '_' +
-                                                                  _name)
+                                                              _phoneNumber)
                                                           .setData({
                                                         '이름': _name,
                                                         '핸드폰번호': _phoneNumber,
                                                         '위치': _selectedItem
                                                             .location,
+                                                        '비밀번호': _password,
                                                         '로그인여부': 'N',
                                                         '인증여부': 'N',
                                                         '이용횟수': 0,
@@ -385,7 +384,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                         );
                                       });
                                 } else {
-                                  Fluttertoast.showToast(msg: '중복된 핸드폰번호입니다',
+                                  Fluttertoast.showToast(msg: '핸드폰번호가 중복되었어요',
                                       gravity: ToastGravity
                                           .CENTER,
                                       backgroundColor:

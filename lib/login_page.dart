@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'add_account_page.dart';
 import 'background_page.dart';
@@ -11,6 +14,11 @@ class Login_Page extends StatefulWidget {
 }
 
 class _Login_PageState extends State<Login_Page> {
+  String _userPhoneNumber;
+  String _userLocation;
+  String _comparePhoneNumber;
+  String _comparePassword;
+
   final GlobalKey<FormState> _phoneNumberFormKey =
       GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final GlobalKey<FormState> _passwordFormKey =
@@ -33,16 +41,15 @@ class _Login_PageState extends State<Login_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Flexible(
-            child: Image.asset(
-              'images/halfofthing_logo.png',
-              width: 100,
-              height: 100,
-              color: Colors.pink,
-            ),
+          Image.asset(
+            'images/halfofthing_logo.png',
+            width: 100,
+            height: 100,
+            color: Colors.pink,
           ),
           Column(
             children: <Widget>[
@@ -118,12 +125,44 @@ class _Login_PageState extends State<Login_Page> {
               ),
               GestureDetector(
                 onTap: () {
-                  if (_phoneNumberFormKey.currentState.validate() == true) {
-                    if (_passwordFormKey.currentState.validate() == true) {
-
-
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => Background_Page()));
+                  if (_phoneNumberFormKey.currentState.validate()) {
+                    if (_passwordFormKey.currentState.validate()) {
+                      Firestore.instance
+                          .collection('사용자')
+                          .where('핸드폰번호', isEqualTo: _phoneNumber)
+                          .getDocuments()
+                          .then((QuerySnapshot ds) {
+                        ds.documents.forEach((doc) {
+                          _comparePhoneNumber = doc['핸드폰번호'];
+                          _comparePassword = doc['비밀번호'];
+                          _userLocation = doc['위치'];
+                        });
+                        if (_comparePhoneNumber == _phoneNumber &&
+                            _comparePassword == _password) {
+                          (() async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            setState(() {
+                              prefs.setString('prefsPhoneNumber', _phoneNumber);
+                              prefs.setString('prefsLocation', _userLocation);
+                            });
+                          })();
+                          Fluttertoast.showToast(
+                              msg: '로그인 되었어요',
+                              gravity: ToastGravity.CENTER,
+                              backgroundColor: Colors.pink,
+                              textColor: Colors.white);
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => Background_Page()));
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: '로그인정보가 일치하지 않아요',
+                              gravity: ToastGravity.CENTER,
+                              backgroundColor: Colors.pink,
+                              textColor: Colors.white);
+                        }
+                      });
                     } else {}
                   } else {}
                 },
@@ -149,29 +188,34 @@ class _Login_PageState extends State<Login_Page> {
                   ),
                 ),
               ),
-              GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => Add_Account_Page()));
-                  },
-                  child: Text(
-                    '반띵이 처음이신가요?',
-                    style: text_grey_15(),
-                  )),
-              Container(
-                height: 30,
-              ),
-              GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => Find_Password_Page()));
-                  },
-                  child: Text(
-                    '비밀번호 찾기',
-                    style: text_grey_15(),
-                  )),
             ],
           ),
+
+Column(
+  children: <Widget>[
+    GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Add_Account_Page()));
+        },
+        child: Text(
+          '반띵이 처음이신가요?',
+          style: text_grey_15(),
+        )),
+    Container(
+      height: 40,
+    ),
+    GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Find_Password_Page()));
+        },
+        child: Text(
+          '비밀번호 찾기',
+          style: text_grey_15(),
+        )),
+  ],
+)
 //          Padding(
 //            padding: const EdgeInsets.symmetric(horizontal: 80),
 //            child: Column(

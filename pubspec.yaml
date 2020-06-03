@@ -34,6 +34,10 @@ dependencies:
   firebase_storage:
   firebase_messaging:
   search_widget:
+  flutter_time_picker_spinner: 1.0.6+1
+  intl: 0.16.1
+  flutter_phoenix: 0.1.0
+
 
 dev_dependencies:
   flutter_test:
