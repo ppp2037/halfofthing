@@ -129,6 +129,13 @@ TextStyle text_pink_20() {
   );
 }
 
+TextStyle text_pink_25() {
+  return TextStyle(
+    color: Colors.pink,
+    fontSize: 25,
+  );
+}
+
 TextStyle text_pink_30() {
   return TextStyle(
     color: Colors.pink,

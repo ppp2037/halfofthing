@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import 'settings/styles.dart';
 import 'user_board_page.dart';
+import 'user_chat_page.dart';
 import 'user_create_page.dart';
-import 'user_setting_page.dart';
 
 class Background_Page extends StatefulWidget {
   @override
@@ -18,7 +17,7 @@ class _Background_PageState extends State<Background_Page> {
   static List<Widget> _widgetOptions = <Widget>[
     User_Board_Page(),
     User_Create_page(),
-    User_Setting_Page(),
+    User_Chat_Page(),
   ];
 
   void _onItemTapped(int index) {
@@ -42,26 +41,6 @@ class _Background_PageState extends State<Background_Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.asset(
-              'images/halfofthing_logo_white_1024x1024.png',
-              height: 40,
-            ),
-            Container(
-              width: 10,
-            ),
-            Text(
-              '반띵',
-              style: text_white_20(),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
       body: WillPopScope(
         child: Center(
           child: _widgetOptions[_selectedIndex],
@@ -76,7 +55,7 @@ class _Background_PageState extends State<Background_Page> {
               icon: Icon(Icons.library_books), title: Text('게시판')),
           BottomNavigationBarItem(icon: Icon(Icons.add), title: Text('시작')),
           BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), title: Text('프로필')),
+              icon: Icon(Icons.chat), title: Text('채팅')),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.pink,

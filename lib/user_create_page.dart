@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -19,15 +18,21 @@ class _User_Create_pageState extends State<User_Create_page> {
       GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final TextEditingController _restaurantController =
       TextEditingController(); //컨트롤러 생성
+  final GlobalKey<FormState> _meetingPlaceFormKey =
+  GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+  final TextEditingController _meetingPlaceController =
+  TextEditingController(); //컨트롤러 생성
 
   @override
   void dispose() {
     _restaurantController.dispose();
+    _meetingPlaceController.dispose();
     super.dispose();
   }
 
   String _restaurant;
   String _time;
+  String _meetingPlace;
 
   String _userPhoneNumber;
   String _userLocation;
@@ -104,6 +109,39 @@ class _User_Create_pageState extends State<User_Create_page> {
                   borderRadius: BorderRadius.circular(20)),
               elevation: 15,
               child: Padding(
+                padding: const EdgeInsets.only(left: 15, top: 5, bottom: 5),
+                child: Form(
+                  key: _meetingPlaceFormKey,
+                  child: TextFormField(
+                    onChanged: (String str) {
+                      setState(() {
+                        _meetingPlace = str;
+                      });
+                    },
+                    keyboardType: TextInputType.text,
+                    controller: _meetingPlaceController,
+                    decoration: InputDecoration(
+                        icon: Icon(Icons.place),
+                        hintText: '만날 장소',
+                        border: InputBorder.none),
+                    validator: (String value) {
+                      if (value.isEmpty) {
+                        return '만날 장소를 입력해주세요';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 40, right: 40, bottom: 20),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              elevation: 15,
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: <Widget>[
@@ -159,12 +197,13 @@ class _User_Create_pageState extends State<User_Create_page> {
                   '식당이름': _restaurant,
                   '주문시간': _time,
                   '위치': _userLocation,
+                  '만날장소': _meetingPlace,
                   '개설자핸드폰번호': _userPhoneNumber,
                   '참가자핸드폰번호': '',
                   '게시판이름': _userPhoneNumber +
                       '_' +
                       _userOrderId,
-                  '채팅중': 'Y',
+                  '채팅중': 'N',
                 });
                 _restaurantController.clear();
                 Fluttertoast.showToast(
@@ -358,91 +397,91 @@ class _User_Create_pageState extends State<User_Create_page> {
   }
 }
 
-Widget Chatstart(context) {
-  showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text(
-                    '메뉴 :',
-                    style: TextStyle(color: Colors.brown),
-                    textScaleFactor: 1,
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                ],
-              ),
-              Container(
-                height: 40,
-              ),
-              Text(
-                '반띵을 시작하시겠습니까?',
-                style: TextStyle(color: Colors.brown),
-                textScaleFactor: 1,
-              ),
-              Container(
-                height: 30,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      elevation: 5,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 25, right: 25, top: 15, bottom: 15),
-                        child: Center(
-                          child: Text(
-                            '취소',
-                            style: TextStyle(color: Colors.brown),
-                            textScaleFactor: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Chat_Page()));
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      elevation: 5,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 25, right: 25, top: 15, bottom: 15),
-                        child: Center(
-                          child: Text(
-                            '확인',
-                            style: TextStyle(color: Colors.brown),
-                            textScaleFactor: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        );
-      });
-}
+//Widget Chatstart(context) {
+//  showDialog(
+//      context: context,
+//      builder: (BuildContext context) {
+//        return AlertDialog(
+//          shape:
+//              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+//          content: Column(
+//            mainAxisSize: MainAxisSize.min,
+//            children: <Widget>[
+//              Row(
+//                children: <Widget>[
+//                  Text(
+//                    '메뉴 :',
+//                    style: TextStyle(color: Colors.brown),
+//                    textScaleFactor: 1,
+//                  ),
+//                  Container(
+//                    width: 10,
+//                  ),
+//                ],
+//              ),
+//              Container(
+//                height: 40,
+//              ),
+//              Text(
+//                '반띵을 시작하시겠습니까?',
+//                style: TextStyle(color: Colors.brown),
+//                textScaleFactor: 1,
+//              ),
+//              Container(
+//                height: 30,
+//              ),
+//              Row(
+//                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                children: <Widget>[
+//                  GestureDetector(
+//                    onTap: () {
+//                      Navigator.of(context).pop();
+//                    },
+//                    child: Card(
+//                      shape: RoundedRectangleBorder(
+//                          borderRadius: BorderRadius.circular(20)),
+//                      elevation: 5,
+//                      color: Colors.white,
+//                      child: Padding(
+//                        padding: const EdgeInsets.only(
+//                            left: 25, right: 25, top: 15, bottom: 15),
+//                        child: Center(
+//                          child: Text(
+//                            '취소',
+//                            style: TextStyle(color: Colors.brown),
+//                            textScaleFactor: 1.0,
+//                          ),
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                  GestureDetector(
+//                    onTap: () {
+//                      Navigator.of(context).push(MaterialPageRoute(
+//                          builder: (context) => User_Chat_Page()));
+//                    },
+//                    child: Card(
+//                      shape: RoundedRectangleBorder(
+//                          borderRadius: BorderRadius.circular(20)),
+//                      elevation: 5,
+//                      color: Colors.white,
+//                      child: Padding(
+//                        padding: const EdgeInsets.only(
+//                            left: 25, right: 25, top: 15, bottom: 15),
+//                        child: Center(
+//                          child: Text(
+//                            '확인',
+//                            style: TextStyle(color: Colors.brown),
+//                            textScaleFactor: 1.0,
+//                          ),
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                ],
+//              )
+//            ],
+//          ),
+//        );
+//      });
+//}

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings/styles.dart';
@@ -30,6 +31,26 @@ class _User_Board_PageState extends State<User_Board_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          '반띵',
+          style: GoogleFonts.poorStory(color: Colors.pink, fontSize: 30),
+        ),
+        actions: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(
+                Icons.list,
+                color: Colors.grey,
+              ),
+              Container(
+                width: 10,
+              ),
+            ],
+          )
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance
             .collection('게시판')
@@ -129,22 +150,44 @@ Widget _buildListItem(
                               });
                               Firestore.instance
                                   .collection('채팅')
-                                  .document(record.phoneNumber +
-                                      '_' +
-                                      _userPhoneNumber)
-                                  .setData({
-                                '채팅': '안녕',
-                              });
+                                  .document(record.boardname)
+                                  .collection('messages');
+                              //     .setData({
+                              //   '채팅': '안녕',
+                              // });
                               Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => User_Chat_Page()));
+                                  builder: (context) => User_Chat_Page(
+                                    boardName: record.boardname,
+                                    isOrderer: false,
+                                  )));
                             } else {
+                              Firestore.instance
+                                  .collection('게시판')
+                                  .document(record.boardname)
+                                  .updateData({
+                                '참가자핸드폰번호': _userPhoneNumber,
+                              });
+                              Firestore.instance
+                                  .collection('채팅')
+                                  .document(record.boardname)
+                                  .collection('messages');
+                              //     .setData({
+                              //   '채팅': '안녕',
+                              // });
                               Navigator.of(context).pop();
-                              Fluttertoast.showToast(
-                                  msg: '나의 게시판이에요',
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.pink,
-                                  textColor: Colors.white);
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => User_Chat_Page(
+                                    boardName: record.boardname,
+                                    isOrderer: true,
+                                  )));
+
+                              // Navigator.of(context).pop();
+                              // Fluttertoast.showToast(
+                              //     msg: '나의 게시판이에요',
+                              //     gravity: ToastGravity.CENTER,
+                              //     backgroundColor: Colors.pink,
+                              //     textColor: Colors.white);
                             }
                           } else {
                             Navigator.of(context).pop();
@@ -227,9 +270,6 @@ class Record {
   final String boardname;
   final String ischat;
 
-//  final String orderrequest;
-//  final String ordertime;
-//  final String orderid;
   final DocumentReference reference;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
@@ -240,20 +280,13 @@ class Record {
         assert(map['위치'] != null),
         assert(map['게시판이름'] != null),
         assert(map['채팅중'] != null),
-//        assert(map['요청사항'] != null),
-//        assert(map['주문시간'] != null),
-//        assert(map['주문번호'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
         time = map['주문시간'],
         location = map['위치'],
         boardname = map['게시판이름'],
-        ischat = map['채팅중']
-//        orderrequest = map['요청사항'],
-//        ordertime = map['주문시간'],
-//        orderid = map['주문번호']
-  ;
+        ischat = map['채팅중'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
@@ -261,93 +294,4 @@ class Record {
   @override
   String toString() =>
       "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$boardname:$ischat>";
-}
-
-Widget Chatstart(context) {
-  showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text(
-                    '메뉴 :',
-                    style: TextStyle(color: Colors.brown),
-                    textScaleFactor: 1,
-                  ),
-                  Container(
-                    width: 10,
-                  ),
-                ],
-              ),
-              Container(
-                height: 40,
-              ),
-              Text(
-                '반띵을 시작하시겠습니까?',
-                style: TextStyle(color: Colors.brown),
-                textScaleFactor: 1,
-              ),
-              Container(
-                height: 30,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      elevation: 5,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 25, right: 25, top: 15, bottom: 15),
-                        child: Center(
-                          child: Text(
-                            '취소',
-                            style: TextStyle(color: Colors.brown),
-                            textScaleFactor: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Chat_Page()));
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      elevation: 5,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 25, right: 25, top: 15, bottom: 15),
-                        child: Center(
-                          child: Text(
-                            '확인',
-                            style: TextStyle(color: Colors.brown),
-                            textScaleFactor: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        );
-      });
 }

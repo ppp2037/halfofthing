@@ -37,6 +37,7 @@ dependencies:
   flutter_time_picker_spinner: 1.0.6+1
   intl: 0.16.1
   flutter_phoenix: 0.1.0
+  google_fonts: 1.0.0
 
 dev_dependencies:
   flutter_test:
