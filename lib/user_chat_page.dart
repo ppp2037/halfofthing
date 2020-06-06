@@ -37,22 +37,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
-        print("UserPhone : $_userPhoneNumber");
-        print("BoardName : ${widget.boardName}");
+        // print("UserPhone : $_userPhoneNumber");
+        // print("BoardName : ${widget.boardName}");
       });
     })();
-
-    // Firestore.instance
-    //     .collection('사용자')
-    //     .where('핸드폰번호', isEqualTo: _userPhoneNumber)
-    //     .snapshots();
-
-    //   .then((QuerySnapshot ds) {
-    // ds.documents.forEach((doc) {
-    //   _comparePhoneNumber = doc['핸드폰번호'];
-    //   _comparePassword = doc['비밀번호'];
-    //   _userLocation = doc['위치']});
-
     Firestore.instance
         .collection('사용자')
         .document(_userPhoneNumber)
@@ -116,9 +104,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.boardName);
-    print(widget.isOrderer);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white10,

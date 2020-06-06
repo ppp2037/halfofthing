@@ -238,7 +238,6 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '참가자핸드폰번호': '',
                             '게시판이름': _userPhoneNumber + '_' + _userOrderId,
                             '반띵중': 'N',
-                            '생성시간': _boardCreatTime,
                           });
                           Fluttertoast.showToast(
                               msg: '새로운 반띵이 등록되었어요',
