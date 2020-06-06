@@ -2,28 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/*
-TODO:
-  <주문자>
-    - 게시물을 작성하면 항상 채팅방이 열린 상태.
-    - 참여자가 들어오면 "xx님이 들어왔습니다." 문구, 주문자에게 Notification, 반띵중 true
-    - 참여자가 나가면 "xx님이 반띵을 취소하였습니다." 문구
-    - 한 채팅방에서 주문자는 고정이며 참여자만 들어왔다 나갔다 할 수 있음.
-    - 상대방 프로필을 클릭하면 프로필 화면에 '내보내기'버튼 -> 버튼을 누르면 "xx님을 내보내시겠습니까?" -> 상대방 내보내고 "xx님을 내보냈습니다." 문구, 반띵중 false
- */
-
 class User_Chat_Page extends StatefulWidget {
   final String boardName;
-  final bool isOrderer;
-  // receive data from the FirstScreen as a parameter
-  User_Chat_Page({Key key, @required this.boardName, @required this.isOrderer})
-      : super(key: key);
+  User_Chat_Page({Key key, this.boardName}) : super(key: key);
   @override
   _User_Chat_PageState createState() => _User_Chat_PageState();
 }
 
 class _User_Chat_PageState extends State<User_Chat_Page> {
-  final db = Firestore.instance;
   CollectionReference chatReference;
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
@@ -31,20 +17,13 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   @override
   void initState() {
     super.initState();
-    chatReference =
-        db.collection("채팅").document(widget.boardName).collection('messages');
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
-        // print("UserPhone : $_userPhoneNumber");
-        // print("BoardName : ${widget.boardName}");
+        print("UserPhone : $_userPhoneNumber");
       });
     })();
-    Firestore.instance
-        .collection('사용자')
-        .document(_userPhoneNumber)
-        .updateData({'채팅중인방ID': widget.boardName});
   }
 
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
@@ -104,42 +83,61 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white10,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.pink),
-      ),
-      body: Container(
-        padding: EdgeInsets.all(5),
-        child: new Column(
-          children: <Widget>[
-            StreamBuilder<QuerySnapshot>(
-              stream:
-                  chatReference.orderBy('time', descending: true).snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) return new Text("No Chat");
-                return Expanded(
-                  child: new ListView(
-                    reverse: true,
-                    children: generateMessages(snapshot),
-                  ),
-                );
-              },
-            ),
-            new Divider(height: 1.0),
-            new Container(
-              decoration: new BoxDecoration(color: Theme.of(context).cardColor),
-              child: _buildTextComposer(),
-            ),
-            new Builder(builder: (BuildContext context) {
-              return new Container(width: 0.0, height: 0.0);
-            })
-          ],
-        ),
-      ),
-    );
+    String _chattingRoomID;
+    return StreamBuilder<DocumentSnapshot>(
+        stream: Firestore.instance
+            .collection('사용자')
+            .document(_userPhoneNumber)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          } else {
+            _chattingRoomID = snapshot.data['채팅중인방ID'];
+            chatReference = Firestore.instance
+                .collection("채팅")
+                .document(_chattingRoomID)
+                .collection('messages');
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.white10,
+                elevation: 0,
+                iconTheme: IconThemeData(color: Colors.pink),
+              ),
+              body: Container(
+                padding: EdgeInsets.all(5),
+                child: new Column(
+                  children: <Widget>[
+                    StreamBuilder<QuerySnapshot>(
+                      stream: chatReference
+                          .orderBy('time', descending: true)
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (!snapshot.hasData) return new Text("No Chat");
+                        return Expanded(
+                          child: new ListView(
+                            reverse: true,
+                            children: generateMessages(snapshot),
+                          ),
+                        );
+                      },
+                    ),
+                    new Divider(height: 1.0),
+                    new Container(
+                      decoration:
+                          new BoxDecoration(color: Theme.of(context).cardColor),
+                      child: _buildTextComposer(),
+                    ),
+                    new Builder(builder: (BuildContext context) {
+                      return new Container(width: 0.0, height: 0.0);
+                    })
+                  ],
+                ),
+              ),
+            );
+          }
+        });
   }
 
   IconButton getDefaultSendButton() {

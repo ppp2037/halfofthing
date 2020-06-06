@@ -226,6 +226,8 @@ class _User_Create_pageState extends State<User_Create_page> {
                           var _currentTime = DateTime.now();
                           var _userOrderId =
                               DateFormat('yyyyMMddHHmmss').format(_currentTime);
+                          var _boardID = _userPhoneNumber + '_' + _userOrderId;
+
                           Firestore.instance
                               .collection('게시판')
                               .document(_userPhoneNumber + '_' + _userOrderId)
@@ -236,9 +238,13 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '만날장소': _meetingPlace,
                             '개설자핸드폰번호': _userPhoneNumber,
                             '참가자핸드폰번호': '',
-                            '게시판이름': _userPhoneNumber + '_' + _userOrderId,
+                            '게시판이름': _boardID,
                             '반띵중': 'N',
                           });
+                          Firestore.instance
+                              .collection('사용자')
+                              .document(_userPhoneNumber)
+                              .updateData({'채팅중인방ID': _boardID});
                           Fluttertoast.showToast(
                               msg: '새로운 반띵이 등록되었어요',
                               gravity: ToastGravity.CENTER,
@@ -271,159 +277,6 @@ class _User_Create_pageState extends State<User_Create_page> {
                         ),
                       ),
                     ),
-//          Row(
-//            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//            children: <Widget>[
-//              Column(
-//                mainAxisAlignment: MainAxisAlignment.center,
-//                children: <Widget>[
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[1],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                  Container(
-//                    height: 10,
-//                  ),
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[2],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                  Container(
-//                    height: 10,
-//                  ),
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[3],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                ],
-//              ),
-//              Column(
-//                mainAxisAlignment: MainAxisAlignment.center,
-//                children: <Widget>[
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[4],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                  Container(
-//                    height: 10,
-//                  ),
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[5],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                  Container(
-//                    height: 10,
-//                  ),
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                            child: Text(
-//                          _selectedMenu[6],
-//                          style: text_black_20(),
-//                        )),
-//                      ),
-//                    ),
-//                  ),
-//                ],
-//              ),
-//            ],
-//          ),
                   ],
                 );
         },
@@ -431,92 +284,3 @@ class _User_Create_pageState extends State<User_Create_page> {
     );
   }
 }
-
-//Widget Chatstart(context) {
-//  showDialog(
-//      context: context,
-//      builder: (BuildContext context) {
-//        return AlertDialog(
-//          shape:
-//              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-//          content: Column(
-//            mainAxisSize: MainAxisSize.min,
-//            children: <Widget>[
-//              Row(
-//                children: <Widget>[
-//                  Text(
-//                    '메뉴 :',
-//                    style: TextStyle(color: Colors.brown),
-//                    textScaleFactor: 1,
-//                  ),
-//                  Container(
-//                    width: 10,
-//                  ),
-//                ],
-//              ),
-//              Container(
-//                height: 40,
-//              ),
-//              Text(
-//                '반띵을 시작하시겠습니까?',
-//                style: TextStyle(color: Colors.brown),
-//                textScaleFactor: 1,
-//              ),
-//              Container(
-//                height: 30,
-//              ),
-//              Row(
-//                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                children: <Widget>[
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).pop();
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                          child: Text(
-//                            '취소',
-//                            style: TextStyle(color: Colors.brown),
-//                            textScaleFactor: 1.0,
-//                          ),
-//                        ),
-//                      ),
-//                    ),
-//                  ),
-//                  GestureDetector(
-//                    onTap: () {
-//                      Navigator.of(context).push(MaterialPageRoute(
-//                          builder: (context) => User_Chat_Page()));
-//                    },
-//                    child: Card(
-//                      shape: RoundedRectangleBorder(
-//                          borderRadius: BorderRadius.circular(20)),
-//                      elevation: 5,
-//                      color: Colors.white,
-//                      child: Padding(
-//                        padding: const EdgeInsets.only(
-//                            left: 25, right: 25, top: 15, bottom: 15),
-//                        child: Center(
-//                          child: Text(
-//                            '확인',
-//                            style: TextStyle(color: Colors.brown),
-//                            textScaleFactor: 1.0,
-//                          ),
-//                        ),
-//                      ),
-//                    ),
-//                  ),
-//                ],
-//              )
-//            ],
-//          ),
-//        );
-//      });
-//}
