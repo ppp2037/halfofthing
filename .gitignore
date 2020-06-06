@@ -1,0 +1,8 @@
+# gitignore는 프로젝트 최상단에 위치시킴
+
+# 프로젝트 전체 폴더 중 TODO라는 폴더명을 사용하는 TODO 폴더의 하위 파일은 모두 무시
+# (즉, t.txt 파일과 tt.txt 파일 모두 무시됨)
+# TODO/
+# 출처: https://shilan.tistory.com/entry/gitignore-파일-작성-규칙 [끄적끄적]
+
+FirebaseFirestore/
