@@ -337,13 +337,11 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                         '로그인여부': 'N',
                                                         '인증여부': 'N',
                                                         '이용횟수': 0,
-                                                        '채팅중': 'N',
+                                                        '채팅중인방ID': '',
                                                       });
-                                                      Navigator.of(
-                                                          context)
+                                                      Navigator.of(context)
                                                           .popUntil((route) =>
-                                                      route
-                                                          .isFirst);
+                                                              route.isFirst);
                                                       Fluttertoast.showToast(
                                                           msg: '회원가입에 성공했어요',
                                                           gravity: ToastGravity
@@ -385,13 +383,11 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                         );
                                       });
                                 } else {
-                                  Fluttertoast.showToast(msg: '핸드폰번호가 중복되었어요',
-                                      gravity: ToastGravity
-                                          .CENTER,
-                                      backgroundColor:
-                                      Colors.pink,
-                                      textColor:
-                                      Colors.white);
+                                  Fluttertoast.showToast(
+                                      msg: '핸드폰번호가 중복되었어요',
+                                      gravity: ToastGravity.CENTER,
+                                      backgroundColor: Colors.pink,
+                                      textColor: Colors.white);
                                 }
                               });
                             } else {

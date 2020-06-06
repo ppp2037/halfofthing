@@ -66,28 +66,29 @@ class _User_Create_pageState extends State<User_Create_page> {
         builder: (context, snapshot) {
           if (!snapshot.hasData)
             return Center(child: CircularProgressIndicator());
-          return snapshot.data['채팅중'] == 'Y'
-              ? Column(mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  '지금 진행중인 반띵이 있어요',
-                  style: text_grey_15(),
-                ),
-                Container(
-                  height: 60,
-                ),
-                Text(
-                  '새로운 반띵을 시작하려면',
-                  style: text_grey_15(),
-                ),
-                Container(
-                  height: 20,
-                ),
-                Text(
-                  '기존 반띵을 취소해주세요',
-                  style: text_grey_15(),
-                ),
-              ],
+          return snapshot.data['채팅중인방ID'] != ''
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      '지금 진행중인 반띵이 있어요',
+                      style: text_grey_15(),
+                    ),
+                    Container(
+                      height: 60,
+                    ),
+                    Text(
+                      '새로운 반띵을 시작하려면',
+                      style: text_grey_15(),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(
+                      '기존 반띵을 취소해주세요',
+                      style: text_grey_15(),
+                    ),
+                  ],
                 )
               : Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -239,7 +240,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '개설자핸드폰번호': _userPhoneNumber,
                             '참가자핸드폰번호': '',
                             '게시판이름': _userPhoneNumber + '_' + _userOrderId,
-                            '채팅중': 'N',
+                            '반띵중': 'N',
                             '생성시간': _boardCreatTime,
                           });
                           Fluttertoast.showToast(

@@ -27,7 +27,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   CollectionReference chatReference;
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
-
   String _userPhoneNumber;
   @override
   void initState() {
@@ -38,8 +37,26 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
+        print("UserPhone : $_userPhoneNumber");
+        print("BoardName : ${widget.boardName}");
       });
     })();
+
+    // Firestore.instance
+    //     .collection('사용자')
+    //     .where('핸드폰번호', isEqualTo: _userPhoneNumber)
+    //     .snapshots();
+
+    //   .then((QuerySnapshot ds) {
+    // ds.documents.forEach((doc) {
+    //   _comparePhoneNumber = doc['핸드폰번호'];
+    //   _comparePassword = doc['비밀번호'];
+    //   _userLocation = doc['위치']});
+
+    Firestore.instance
+        .collection('사용자')
+        .document(_userPhoneNumber)
+        .updateData({'채팅중인방ID': widget.boardName});
   }
 
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
@@ -87,13 +104,13 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
     return snapshot.data.documents
         .map<Widget>((doc) => Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: new Row(
-        children: doc.data['sender_phone'] != _userPhoneNumber
-            ? generateReceiverLayout(doc)
-            : generateSenderLayout(doc),
-      ),
-    ))
+              margin: const EdgeInsets.symmetric(vertical: 10.0),
+              child: new Row(
+                children: doc.data['sender_phone'] != _userPhoneNumber
+                    ? generateReceiverLayout(doc)
+                    : generateSenderLayout(doc),
+              ),
+            ))
         .toList();
   }
 
@@ -114,7 +131,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           children: <Widget>[
             StreamBuilder<QuerySnapshot>(
               stream:
-              chatReference.orderBy('time', descending: true).snapshots(),
+                  chatReference.orderBy('time', descending: true).snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (!snapshot.hasData) return new Text("No Chat");
@@ -168,7 +185,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   },
                   onSubmitted: _sendText,
                   decoration:
-                  new InputDecoration.collapsed(hintText: "Send a message"),
+                      new InputDecoration.collapsed(hintText: "Send a message"),
                 ),
               ),
               new Container(
