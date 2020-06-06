@@ -4,12 +4,15 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
 import 'user_settings_feedback_page.dart';
+import 'user_settings_help_page.dart';
 import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
+import 'user_settings_personalinfo_page.dart';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -158,6 +161,10 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       '고객지원',
                       style: text_grey_15(),
                     ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_Settings_Help_Page()));
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.notifications_active),
@@ -187,6 +194,10 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       '개인정보 처리방침',
                       style: text_grey_15(),
                     ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_Settings_PersonalInfo_Page()));
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.clear),
@@ -240,7 +251,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
         stream: Firestore.instance
             .collection('게시판')
             .where('위치', isEqualTo: _userLocation)
-//            .orderBy('생성시간')
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
@@ -265,6 +275,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
 Widget _buildList(
     BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
+  snapshot.sort((a, b) =>
+      Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
   return ListView(
     padding: const EdgeInsets.only(bottom: 20.0),
     children: snapshot
@@ -277,6 +289,12 @@ Widget _buildListItem(
     BuildContext context, DocumentSnapshot data, String _userPhoneNumber) {
   final record = Record.fromSnapshot(data);
 
+  // record.time : DateFormat('yyyyMMddHHmmss')의 형태 => '00시 00분' 형태로 변환
+  String orderTimeStr = record.time.toString().substring(8, 10) +
+      "시 " +
+      record.time.toString().substring(10, 12) +
+      "분";
+  print("주문 시간 : ${record.time} => $orderTimeStr");
   return ListTile(
     onTap: () {
       showDialog(
@@ -292,7 +310,7 @@ Widget _buildListItem(
                   Container(
                     height: 20,
                   ),
-                  Text('시간 : ' + record.time, style: text_pink_20()),
+                  Text('시간 : ' + orderTimeStr, style: text_pink_20()),
                   Container(
                     height: 20,
                   ),
@@ -342,33 +360,15 @@ Widget _buildListItem(
                               Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => User_Chat_Page(
-                                        boardName: record.boardname,
-                                        isOrderer: false,
-                                      )));
+                                    boardName: record.boardname,
+                                    isOrderer: false,
+                                  )));
                             } else {
-                              Firestore.instance
-                                  .collection('게시판')
-                                  .document(record.boardname)
-                                  .updateData({
-                                '참가자핸드폰번호': _userPhoneNumber,
-                              });
-                              Firestore.instance
-                                  .collection('채팅')
-                                  .document(record.boardname)
-                                  .collection('messages');
-                              Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => User_Chat_Page(
-                                        boardName: record.boardname,
-                                        isOrderer: true,
-                                      )));
-
-                              // Navigator.of(context).pop();
-                              // Fluttertoast.showToast(
-                              //     msg: '나의 게시판이에요',
-                              //     gravity: ToastGravity.CENTER,
-                              //     backgroundColor: Colors.pink,
-                              //     textColor: Colors.white);
+                                    boardName: record.boardname,
+                                    isOrderer: false,
+                                  )));
                             }
                           } else {
                             Navigator.of(context).pop();
@@ -403,7 +403,7 @@ Widget _buildListItem(
     title: Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             children: <Widget>[
               Row(
@@ -415,15 +415,15 @@ Widget _buildListItem(
                   ),
                   record.phoneNumber == _userPhoneNumber
                       ? Text(
-                          '내가 참여중',
-                          style: text_grey_15(),
-                        )
+                    '내가 참여중',
+                    style: text_grey_15(),
+                  )
                       : record.ischat == 'Y'
-                          ? Text(
-                              '반띵중',
-                              style: text_grey_15(),
-                            )
-                          : Container(),
+                      ? Text(
+                    '반띵중',
+                    style: text_grey_15(),
+                  )
+                      : Container(),
                 ],
               ),
               Container(
@@ -432,7 +432,7 @@ Widget _buildListItem(
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(record.time + ' ' + record.meetingPlace,
+                  Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
                       style: text_grey_20()),
                 ],
               ),

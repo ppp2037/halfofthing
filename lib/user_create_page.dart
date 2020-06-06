@@ -31,7 +31,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   }
 
   String _restaurant;
-  String _time;
+  var _time;
   String _meetingPlace;
   String _boardCreatTime;
 
@@ -208,11 +208,8 @@ class _User_Create_pageState extends State<User_Create_page> {
                                   isForce2Digits: true,
                                   onTimeChange: (time) {
                                     setState(() {
-                                      _time =
-                                          DateFormat('HH시 mm분').format(time);
-                                      _boardCreatTime =
-                                          DateFormat('yyyyMMddHHmmss')
-                                              .format(time);
+                                      _time = DateFormat('yyyyMMddHHmmss')
+                                          .format(time);
                                     });
                                   },
                                 ),
@@ -240,7 +237,6 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '참가자핸드폰번호': '',
                             '게시판이름': _userPhoneNumber + '_' + _userOrderId,
                             '반띵중': 'N',
-                            '생성시간': _boardCreatTime,
                           });
                           Firestore.instance
                               .collection('사용자')
