@@ -333,11 +333,11 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                         '핸드폰번호': _phoneNumber,
                                                         '위치': _selectedItem
                                                             .location,
-                                                        '비밀번호': _password,
+                                                        '비밀번호': make_encryption(_password),
                                                         '로그인여부': 'N',
                                                         '인증여부': 'N',
                                                         '이용횟수': 0,
-                                                        '채팅중': 'N',
+                                                        '채팅중인방ID': '',
                                                       });
                                                       Navigator.of(
                                                           context)

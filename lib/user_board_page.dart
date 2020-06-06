@@ -7,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
+import 'user_settings_feedback_page.dart';
+import 'user_settings_howto_page.dart';
+import 'user_settings_notice_page.dart';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -35,7 +38,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.grey),
-        brightness: Brightness.light,
         backgroundColor: Colors.white,
         title: Text(
           '반띵',
@@ -95,30 +97,76 @@ class _User_Board_PageState extends State<User_Board_Page> {
                             ),
                           ],
                         ),
+                        Container(
+                          height: 20,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.apps,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                            Container(
+                              width: 10,
+                            ),
+                            Text(
+                              '이용횟수  :  ' + snapshot.data['이용횟수'].toString(),
+                              style: text_white_20(),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                   ListTile(
-                    leading: Icon(Icons.apps),
-                    title: Text('이용횟수  :  ' + snapshot.data['이용횟수'].toString(), style: text_grey_15(),),
-                  ),
-                  ListTile(
                     leading: Icon(Icons.library_books),
-                    title: Text('이용방법', style: text_grey_15(),),
+                    title: Text(
+                      '이용방법',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_Settings_Howto_Page()));
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.notifications),
-                    title: Text('공지사항', style: text_grey_15(),),
+                    title: Text(
+                      '공지사항',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_Settings_Notice_page()));
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text(
+                      '개선사항',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_Settings_Feedback_Page()));
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.help_outline),
-                    title: Text('고객지원', style: text_grey_15(),),
+                    title: Text(
+                      '고객지원',
+                      style: text_grey_15(),
+                    ),
                   ),
                   ListTile(
                     leading: Icon(Icons.notifications_active),
                     title: Row(
                       children: <Widget>[
-                        Text('푸시알림',style: text_grey_15(),),
+                        Text(
+                          '푸시알림',
+                          style: text_grey_15(),
+                        ),
                         Container(
                           width: 30,
                         ),
@@ -134,12 +182,22 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     ),
                   ),
                   ListTile(
-                    leading: Icon(Icons.help_outline),
-                    title: Text('로그아웃',style: text_grey_15(),),
+                    leading: Icon(Icons.lock),
+                    title: Text(
+                      '개인정보 처리방침',
+                      style: text_grey_15(),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.clear),
+                    title: Text(
+                      '로그아웃',
+                      style: text_grey_15(),
+                    ),
                     onTap: () {
                       (() async {
                         SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
+                            await SharedPreferences.getInstance();
                         setState(() {
                           prefs.clear();
                         });
@@ -152,6 +210,26 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       Phoenix.rebirth(context);
                     },
                   ),
+                  ListTile(
+                    title: Column(
+                      children: <Widget>[
+                        Container(
+                          height: 20,
+                        ),
+                        Text(
+                          'Copyright © 2020 gauntlet Inc.',
+                          style: text_grey_10(),
+                        ),
+                        Container(
+                          height: 10,
+                        ),
+                        Text(
+                          'All Rights Reserved. Ver 1.0.0',
+                          style: text_grey_10(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             );
@@ -162,7 +240,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
         stream: Firestore.instance
             .collection('게시판')
             .where('위치', isEqualTo: _userLocation)
-            .orderBy('생성시간')
+//            .orderBy('생성시간')
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
@@ -199,7 +277,7 @@ Widget _buildListItem(
     BuildContext context, DocumentSnapshot data, String _userPhoneNumber) {
   final record = Record.fromSnapshot(data);
 
-  return GestureDetector(
+  return ListTile(
     onTap: () {
       showDialog(
           context: context,
@@ -322,10 +400,10 @@ Widget _buildListItem(
             );
           });
     },
-    child: Column(
+    title: Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
             children: <Widget>[
               Row(
@@ -363,8 +441,6 @@ Widget _buildListItem(
         ),
         Divider(
           thickness: 1,
-          indent: 20,
-          endIndent: 20,
         ),
       ],
     ),
@@ -391,7 +467,7 @@ class Record {
         assert(map['위치'] != null),
         assert(map['만날장소'] != null),
         assert(map['게시판이름'] != null),
-        assert(map['채팅중'] != null),
+        assert(map['반띵중'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
@@ -399,7 +475,7 @@ class Record {
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
-        ischat = map['채팅중'];
+        ischat = map['반띵중'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);

@@ -1,5 +1,7 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:halfofthing/settings/styles.dart';
 
 import 'user_board_page.dart';
 import 'user_chat_page.dart';
@@ -50,12 +52,18 @@ class _Background_PageState extends State<Background_Page> {
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
               icon: Icon(Icons.library_books), title: Text('게시판')),
           BottomNavigationBarItem(icon: Icon(Icons.add), title: Text('시작')),
           BottomNavigationBarItem(
-              icon: Icon(Icons.chat), title: Text('채팅')),
+              icon: Badge(
+                animationType: BadgeAnimationType.scale,
+                shape: BadgeShape.circle,
+                position: BadgePosition.topRight(top: -15),
+                badgeColor: Colors.pink,
+                badgeContent: Text('3',style: text_white_15(),),
+              child: Icon(Icons.chat)), title: Text('채팅')),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.pink,
