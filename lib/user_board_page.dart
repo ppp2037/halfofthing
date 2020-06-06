@@ -179,7 +179,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
         stream: Firestore.instance
             .collection('게시판')
             .where('위치', isEqualTo: _userLocation)
-            .orderBy('생성시간')
+            // .orderBy('생성시간')
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
@@ -204,6 +204,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
 Widget _buildList(
     BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
+  snapshot.sort((a, b) =>
+      Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
   return ListView(
     padding: const EdgeInsets.only(bottom: 20.0),
     children: snapshot
@@ -216,6 +218,12 @@ Widget _buildListItem(
     BuildContext context, DocumentSnapshot data, String _userPhoneNumber) {
   final record = Record.fromSnapshot(data);
 
+  // record.time : DateFormat('yyyyMMddHHmmss')의 형태 => '00시 00분' 형태로 변환
+  String orderTimeStr = record.time.toString().substring(8, 10) +
+      "시 " +
+      record.time.toString().substring(10, 12) +
+      "분";
+  print("주문 시간 : ${record.time} => $orderTimeStr");
   return GestureDetector(
     onTap: () {
       showDialog(
@@ -231,7 +239,7 @@ Widget _buildListItem(
                   Container(
                     height: 20,
                   ),
-                  Text('시간 : ' + record.time, style: text_pink_20()),
+                  Text('시간 : ' + orderTimeStr, style: text_pink_20()),
                   Container(
                     height: 20,
                   ),
@@ -371,7 +379,7 @@ Widget _buildListItem(
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(record.time + ' ' + record.meetingPlace,
+                  Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
                       style: text_grey_20()),
                 ],
               ),

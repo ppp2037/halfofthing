@@ -31,7 +31,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   }
 
   String _restaurant;
-  String _time;
+  var _time;
   String _meetingPlace;
   String _boardCreatTime;
 
@@ -209,11 +209,8 @@ class _User_Create_pageState extends State<User_Create_page> {
                                   isForce2Digits: true,
                                   onTimeChange: (time) {
                                     setState(() {
-                                      _time =
-                                          DateFormat('HH시 mm분').format(time);
-                                      _boardCreatTime =
-                                          DateFormat('yyyyMMddHHmmss')
-                                              .format(time);
+                                      _time = DateFormat('yyyyMMddHHmmss')
+                                          .format(time);
                                     });
                                   },
                                 ),
