@@ -1,165 +1,315 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bubble/bubble.dart';
+import 'package:intl/intl.dart';
 
-/*
-TODO:
-  <주문자>
-    - 게시물을 작성하면 항상 채팅방이 열린 상태.
-    - 참여자가 들어오면 "xx님이 들어왔습니다." 문구, 주문자에게 Notification, 반띵중 true
-    - 참여자가 나가면 "xx님이 반띵을 취소하였습니다." 문구
-    - 한 채팅방에서 주문자는 고정이며 참여자만 들어왔다 나갔다 할 수 있음.
-    - 상대방 프로필을 클릭하면 프로필 화면에 '내보내기'버튼 -> 버튼을 누르면 "xx님을 내보내시겠습니까?" -> 상대방 내보내고 "xx님을 내보냈습니다." 문구, 반띵중 false
- */
+import 'background_page.dart';
+import 'settings/styles.dart';
+import 'survey_page.dart';
 
 class User_Chat_Page extends StatefulWidget {
   final String boardName;
-  final bool isOrderer;
-  // receive data from the FirstScreen as a parameter
-  User_Chat_Page({Key key, @required this.boardName, @required this.isOrderer})
-      : super(key: key);
+
+  User_Chat_Page({Key key, this.boardName}) : super(key: key);
+
   @override
   _User_Chat_PageState createState() => _User_Chat_PageState();
 }
 
 class _User_Chat_PageState extends State<User_Chat_Page> {
-  final db = Firestore.instance;
   CollectionReference chatReference;
-  final TextEditingController _textController = new TextEditingController();
+  final TextEditingController _textController = TextEditingController();
   bool _isWritting = false;
-
   String _userPhoneNumber;
+
   @override
   void initState() {
     super.initState();
-    chatReference =
-        db.collection("채팅").document(widget.boardName).collection('messages');
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
+        print("UserPhone : $_userPhoneNumber");
       });
     })();
   }
 
+  String readTimestamp(Timestamp timestamp) {
+    var now = DateTime.now();
+    var format = DateFormat('HH시 mm분');
+    var date = timestamp.toDate();
+    var diff = date.difference(now);
+    var time = '';
+
+    if (diff.inSeconds <= 0 ||
+        diff.inSeconds > 0 && diff.inMinutes == 0 ||
+        diff.inMinutes > 0 && diff.inHours == 0 ||
+        diff.inHours > 0 && diff.inDays == 0) {
+      time = '' + format.format(date);
+    } else {
+      if (diff.inDays == 1) {
+        time = '어제 ' + format.format(date);
+      } else {
+        time = diff.inDays.toString() + 'DAYS AGO';
+      }
+    }
+
+    return time;
+  }
+
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
+    // 나의 말풍선
+    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    double px = 1 / pixelRatio;
+
+    BubbleStyle styleMe = BubbleStyle(
+      alignment: Alignment.topRight,
+      nip: BubbleNip.rightTop,
+      color: Color.fromARGB(255, 225, 255, 199),
+      elevation: 1 * px,
+      nipWidth: 10,
+    );
+
     return <Widget>[
-      new Expanded(
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            new Text(documentSnapshot.data['sender_nickname'],
-                style: new TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-            new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new Text(documentSnapshot.data['text']),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            readTimestamp(documentSnapshot.data['time']),
+            style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12.0,
+                fontStyle: FontStyle.italic),
+          ),
+          Bubble(
+            style: styleMe,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(documentSnapshot.data['sender_nickname'],
+                    style: TextStyle(
+                        fontSize: 14.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+                Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: Text(
+                    documentSnapshot.data['text'],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          )
+        ],
+      )
     ];
   }
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
+    // 상대방의 말풍선
+    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    double px = 1 / pixelRatio;
+
+    BubbleStyle styleSomebody = BubbleStyle(
+      nip: BubbleNip.leftTop,
+      color: Colors.white,
+      elevation: 1 * px,
+      margin: BubbleEdges.only(top: 8.0),
+      alignment: Alignment.topLeft,
+    );
+    Timestamp ts = documentSnapshot.data['time'];
+    DateTime d = ts.toDate();
+    print("timestamp : ${documentSnapshot.data['time']}");
+    print("date : ${d}");
+
     return <Widget>[
-      new Expanded(
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            new Text(documentSnapshot.data['sender_nickname'],
-                style: new TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-            new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new Text(documentSnapshot.data['text']),
+      Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Bubble(
+              style: styleSomebody,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text(documentSnapshot.data['sender_nickname'],
+                      style: TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold)),
+                  Container(
+                    margin: const EdgeInsets.only(top: 5.0),
+                    child: Text(documentSnapshot.data['text']),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+            Text(
+              readTimestamp(documentSnapshot.data['time']),
+              style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12.0,
+                  fontStyle: FontStyle.italic),
+            ),
+          ])
     ];
   }
 
   generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
     return snapshot.data.documents
-        .map<Widget>((doc) => Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: new Row(
-        children: doc.data['sender_phone'] != _userPhoneNumber
-            ? generateReceiverLayout(doc)
-            : generateSenderLayout(doc),
-      ),
-    ))
+        .map<Widget>((doc) => doc.data['sender_phone'] != _userPhoneNumber
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: generateReceiverLayout(doc),
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: generateSenderLayout(doc),
+                ),
+              ))
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(widget.boardName);
-    print(widget.isOrderer);
+    String _chattingRoomID;
 
     return Scaffold(
       appBar: AppBar(
+        title: Text(
+          '반띵을 완료하면 우측상단 완료를 눌러주세요',
+          style: text_grey_15(),
+        ),
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white10,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.pink),
+        iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: Container(
-        padding: EdgeInsets.all(5),
-        child: new Column(
-          children: <Widget>[
-            StreamBuilder<QuerySnapshot>(
-              stream:
-              chatReference.orderBy('time', descending: true).snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) return new Text("No Chat");
-                return Expanded(
-                  child: new ListView(
-                    reverse: true,
-                    children: generateMessages(snapshot),
+      endDrawer: StreamBuilder<DocumentSnapshot>(
+        stream: Firestore.instance
+            .collection('사용자')
+            .document(_userPhoneNumber)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          } else {
+            Map<String, dynamic> documentFields = snapshot.data.data;
+//            snapshot.data['핸드폰번호']
+            return Drawer(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                        '상대방 반띵 횟수 : ' + snapshot.data['이용횟수'].toString(),
+                        style: text_grey_20()),
                   ),
-                );
-              },
-            ),
-            new Divider(height: 1.0),
-            new Container(
-              decoration: new BoxDecoration(color: Theme.of(context).cardColor),
-              child: _buildTextComposer(),
-            ),
-            new Builder(builder: (BuildContext context) {
-              return new Container(width: 0.0, height: 0.0);
-            })
-          ],
-        ),
+                  ListTile(
+                    title: Text('반띵 완료하기', style: text_grey_20()),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Survey_Page()));
+                    },
+                  ),
+                  ListTile(
+                    title: Text('다른 반띵하기', style: text_grey_20()),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => Background_Page()));
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+        },
       ),
+      body: StreamBuilder<DocumentSnapshot>(
+          stream: Firestore.instance
+              .collection('사용자')
+              .document(_userPhoneNumber)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            } else {
+              _chattingRoomID = snapshot.data['채팅중인방ID'];
+              chatReference = Firestore.instance
+                  .collection("채팅")
+                  .document(_chattingRoomID)
+                  .collection('messages');
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.white10,
+                  elevation: 0,
+                  iconTheme: IconThemeData(color: Colors.pink),
+                ),
+                body: Container(
+                  padding: EdgeInsets.all(8),
+                  color: Colors.yellow.withAlpha(64),
+                  child: Column(
+                    children: <Widget>[
+                      StreamBuilder<QuerySnapshot>(
+                        stream: chatReference
+                            .orderBy('time', descending: true)
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (!snapshot.hasData) return CircularProgressIndicator();
+                          return Expanded(
+                            child: ListView(
+                              reverse: true,
+                              children: generateMessages(snapshot),
+                            ),
+                          );
+                        },
+                      ),
+                      Divider(height: 1.0),
+                      Container(
+                        decoration: new BoxDecoration(
+                            color: Theme.of(context).cardColor),
+                        child: _buildTextComposer(),
+                      ),
+                      new Builder(builder: (BuildContext context) {
+                        return Container(width: 0.0, height: 0.0);
+                      })
+                    ],
+                  ),
+                ),
+              );
+            }
+          }),
     );
   }
 
   IconButton getDefaultSendButton() {
-    return new IconButton(
-      icon: new Icon(Icons.send),
+    return IconButton(
+      icon: Icon(Icons.send),
       onPressed: _isWritting ? () => _sendText(_textController.text) : null,
     );
   }
 
   Widget _buildTextComposer() {
-    return new IconTheme(
-        data: new IconThemeData(
+    return IconTheme(
+        data: IconThemeData(
           color: _isWritting
               ? Theme.of(context).accentColor
               : Theme.of(context).disabledColor,
         ),
-        child: new Container(
+        child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: new Row(
+          child: Row(
             children: <Widget>[
-              new Flexible(
-                child: new TextField(
+              Flexible(
+                child: TextField(
                   controller: _textController,
                   onChanged: (String messageText) {
                     setState(() {
@@ -168,10 +318,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   },
                   onSubmitted: _sendText,
                   decoration:
-                  new InputDecoration.collapsed(hintText: "Send a message"),
+                      InputDecoration.collapsed(hintText: "Send a message"),
                 ),
               ),
-              new Container(
+              Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: getDefaultSendButton(),
               ),
@@ -181,16 +331,19 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Future<Null> _sendText(String text) async {
-    _textController.clear();
-    chatReference.add({
-      'text': text,
-      'sender_phone': _userPhoneNumber,
-      'sender_nickname': "랜덤",
-      'time': FieldValue.serverTimestamp(),
-    }).then((documentReference) {
-      setState(() {
-        _isWritting = false;
-      });
-    }).catchError((e) {});
+    if (text.isNotEmpty) {
+      _textController.clear();
+      chatReference.add({
+        'text': text,
+        'sender_phone': _userPhoneNumber,
+        'sender_nickname': "랜덤",
+        'time': DateTime.now(),
+        'delivered': false,
+      }).then((documentReference) {
+        setState(() {
+          _isWritting = false;
+        });
+      }).catchError((e) {});
+    }
   }
 }
