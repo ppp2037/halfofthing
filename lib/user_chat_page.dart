@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bubble/bubble.dart';
+import 'package:intl/intl.dart';
 
 class User_Chat_Page extends StatefulWidget {
   final String boardName;
@@ -14,6 +16,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
   String _userPhoneNumber;
+
   @override
   void initState() {
     super.initState();
@@ -26,45 +29,125 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     })();
   }
 
+  String readTimestamp(Timestamp timestamp) {
+    var now = new DateTime.now();
+    var format = new DateFormat('HH시 mm분');
+    var date = timestamp.toDate();
+    var diff = date.difference(now);
+    var time = '';
+
+    if (diff.inSeconds <= 0 ||
+        diff.inSeconds > 0 && diff.inMinutes == 0 ||
+        diff.inMinutes > 0 && diff.inHours == 0 ||
+        diff.inHours > 0 && diff.inDays == 0) {
+      time = '' + format.format(date);
+    } else {
+      if (diff.inDays == 1) {
+        time = '어제 ' + format.format(date);
+      } else {
+        time = diff.inDays.toString() + 'DAYS AGO';
+      }
+    }
+
+    return time;
+  }
+
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
+    // 나의 말풍선
+    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    double px = 1 / pixelRatio;
+
+    BubbleStyle styleMe = BubbleStyle(
+      alignment: Alignment.topRight,
+      nip: BubbleNip.rightTop,
+      color: Color.fromARGB(255, 225, 255, 199),
+      elevation: 1 * px,
+      nipWidth: 10,
+    );
+
     return <Widget>[
-      new Expanded(
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            new Text(documentSnapshot.data['sender_nickname'],
-                style: new TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-            new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new Text(documentSnapshot.data['text']),
+      new Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            readTimestamp(documentSnapshot.data['time']),
+            style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12.0,
+                fontStyle: FontStyle.italic),
+          ),
+          Bubble(
+            style: styleMe,
+            child: new Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                new Text(documentSnapshot.data['sender_nickname'],
+                    style: new TextStyle(
+                        fontSize: 14.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+                new Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: new Text(
+                    documentSnapshot.data['text'],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          )
+        ],
+      )
     ];
   }
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
+    // 상대방의 말풍선
+    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    double px = 1 / pixelRatio;
+
+    BubbleStyle styleSomebody = BubbleStyle(
+      nip: BubbleNip.leftTop,
+      color: Colors.white,
+      elevation: 1 * px,
+      margin: BubbleEdges.only(top: 8.0),
+      alignment: Alignment.topLeft,
+    );
+    Timestamp ts = documentSnapshot.data['time'];
+    DateTime d = ts.toDate();
+    print("timestamp : ${documentSnapshot.data['time']}");
+    print("date : ${d}");
+
     return <Widget>[
-      new Expanded(
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            new Text(documentSnapshot.data['sender_nickname'],
-                style: new TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-            new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new Text(documentSnapshot.data['text']),
+      new Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Bubble(
+              style: styleSomebody,
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  new Text(documentSnapshot.data['sender_nickname'],
+                      style: new TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold)),
+                  new Container(
+                    margin: const EdgeInsets.only(top: 5.0),
+                    child: new Text(documentSnapshot.data['text']),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+            Text(
+              readTimestamp(documentSnapshot.data['time']),
+              style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12.0,
+                  fontStyle: FontStyle.italic),
+            ),
+          ])
     ];
   }
 
@@ -84,6 +167,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   @override
   Widget build(BuildContext context) {
     String _chattingRoomID;
+
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
@@ -105,7 +189,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 iconTheme: IconThemeData(color: Colors.pink),
               ),
               body: Container(
-                padding: EdgeInsets.all(5),
+                padding: EdgeInsets.all(8),
+                color: Colors.yellow.withAlpha(64),
                 child: new Column(
                   children: <Widget>[
                     StreamBuilder<QuerySnapshot>(
@@ -187,6 +272,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       'sender_phone': _userPhoneNumber,
       'sender_nickname': "랜덤",
       'time': FieldValue.serverTimestamp(),
+      'read': false,
     }).then((documentReference) {
       setState(() {
         _isWritting = false;
