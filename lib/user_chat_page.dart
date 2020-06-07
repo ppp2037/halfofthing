@@ -16,7 +16,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
   String _userPhoneNumber;
-
+  String _chattingRoomID;
   @override
   void initState() {
     super.initState();
@@ -29,10 +29,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     })();
   }
 
-  String readTimestamp(Timestamp timestamp) {
+  Widget timeStampText(DocumentSnapshot documentSnapshot) {
     var now = new DateTime.now();
     var format = new DateFormat('HH:mm');
-    DateTime date = timestamp.toDate();
+    DateTime date = documentSnapshot.data['time'].toDate();
     // FIXME: toDate() 값이 null 인 비동기 문제:  'toDate' was called on null => Fixed
     var diff = date.difference(now);
     var time = '';
@@ -46,11 +46,24 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       if (diff.inDays == 1) {
         time = '어제 ' + format.format(date);
       } else {
-        time = diff.inDays.toString() + 'DAYS AGO';
+        time = diff.inDays.toString() + '일 전';
       }
     }
+    return Text(
+      time,
+      style: TextStyle(
+          color: Colors.grey, fontSize: 12.0, fontStyle: FontStyle.italic),
+    );
+  }
 
-    return time;
+  Widget deliveredIcon(DocumentSnapshot documentSnapshot) {
+    return documentSnapshot.data['delivered']
+        ? Container()
+        : Icon(
+            Icons.fiber_manual_record,
+            color: Colors.orange,
+            size: 15,
+          );
   }
 
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
@@ -71,13 +84,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            readTimestamp(documentSnapshot.data['time']),
-            style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12.0,
-                fontStyle: FontStyle.italic),
-          ),
+          timeStampText(documentSnapshot),
+          deliveredIcon(documentSnapshot),
           Bubble(
             style: styleMe,
             child: new Column(
@@ -114,11 +122,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       margin: BubbleEdges.only(top: 8.0),
       alignment: Alignment.topLeft,
     );
-    Timestamp ts = documentSnapshot.data['time'];
-    DateTime d = ts.toDate();
-    // print("timestamp : ${documentSnapshot.data['time']}");
-    // print("date : ${d}");
-
+    documentSnapshot.reference.updateData({'delivered': true});
     return <Widget>[
       new Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -141,34 +145,33 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 ],
               ),
             ),
-            Text(
-              readTimestamp(documentSnapshot.data['time']),
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12.0,
-                  fontStyle: FontStyle.italic),
-            ),
+            timeStampText(documentSnapshot)
           ])
     ];
   }
 
   generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
     return snapshot.data.documents
-        .map<Widget>((doc) => Container(
-              margin: const EdgeInsets.symmetric(vertical: 10.0),
-              child: new Row(
-                children: doc.data['sender_phone'] != _userPhoneNumber
-                    ? generateReceiverLayout(doc)
-                    : generateSenderLayout(doc),
-              ),
-            ))
+        .map<Widget>((doc) => doc.data['sender_phone'] != _userPhoneNumber
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: generateReceiverLayout(doc),
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: generateSenderLayout(doc),
+                ),
+              ))
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    String _chattingRoomID;
-
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
@@ -183,6 +186,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 .collection("채팅")
                 .document(_chattingRoomID)
                 .collection('messages');
+
             return Scaffold(
               appBar: AppBar(
                 backgroundColor: Colors.white10,
@@ -267,17 +271,19 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Future<Null> _sendText(String text) async {
-    _textController.clear();
-    chatReference.add({
-      'text': text,
-      'sender_phone': _userPhoneNumber,
-      'sender_nickname': "랜덤",
-      'time': DateTime.now(),
-      'read': false,
-    }).then((documentReference) {
-      setState(() {
-        _isWritting = false;
-      });
-    }).catchError((e) {});
+    if (text.isNotEmpty) {
+      _textController.clear();
+      chatReference.add({
+        'text': text,
+        'sender_phone': _userPhoneNumber,
+        'sender_nickname': "랜덤",
+        'time': DateTime.now(),
+        'delivered': false,
+      }).then((documentReference) {
+        setState(() {
+          _isWritting = false;
+        });
+      }).catchError((e) {});
+    }
   }
 }
