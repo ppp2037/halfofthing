@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bubble/bubble.dart';
 import 'package:intl/intl.dart';
+import 'background_page.dart';
+import 'settings/styles.dart';
+import 'survey_page.dart';
 
 class User_Chat_Page extends StatefulWidget {
   final String boardName;
@@ -80,7 +83,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     );
 
     return <Widget>[
-      new Row(
+      Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -88,17 +91,17 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           deliveredIcon(documentSnapshot),
           Bubble(
             style: styleMe,
-            child: new Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                new Text(documentSnapshot.data['sender_nickname'],
-                    style: new TextStyle(
+                Text(documentSnapshot.data['sender_nickname'],
+                    style: TextStyle(
                         fontSize: 14.0,
                         color: Colors.black,
                         fontWeight: FontWeight.bold)),
-                new Container(
+                Container(
                   margin: const EdgeInsets.only(top: 5.0),
-                  child: new Text(
+                  child: Text(
                     documentSnapshot.data['text'],
                   ),
                 ),
@@ -172,7 +175,18 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          '반띵을 완료하면 우측상단 완료를 눌러주세요',
+          style: text_grey_15(),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white10,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
+      endDrawer: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
             .document(_userPhoneNumber)
@@ -181,75 +195,116 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           } else {
-            _chattingRoomID = snapshot.data['채팅중인방ID'];
-            chatReference = Firestore.instance
-                .collection("채팅")
-                .document(_chattingRoomID)
-                .collection('messages');
-
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.white10,
-                elevation: 0,
-                iconTheme: IconThemeData(color: Colors.pink),
-              ),
-              body: Container(
-                padding: EdgeInsets.all(8),
-                color: Colors.yellow.withAlpha(64),
-                child: new Column(
-                  children: <Widget>[
-                    StreamBuilder<QuerySnapshot>(
-                      stream: chatReference
-                          .orderBy('time', descending: true)
-                          .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (!snapshot.hasData) return new Text("No Chat");
-                        return Expanded(
-                          child: new ListView(
-                            reverse: true,
-                            children: generateMessages(snapshot),
-                          ),
-                        );
-                      },
-                    ),
-                    new Divider(height: 1.0),
-                    new Container(
-                      decoration:
-                          new BoxDecoration(color: Theme.of(context).cardColor),
-                      child: _buildTextComposer(),
-                    ),
-                    new Builder(builder: (BuildContext context) {
-                      return new Container(width: 0.0, height: 0.0);
-                    })
-                  ],
-                ),
+            Map<String, dynamic> documentFields = snapshot.data.data;
+//            snapshot.data['핸드폰번호']
+            return Drawer(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                        '상대방 반띵 횟수 : ' + snapshot.data['이용횟수'].toString(),
+                        style: text_grey_20()),
+                  ),
+                  ListTile(
+                    title: Text('반띵 완료하기', style: text_grey_20()),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Survey_Page()));
+                    },
+                  ),
+                  ListTile(
+                    title: Text('다른 반띵하기', style: text_grey_20()),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => Background_Page()));
+                    },
+                  ),
+                ],
               ),
             );
           }
-        });
+        },
+      ),
+      body: StreamBuilder<DocumentSnapshot>(
+          stream: Firestore.instance
+              .collection('사용자')
+              .document(_userPhoneNumber)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            } else {
+              _chattingRoomID = snapshot.data['채팅중인방ID'];
+              chatReference = Firestore.instance
+                  .collection("채팅")
+                  .document(_chattingRoomID)
+                  .collection('messages');
+
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.white10,
+                  elevation: 0,
+                  iconTheme: IconThemeData(color: Colors.pink),
+                ),
+                body: Container(
+                  padding: EdgeInsets.all(8),
+                  color: Colors.yellow.withAlpha(64),
+                  child: new Column(
+                    children: <Widget>[
+                      StreamBuilder<QuerySnapshot>(
+                        stream: chatReference
+                            .orderBy('time', descending: true)
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (!snapshot.hasData) return new Text("No Chat");
+                          return Expanded(
+                            child: new ListView(
+                              reverse: true,
+                              children: generateMessages(snapshot),
+                            ),
+                          );
+                        },
+                      ),
+                      new Divider(height: 1.0),
+                      new Container(
+                        decoration: new BoxDecoration(
+                            color: Theme.of(context).cardColor),
+                        child: _buildTextComposer(),
+                      ),
+                      new Builder(builder: (BuildContext context) {
+                        return new Container(width: 0.0, height: 0.0);
+                      })
+                    ],
+                  ),
+                ),
+              );
+            }
+          }),
+    );
   }
 
   IconButton getDefaultSendButton() {
-    return new IconButton(
-      icon: new Icon(Icons.send),
+    return IconButton(
+      icon: Icon(Icons.send),
       onPressed: _isWritting ? () => _sendText(_textController.text) : null,
     );
   }
 
   Widget _buildTextComposer() {
-    return new IconTheme(
-        data: new IconThemeData(
+    return IconTheme(
+        data: IconThemeData(
           color: _isWritting
               ? Theme.of(context).accentColor
               : Theme.of(context).disabledColor,
         ),
-        child: new Container(
+        child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: new Row(
+          child: Row(
             children: <Widget>[
-              new Flexible(
-                child: new TextField(
+              Flexible(
+                child: TextField(
                   controller: _textController,
                   onChanged: (String messageText) {
                     setState(() {
@@ -258,10 +313,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   },
                   onSubmitted: _sendText,
                   decoration:
-                      new InputDecoration.collapsed(hintText: "Send a message"),
+                      InputDecoration.collapsed(hintText: "Send a message"),
                 ),
               ),
-              new Container(
+              Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: getDefaultSendButton(),
               ),

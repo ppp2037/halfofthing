@@ -227,7 +227,6 @@ class _User_Create_pageState extends State<User_Create_page> {
                           var _userOrderId =
                               DateFormat('yyyyMMddHHmmss').format(_currentTime);
                           var _boardID = _userPhoneNumber + '_' + _userOrderId;
-
                           Firestore.instance
                               .collection('게시판')
                               .document(_userPhoneNumber + '_' + _userOrderId)

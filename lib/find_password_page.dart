@@ -55,6 +55,7 @@ class _Find_Password_PageState extends State<Find_Password_Page> {
                     decoration: InputDecoration(
                         icon: Icon(Icons.phone),
                         hintText: '핸드폰번호',
+                        hintStyle: text_grey_15(),
                         border: InputBorder.none),
                     validator: (String value) {
                       if (value.isEmpty) {
