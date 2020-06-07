@@ -142,7 +142,7 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
                 elevation: 15,
                 child: Padding(
                   padding: const EdgeInsets.only(
-                      left: 15, top: 5, bottom: 5),
+                      top: 5, bottom: 5),
                   child: Container(
                       height: 50,
                       child: Center(

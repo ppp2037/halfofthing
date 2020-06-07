@@ -74,6 +74,7 @@ class _Login_PageState extends State<Login_Page> {
                         decoration: InputDecoration(
                             icon: Icon(Icons.phone),
                             hintText: '핸드폰번호',
+                            hintStyle: text_grey_15(),
                             border: InputBorder.none),
                         validator: (String value) {
                           if (value.isEmpty) {
@@ -111,6 +112,7 @@ class _Login_PageState extends State<Login_Page> {
                         decoration: InputDecoration(
                             icon: Icon(Icons.lock),
                             hintText: '비밀번호',
+                            hintStyle: text_grey_15(),
                             border: InputBorder.none),
                         validator: (String value) {
                           if (value.isEmpty) {
