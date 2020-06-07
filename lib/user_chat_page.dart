@@ -31,8 +31,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   String readTimestamp(Timestamp timestamp) {
     var now = new DateTime.now();
-    var format = new DateFormat('HH시 mm분');
-    var date = timestamp.toDate();
+    var format = new DateFormat('HH:mm');
+    DateTime date = timestamp.toDate();
+    // FIXME: toDate() 값이 null 인 비동기 문제:  'toDate' was called on null => Fixed
     var diff = date.difference(now);
     var time = '';
 
@@ -115,8 +116,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     );
     Timestamp ts = documentSnapshot.data['time'];
     DateTime d = ts.toDate();
-    print("timestamp : ${documentSnapshot.data['time']}");
-    print("date : ${d}");
+    // print("timestamp : ${documentSnapshot.data['time']}");
+    // print("date : ${d}");
 
     return <Widget>[
       new Row(
@@ -271,7 +272,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       'text': text,
       'sender_phone': _userPhoneNumber,
       'sender_nickname': "랜덤",
-      'time': FieldValue.serverTimestamp(),
+      'time': DateTime.now(),
       'read': false,
     }).then((documentReference) {
       setState(() {
