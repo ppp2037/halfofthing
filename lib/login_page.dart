@@ -178,7 +178,7 @@ class _Login_PageState extends State<Login_Page> {
                     elevation: 15,
                     child: Padding(
                       padding:
-                          const EdgeInsets.only(left: 15, top: 5, bottom: 5),
+                          const EdgeInsets.only(top: 5, bottom: 5),
                       child: Container(
                           height: 50,
                           child: Center(
@@ -192,84 +192,31 @@ class _Login_PageState extends State<Login_Page> {
               ),
             ],
           ),
-
-Column(
-  children: <Widget>[
-    GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => Add_Account_Page()));
-        },
-        child: Text(
-          '반띵이 처음이신가요?',
-          style: text_grey_15(),
-        )),
-    Container(
-      height: 40,
-    ),
-    GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => Find_Password_Page()));
-        },
-        child: Text(
-          '비밀번호 찾기',
-          style: text_grey_15(),
-        )),
-  ],
-)
-//          Padding(
-//            padding: const EdgeInsets.symmetric(horizontal: 80),
-//            child: Column(
-//              children: <Widget>[
-//                Text(
-//                  'or login with',
-//                  style: text_white_20(),
-//                ),
-//                Container(
-//                  height: 20,
-//                ),
-//                Row(
-//                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-//                  children: <Widget>[
-//                    GestureDetector(
-//                        onTap: () {
-//                          Navigator.of(context).pushReplacement(
-//                              MaterialPageRoute(
-//                                  builder: (context) => User_Map_Page()));
-//                        },
-//                        child: Image.asset(
-//                          'images/google_logo_400x400.png',
-//                          width: 50,
-//                          height: 50,
-//                        )),
-//                    GestureDetector(
-//                        onTap: () {
-//                          Navigator.of(context).pushReplacement(
-//                              MaterialPageRoute(
-//                                  builder: (context) => User_Map_Page()));
-//                        },
-//                        child: Image.asset(
-//                          'images/apple_logo_400x400.png',
-//                          width: 50,
-//                          height: 50,
-//                        )),
-//                    GestureDetector(
-//                        onTap: () {
-//                          Navigator.of(context).pushReplacement(
-//                              MaterialPageRoute(
-//                                  builder: (context) => User_Map_Page()));
-//                        },
-//                        child: Image.asset(
-//                          'images/facebook_logo_400x400.png',
-//                          width: 50,
-//                          height: 50,
-//                        )),
-//                  ],
-//                ),
-//              ],
-//            ),
-//          )
+          Column(
+            children: <Widget>[
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Add_Account_Page()));
+                  },
+                  child: Text(
+                    '반띵이 처음이신가요?',
+                    style: text_grey_15(),
+                  )),
+              Container(
+                height: 40,
+              ),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Find_Password_Page()));
+                  },
+                  child: Text(
+                    '비밀번호 찾기',
+                    style: text_grey_15(),
+                  )),
+            ],
+          )
         ],
       ),
     );
