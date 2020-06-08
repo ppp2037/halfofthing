@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bubble/bubble.dart';
 import 'package:intl/intl.dart';
-
 import 'background_page.dart';
 import 'settings/styles.dart';
 import 'survey_page.dart';
@@ -22,6 +20,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   final TextEditingController _textController = TextEditingController();
   bool _isWritting = false;
   String _userPhoneNumber;
+  String _chattingRoomID;
 
   @override
   void initState() {
@@ -35,10 +34,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     })();
   }
 
-  String readTimestamp(Timestamp timestamp) {
+  Widget timeStampText(DocumentSnapshot documentSnapshot) {
     var now = DateTime.now();
-    var format = DateFormat('HH시 mm분');
-    var date = timestamp.toDate();
+    var format = DateFormat('HH:mm');
+    DateTime date = documentSnapshot.data['time'].toDate();
+    // FIXME: toDate() 값이 null 인 비동기 문제:  'toDate' was called on null => Fixed
     var diff = date.difference(now);
     var time = '';
 
@@ -51,55 +51,54 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       if (diff.inDays == 1) {
         time = '어제 ' + format.format(date);
       } else {
-        time = diff.inDays.toString() + 'DAYS AGO';
+        time = diff.inDays.toString() + '일 전';
       }
     }
+    return Text(
+      time,
+      style: text_grey_10(),
+    );
+  }
 
-    return time;
+  Widget deliveredIcon(DocumentSnapshot documentSnapshot) {
+    return documentSnapshot.data['delivered']
+        ? Container()
+        : Icon(
+            Icons.fiber_manual_record,
+            color: Colors.orange,
+            size: 15,
+          );
   }
 
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
     // 나의 말풍선
-    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
-    double px = 1 / pixelRatio;
-
-    BubbleStyle styleMe = BubbleStyle(
-      alignment: Alignment.topRight,
-      nip: BubbleNip.rightTop,
-      color: Color.fromARGB(255, 225, 255, 199),
-      elevation: 1 * px,
-      nipWidth: 10,
-    );
-
     return <Widget>[
       Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            readTimestamp(documentSnapshot.data['time']),
-            style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12.0,
-                fontStyle: FontStyle.italic),
-          ),
-          Bubble(
-            style: styleMe,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(documentSnapshot.data['sender_nickname'],
-                    style: TextStyle(
-                        fontSize: 14.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold)),
-                Container(
-                  margin: const EdgeInsets.only(top: 5.0),
-                  child: Text(
-                    documentSnapshot.data['text'],
+          timeStampText(documentSnapshot),
+          deliveredIcon(documentSnapshot),
+          Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            color: Colors.pink,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(documentSnapshot.data['sender_nickname'],
+                      style: text_white_15()),
+                  Container(
+                    height: 5,
                   ),
-                ),
-              ],
+                  Text(
+                    documentSnapshot.data['text'],
+                    style: text_white_15(),
+                  ),
+                ],
+              ),
             ),
           )
         ],
@@ -109,50 +108,36 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
     // 상대방의 말풍선
-    double pixelRatio = MediaQuery.of(context).devicePixelRatio;
-    double px = 1 / pixelRatio;
-
-    BubbleStyle styleSomebody = BubbleStyle(
-      nip: BubbleNip.leftTop,
-      color: Colors.white,
-      elevation: 1 * px,
-      margin: BubbleEdges.only(top: 8.0),
-      alignment: Alignment.topLeft,
-    );
-    Timestamp ts = documentSnapshot.data['time'];
-    DateTime d = ts.toDate();
-    print("timestamp : ${documentSnapshot.data['time']}");
-    print("date : ${d}");
-
+    documentSnapshot.reference.updateData({'delivered': true});
     return <Widget>[
       Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Bubble(
-              style: styleSomebody,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  Text(documentSnapshot.data['sender_nickname'],
-                      style: TextStyle(
-                          fontSize: 14.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
-                  Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: Text(documentSnapshot.data['text']),
-                  ),
-                ],
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              color: Colors.white,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(documentSnapshot.data['sender_nickname'],
+                        style: text_black_15()),
+                    Container(
+                      height: 5,
+                    ),
+                    Text(
+                      documentSnapshot.data['text'],
+                      style: text_black_15(),
+                    ),
+                  ],
+                ),
               ),
             ),
-            Text(
-              readTimestamp(documentSnapshot.data['time']),
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12.0,
-                  fontStyle: FontStyle.italic),
-            ),
+            timeStampText(documentSnapshot)
           ])
     ];
   }
@@ -179,8 +164,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    String _chattingRoomID;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -246,15 +229,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   .collection("채팅")
                   .document(_chattingRoomID)
                   .collection('messages');
-              return Scaffold(
-                appBar: AppBar(
-                  backgroundColor: Colors.white10,
-                  elevation: 0,
-                  iconTheme: IconThemeData(color: Colors.pink),
-                ),
-                body: Container(
-                  padding: EdgeInsets.all(8),
-                  color: Colors.yellow.withAlpha(64),
+              return Container(
+                color: Colors.yellow.withAlpha(64),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     children: <Widget>[
                       StreamBuilder<QuerySnapshot>(
@@ -263,7 +241,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                             .snapshots(),
                         builder: (BuildContext context,
                             AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (!snapshot.hasData) return CircularProgressIndicator();
+                          if (!snapshot.hasData)
+                            return CircularProgressIndicator();
                           return Expanded(
                             child: ListView(
                               reverse: true,
@@ -272,13 +251,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                           );
                         },
                       ),
-                      Divider(height: 1.0),
-                      Container(
-                        decoration: new BoxDecoration(
-                            color: Theme.of(context).cardColor),
-                        child: _buildTextComposer(),
-                      ),
-                      new Builder(builder: (BuildContext context) {
+                      Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          color: Colors.white,
+                          child: _buildTextComposer()),
+                      Builder(builder: (BuildContext context) {
                         return Container(width: 0.0, height: 0.0);
                       })
                     ],
@@ -304,8 +282,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               ? Theme.of(context).accentColor
               : Theme.of(context).disabledColor,
         ),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20),
           child: Row(
             children: <Widget>[
               Flexible(
@@ -317,14 +295,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     });
                   },
                   onSubmitted: _sendText,
-                  decoration:
-                      InputDecoration.collapsed(hintText: "Send a message"),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                  ),
                 ),
               ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: getDefaultSendButton(),
-              ),
+              getDefaultSendButton(),
             ],
           ),
         ));
