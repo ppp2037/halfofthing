@@ -13,7 +13,8 @@ class Login_Page extends StatefulWidget {
   _Login_PageState createState() => _Login_PageState();
 }
 
-class _Login_PageState extends State<Login_Page> {
+class _Login_PageState extends State<Login_Page>
+    with SingleTickerProviderStateMixin {
   String _userPhoneNumber;
   String _userLocation;
   String _comparePhoneNumber;
@@ -32,14 +33,31 @@ class _Login_PageState extends State<Login_Page> {
   void dispose() {
     _phoneNumberController.dispose();
     _passwordController.dispose();
+    _logoController.dispose();
     super.dispose();
   }
 
   String _phoneNumber; // 사용자가 입력한 핸드폰번호 값
   String _password; // 사용자가 입력한 비밀번호 값
 
+  AnimationController _logoController;
+  Animation _logoAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _logoController =
+        AnimationController(duration: Duration(seconds: 1), vsync: this);
+    _logoController.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _logoAnimation =
+        CurvedAnimation(parent: _logoController, curve: Curves.fastOutSlowIn);
+    _logoAnimation.addListener(() {
+      setState(() {});
+    });
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -47,9 +65,9 @@ class _Login_PageState extends State<Login_Page> {
         children: <Widget>[
           Image.asset(
             'images/halfofthing_logo.png',
-            width: 100,
-            height: 100,
             color: Colors.pink,
+            width: Tween(begin: 0.0, end: 100.0).evaluate(_logoAnimation),
+            height: Tween(begin: 0.0, end: 100.0).evaluate(_logoAnimation),
           ),
           Column(
             children: <Widget>[
@@ -177,8 +195,7 @@ class _Login_PageState extends State<Login_Page> {
                         borderRadius: BorderRadius.circular(20)),
                     elevation: 15,
                     child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 5, bottom: 5),
+                      padding: const EdgeInsets.only(top: 5, bottom: 5),
                       child: Container(
                           height: 50,
                           child: Center(
