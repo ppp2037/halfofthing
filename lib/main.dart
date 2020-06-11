@@ -70,8 +70,9 @@ class _HalfofthingState extends State<Halfofthing> {
       debugShowCheckedModeBanner: false,
       title: '반띵',
       theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
           brightness: Brightness.light,
-          primarySwatch: Colors.pink,
+          primarySwatch: Colors.grey,
           fontFamily: 'Spoqa_Han_Sans_Regular'),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
