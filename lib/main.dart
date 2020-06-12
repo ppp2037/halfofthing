@@ -39,8 +39,8 @@ class _HalfofthingState extends State<Halfofthing> {
   void firebaseCloudMessaging_Listeners() {
     if (Platform.isIOS) iOS_Permission();
 
-    fcm.getToken().then((token){
-      print('token:'+token);
+    fcm.getToken().then((token) {
+      print('token:' + token);
     });
 
     fcm.configure(
@@ -58,11 +58,8 @@ class _HalfofthingState extends State<Halfofthing> {
 
   void iOS_Permission() {
     fcm.requestNotificationPermissions(
-        IosNotificationSettings(sound: true, badge: true, alert: true)
-    );
-    fcm.onIosSettingsRegistered
-        .listen((IosNotificationSettings settings)
-    {
+        IosNotificationSettings(sound: true, badge: true, alert: true));
+    fcm.onIosSettingsRegistered.listen((IosNotificationSettings settings) {
       print("Settings registered: $settings");
     });
   }
@@ -73,7 +70,13 @@ class _HalfofthingState extends State<Halfofthing> {
       debugShowCheckedModeBanner: false,
       title: '반띵',
       theme: ThemeData(
-          primarySwatch: Colors.pink, fontFamily: 'Spoqa_Han_Sans_Regular'),
+          scaffoldBackgroundColor: Colors.white,
+          brightness: Brightness.light,
+          primarySwatch: Colors.grey,
+          fontFamily: 'Spoqa_Han_Sans_Regular'),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
       home: _userIsLogin ? Login_Page() : Background_Page(),
     );
   }

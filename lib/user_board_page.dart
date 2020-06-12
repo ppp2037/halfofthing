@@ -40,8 +40,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.grey),
-        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black),
+        backgroundColor: Colors.white10,
+        elevation: 0,
         title: Text(
           '반띵',
           style: GoogleFonts.poorStory(color: Colors.pink, fontSize: 30),
