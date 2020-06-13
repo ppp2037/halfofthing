@@ -272,115 +272,136 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
               ],
             );
-          return _buildList(context, snapshot.data.documents, _userPhoneNumber,
-              _userIsChatting);
+          return _buildList(context, snapshot.data.documents, _userPhoneNumber);
         },
       ),
     );
   }
-}
 
-Widget _buildList(BuildContext context, List<DocumentSnapshot> snapshot,
-    _userPhoneNumber, _userIsChatting) {
-  snapshot.sort((a, b) =>
-      Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
-  return ListView(
-    padding: const EdgeInsets.only(bottom: 20.0),
-    children: snapshot
-        .map((data) =>
-            _buildListItem(context, data, _userPhoneNumber, _userIsChatting))
-        .toList(),
-  );
-}
+  Widget _buildList(
+      BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
+    snapshot.sort((a, b) =>
+        Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
 
-Widget _buildListItem(BuildContext context, DocumentSnapshot data,
-    String _userPhoneNumber, bool _userIsChatting) {
-  final record = Record.fromSnapshot(data);
-  // myChattingRoom : 현재 선택된 채팅방이 자신이 개설하였거나 참여하고 있는 채팅방인지
-  bool myChattingRoom = (_userPhoneNumber == record.phoneNumber) ||
-      (_userPhoneNumber == record.phoneNumber2);
-  // record.time : DateFormat('yyyyMMddHHmmss')의 형태 => '00시 00분' 형태로 변환
-  String orderTimeStr = record.time.toString().substring(8, 10) +
-      "시 " +
-      record.time.toString().substring(10, 12) +
-      "분";
-  // print("주문 시간 : ${record.time} => $orderTimeStr");
-  return GestureDetector(
-    onTap: () {
-      if (myChattingRoom) {
-        // 자신이 개설하였거나 참여하고 있는 게시물인 경우 -> 팝업 없이 바로 채팅방으로 이동
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => User_Chat_Page(
-                  boardName: record.boardname,
-                )));
-      } else {
-        return showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              if (_userIsChatting) {
-                print("채팅중 다이얼로그");
-                Future.delayed(Duration(seconds: 2), () {
-                  Navigator.pop(context);
-                });
-                return AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0)),
-                  content: SizedBox(
-                      width: 150,
-                      height: 80,
-                      child: new Text("현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요")),
-                );
-              }
+    Firestore.instance
+        .collection("사용자")
+        .document(_userPhoneNumber)
+        .get()
+        .then((DocumentSnapshot ds) {
+      if (ds['채팅중인방ID'] != '') {
+        // 사용자가 현재 채팅중일 경우
+        _userIsChatting = true;
+      }
+    });
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      children: snapshot
+          .map((data) => _buildListItem(context, data, _userPhoneNumber))
+          .toList(),
+    );
+  }
 
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text('식당 : ' + record.restaurant, style: text_pink_20()),
-                    Container(
-                      height: 20,
-                    ),
-                    Text('시간 : ' + orderTimeStr, style: text_pink_20()),
-                    Container(
-                      height: 20,
-                    ),
-                    Text('장소 : ' + record.meetingPlace, style: text_pink_20()),
-                    Container(
-                      height: 20,
-                    ),
-                    Text('반띵을 시작하시겠어요?', style: text_grey_15()),
-                    Container(
-                      height: 30,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget _buildListItem(
+      BuildContext context, DocumentSnapshot data, String _userPhoneNumber) {
+    final record = Record.fromSnapshot(data);
+    String orderTimeStr = record.time.toString().substring(8, 10) +
+        "시 " +
+        record.time.toString().substring(10, 12) +
+        "분";
+    // print("주문 시간 : ${record.time} => $orderTimeStr");
+    return GestureDetector(
+      onTap: () {
+        if (_userPhoneNumber == record.phoneNumber ||
+            _userPhoneNumber == record.phoneNumber2) {
+          // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
+          // => 채팅방으로 바로 이동
+          Navigator.of(context).pop();
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => User_Chat_Page()));
+        } else {
+          return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                if (_userIsChatting) {
+                  // 사용자가 현재 채팅중일 경우 => 입장 불가 Dialog 띄우기
+                  print("채팅중 다이얼로그");
+                  Future.delayed(Duration(seconds: 2), () {
+                    Navigator.pop(context);
+                  });
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    content: SizedBox(
+                        width: 150,
+                        height: 80,
+                        child: new Text("현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요")),
+                  );
+                } else if (record.phoneNumber2 != '') {
+                  // 다른 사람이 참여중인 게시물인 경우 (반띵중)
+                  print("반띵중 다이얼로그");
+                  Future.delayed(Duration(seconds: 2), () {
+                    Navigator.pop(context);
+                  });
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    content: SizedBox(
+                        width: 150, height: 80, child: new Text("이미 반띵중이에요.")),
+                  );
+                } else {
+                  // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            elevation: 5,
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 25, right: 25, top: 15, bottom: 15),
-                              child: Center(
-                                child: Text('취소', style: text_grey_15()),
+                        Text('식당 : ' + record.restaurant,
+                            style: text_pink_20()),
+                        Container(
+                          height: 20,
+                        ),
+                        Text('시간 : ' + orderTimeStr, style: text_pink_20()),
+                        Container(
+                          height: 20,
+                        ),
+                        Text('장소 : ' + record.meetingPlace,
+                            style: text_pink_20()),
+                        Container(
+                          height: 20,
+                        ),
+                        Text('반띵을 시작하시겠어요?', style: text_grey_15()),
+                        Container(
+                          height: 30,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                elevation: 5,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 25, right: 25, top: 15, bottom: 15),
+                                  child: Center(
+                                    child: Text('취소', style: text_grey_15()),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            if (record.ischat != 'Y') {
-                              // 반띵중이 아닌 경우 : 입장 가능
-                              if (record.phoneNumber != _userPhoneNumber) {
-                                // 자신이 개설한 게시판이 아닌 경우
+                            GestureDetector(
+                              onTap: () {
+                                // 게시물에 새로 참가하기
+                                // =>
+                                // 1. 게시판 Collection의 참가자핸드폰번호=_userPhoneNumber로 업데이트,
+                                // 2. 사용자 Collection의 참여중인채팅방ID=record.boardname으로 업데이트
+                                // 3. 채팅방으로 이동
                                 Firestore.instance
                                     .collection('게시판')
                                     .document(record.boardname)
@@ -390,98 +411,90 @@ Widget _buildListItem(BuildContext context, DocumentSnapshot data,
                                 Firestore.instance
                                     .collection('사용자')
                                     .document(_userPhoneNumber)
-                                    .updateData({'채팅중인방ID': record.boardname});
-                                print("게시판 : ${record.boardname}");
+                                    .updateData({
+                                  '채팅중인방ID': record.boardname,
+                                });
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => User_Chat_Page(
-                                          boardName: record.boardname,
-                                        )));
-                              }
-                            } else {
-                              // 게시물이 이미 반띵중인 경우
-                              Navigator.of(context).pop();
-                              Fluttertoast.showToast(
-                                  msg: '이미 반띵중이에요',
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.pink,
-                                  textColor: Colors.white);
-                            }
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            elevation: 5,
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 25, right: 25, top: 15, bottom: 15),
-                              child: Center(
-                                child: Text('확인', style: text_grey_15()),
+                                    builder: (context) => User_Chat_Page()));
+                              },
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                elevation: 5,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 25, right: 25, top: 15, bottom: 15),
+                                  child: Center(
+                                    child: Text('확인', style: text_grey_15()),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              );
-            });
-      }
-    },
-    child: ListTile(
-      title: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      record.restaurant,
-                      style: text_grey_20(),
                     ),
-                    record.phoneNumber == _userPhoneNumber
-                        ? Text(
-                            '나의 게시글',
-                            style: text_grey_15(),
-                          )
-                        : record.phoneNumber2 == _userPhoneNumber
-                            ? Text(
-                                '내가 참여중',
-                                style: text_grey_15(),
-                              )
-                            : record.ischat == 'Y'
-                                ? Text(
-                                    '반띵중',
-                                    style: text_grey_15(),
-                                  )
-                                : Container(),
-                  ],
-                ),
-                Container(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
-                        style: text_grey_20()),
-                  ],
-                ),
-              ],
+                  );
+                }
+              });
+        }
+      },
+      child: ListTile(
+        title: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        record.restaurant,
+                        style: text_grey_20(),
+                      ),
+                      _userPhoneNumber == record.phoneNumber
+                          ? Text(
+                              '나의 게시글',
+                              style: text_grey_15(),
+                            )
+                          : _userPhoneNumber == record.phoneNumber2
+                              ? Text(
+                                  '내가 참여중',
+                                  style: text_grey_15(),
+                                )
+                              : record.phoneNumber2 != ''
+                                  // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                  ? Text(
+                                      '반띵중',
+                                      style: text_grey_15(),
+                                    )
+                                  : Container(),
+                    ],
+                  ),
+                  Container(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
+                          style: text_grey_20()),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Divider(
-            thickness: 1,
-          ),
-        ],
+            Divider(
+              thickness: 1,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class Record {
