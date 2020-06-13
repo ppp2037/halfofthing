@@ -238,12 +238,13 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '개설자핸드폰번호': _userPhoneNumber,
                             '참가자핸드폰번호': '',
                             '게시판이름': _boardID,
-                            '반띵중': 'N',
+                            '참여시간': '',
                           });
                           Firestore.instance
                               .collection('사용자')
                               .document(_userPhoneNumber)
                               .updateData({'채팅중인방ID': _boardID});
+
                           Fluttertoast.showToast(
                               msg: '새로운 반띵이 등록되었어요',
                               gravity: ToastGravity.CENTER,

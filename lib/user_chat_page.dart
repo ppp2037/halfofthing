@@ -19,8 +19,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   bool _isWritting = false;
   String _userPhoneNumber;
   String _chattingRoomID;
-  bool _userIsHost = false; // 사용자가 채팅방 개설자인지
+  bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   String _otherPhoneNumber; // 상대방의 핸드폰번호
+  var _enteredTime;
   @override
   void initState() {
     super.initState();
@@ -140,24 +141,94 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     ];
   }
 
+  List<Widget> generateNoticeLayout(DocumentSnapshot documentSnapshot) {
+    // 공지 말풍선
+    documentSnapshot.reference.updateData({'delivered': true});
+    return <Widget>[
+      new Row(children: [
+        Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          color: Colors.grey[200],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  documentSnapshot.data['text'],
+                  style: text_black_15(),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // timeStampText(documentSnapshot)
+      ])
+    ];
+  }
+
   generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
-    return snapshot.data.documents
-        .map<Widget>((doc) => doc.data['sender_phone'] != _userPhoneNumber
-            ? Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: generateReceiverLayout(doc),
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: generateSenderLayout(doc),
-                ),
-              ))
-        .toList();
+    if (_userIsHost) {
+      // 개설자인 경우 : 메세지 전체 출력
+      return snapshot.data.documents
+          .map<Widget>((doc) => doc.data['sender_phone'] == '공지'
+              ?
+              // 공지 메세지인 경우
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: generateNoticeLayout(doc),
+                  ),
+                )
+              : doc.data['sender_phone'] != _userPhoneNumber
+                  ?
+                  // 상대방이 보낸 메세지인 경우
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: generateReceiverLayout(doc),
+                      ),
+                    )
+                  :
+                  // 자신이 보낸 메세지인 경우
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: generateSenderLayout(doc),
+                      ),
+                    ))
+          .toList();
+    } else {
+      // 참가자인 경우 : 참여시간 이후의 메세지만 출력
+      return snapshot.data.documents
+          .map<Widget>((doc) =>
+              (doc.data['time'].toDate().difference(_enteredTime).inSeconds) > 0
+                  // 메세지 받은 시간 - 참여시간 > 0 인 경우에만 출력
+                  ? doc.data['sender_phone'] != _userPhoneNumber
+                      ?
+                      // 상대방이 보낸 메세지인 경우
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: generateReceiverLayout(doc),
+                          ),
+                        )
+                      :
+                      // 자신이 보낸 메세지인 경우
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: generateSenderLayout(doc),
+                          ),
+                        )
+                  : Container())
+          .toList();
+    }
   }
 
   @override
@@ -203,7 +274,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             );
           } else {
             // 사용자가 채팅중인 방이 있을 경우 => 채팅중인 방으로 연결
-            print("채팅중인방ID : $_chattingRoomID");
             return StreamBuilder<DocumentSnapshot>(
                 stream: Firestore.instance
                     .collection('게시판')
@@ -221,15 +291,24 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     _userIsHost = false;
                     _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
                   }
+
+                  if (snapshot_board.data['참여시간'] != '') {
+                    _enteredTime = DateTime.parse(snapshot_board.data['참여시간']);
+                  }
                   return Scaffold(
                     appBar: AppBar(
+                      leading: IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.black),
+                          onPressed: () => Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                                  builder: (context) => Background_Page()))),
                       title: Text(
                         _userIsHost && _otherPhoneNumber == ''
                             ? '참여중인 사람이 없어요 ㅜ.ㅜ'
                             : '반띵을 완료하면 우측상단 완료를 눌러주세요',
                         style: text_grey_15(),
                       ),
-                      automaticallyImplyLeading: false,
+                      // automaticallyImplyLeading: false,
                       backgroundColor: Colors.white10,
                       elevation: 0,
                       iconTheme: IconThemeData(color: Colors.black),
@@ -310,14 +389,23 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                               title: Text('참가자 내보내기',
                                                   style: text_grey_20()),
                                               onTap: () {
-                                                // TODO: 참가자 내보냄, drawer 닫음
                                                 snapshot_other_user
                                                     .data.reference
                                                     .updateData(
                                                         {'채팅중인방ID': ''});
                                                 snapshot_board.data.reference
-                                                    .updateData(
-                                                        {'참가자핸드폰번호': ''});
+                                                    .updateData({
+                                                  '참가자핸드폰번호': '',
+                                                  '참여시간': ''
+                                                });
+                                                chatReference.add({
+                                                  'text': '상대방을 내보냈습니다.',
+                                                  'sender_phone': '공지',
+                                                  'sender_nickname': "",
+                                                  'time': DateTime.now(),
+                                                  'delivered': false,
+                                                });
+                                                Navigator.pop(context);
                                               },
                                             )
                                           :
@@ -330,15 +418,21 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                               title: Text('다른 반띵하기',
                                                   style: text_grey_20()),
                                               onTap: () {
-                                                // TODO:
-                                                // 1. 사용자 DB의 채팅중인방ID = ''로 변경
-                                                // 2. 게시물 DB의 참가자핸드폰번호 = ''로 변경
                                                 snapshot_user.data.reference
                                                     .updateData(
                                                         {'채팅중인방ID': ''});
+                                                chatReference.add({
+                                                  'text': '상대방이 반띵을 취소하였습니다.',
+                                                  'sender_phone': '공지',
+                                                  'sender_nickname': "",
+                                                  'time': DateTime.now(),
+                                                  'delivered': false,
+                                                });
                                                 snapshot_board.data.reference
-                                                    .updateData(
-                                                        {'참가자핸드폰번호': ''});
+                                                    .updateData({
+                                                  '참가자핸드폰번호': '',
+                                                  '참여시간': ''
+                                                });
                                                 Navigator.of(context)
                                                     .pushReplacement(
                                                         MaterialPageRoute(
@@ -393,20 +487,27 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       child: Row(
         children: <Widget>[
           Flexible(
-            child: TextField(
-              style: text_black_15(),
-              controller: _textController,
-              onChanged: (String messageText) {
-                setState(() {
-                  _isWritting = messageText.length > 0;
-                });
-              },
-              onSubmitted: _sendText,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-              ),
-            ),
-          ),
+              child: _userIsHost && _otherPhoneNumber == ''
+                  // 내가 개설한 채팅방에 참여중인 사람이 없으면 텍스트 입력 disable
+                  ? TextField(
+                      enabled: false,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                    )
+                  : TextField(
+                      style: text_black_15(),
+                      controller: _textController,
+                      onChanged: (String messageText) {
+                        setState(() {
+                          _isWritting = messageText.length > 0;
+                        });
+                      },
+                      onSubmitted: _sendText,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                    )),
           IconButton(
             icon: Icon(
               Icons.send,
@@ -426,7 +527,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       chatReference.add({
         'text': text,
         'sender_phone': _userPhoneNumber,
-        'sender_nickname': "랜덤",
+        'sender_nickname': "사용자",
         'time': DateTime.now(),
         'delivered': false,
       }).then((documentReference) {

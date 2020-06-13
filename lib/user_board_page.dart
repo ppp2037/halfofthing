@@ -4,7 +4,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:intl/intl.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
 import 'user_settings_feedback_page.dart';
@@ -407,12 +407,24 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                     .document(record.boardname)
                                     .updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
+                                  '참여시간': DateTime.now().toString(),
                                 });
                                 Firestore.instance
                                     .collection('사용자')
                                     .document(_userPhoneNumber)
                                     .updateData({
                                   '채팅중인방ID': record.boardname,
+                                });
+                                Firestore.instance
+                                    .collection("채팅")
+                                    .document(record.boardname)
+                                    .collection('messages')
+                                    .add({
+                                  'text': "사용자가 참가하였습니다.",
+                                  'sender_phone': "공지",
+                                  'sender_nickname': "",
+                                  'time': DateTime.now(),
+                                  'delivered': true,
                                 });
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(
@@ -504,9 +516,9 @@ class Record {
   final String time;
   final String location;
   final String boardname;
-  final String ischat;
+  // final String ischat;
   final String meetingPlace;
-
+  final String enteredTime;
   final DocumentReference reference;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
@@ -517,7 +529,7 @@ class Record {
         assert(map['위치'] != null),
         assert(map['만날장소'] != null),
         assert(map['게시판이름'] != null),
-        assert(map['반띵중'] != null),
+        // assert(map['참여시간'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
@@ -525,12 +537,12 @@ class Record {
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
-        ischat = map['반띵중'];
+        enteredTime = map['참여시간'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
 
   @override
   String toString() =>
-      "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$meetingPlace:$boardname:$ischat>";
+      "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$meetingPlace:$boardname>";
 }
