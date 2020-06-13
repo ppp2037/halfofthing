@@ -4,6 +4,7 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'settings/nickname_adj_list.dart';
 
 import 'background_page.dart';
 import 'settings/styles.dart';
@@ -238,7 +239,9 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '개설자핸드폰번호': _userPhoneNumber,
                             '참가자핸드폰번호': '',
                             '게시판이름': _boardID,
-                            '참여시간': '',
+                            '참가자참여시간': '',
+                            '개설자닉네임': randomNickname(),
+                            '참가자닉네임': ''
                           });
                           Firestore.instance
                               .collection('사용자')

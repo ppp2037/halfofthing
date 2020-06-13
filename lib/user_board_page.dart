@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:halfofthing/settings/nickname_adj_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'settings/styles.dart';
@@ -400,12 +401,14 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 // 1. 게시판 Collection의 참가자핸드폰번호=_userPhoneNumber로 업데이트,
                                 // 2. 사용자 Collection의 참여중인채팅방ID=record.boardname으로 업데이트
                                 // 3. 채팅방으로 이동
+                                String nickName = randomNickname();
                                 Firestore.instance
                                     .collection('게시판')
                                     .document(record.boardname)
                                     .updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
-                                  '참여시간': DateTime.now().toString(),
+                                  '참가자참여시간': DateTime.now().toString(),
+                                  '참가자닉네임': nickName,
                                 });
                                 Firestore.instance
                                     .collection('사용자')
@@ -418,7 +421,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                     .document(record.boardname)
                                     .collection('messages')
                                     .add({
-                                  'text': "사용자가 참가하였습니다.",
+                                  'text': "$nickName 님이 입장하셨습니다.",
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
                                   'time': DateTime.now(),
@@ -514,7 +517,6 @@ class Record {
   final String time;
   final String location;
   final String boardname;
-  // final String ischat;
   final String meetingPlace;
   final String enteredTime;
   final DocumentReference reference;
@@ -527,7 +529,6 @@ class Record {
         assert(map['위치'] != null),
         assert(map['만날장소'] != null),
         assert(map['게시판이름'] != null),
-        // assert(map['참여시간'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
@@ -535,7 +536,7 @@ class Record {
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
-        enteredTime = map['참여시간'];
+        enteredTime = map['참가자참여시간'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);

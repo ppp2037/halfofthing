@@ -21,6 +21,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   String _chattingRoomID;
   bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   String _otherPhoneNumber; // 상대방의 핸드폰번호
+  String _myNickname; // 사용자의 닉네임
+  String _otherNickname; // 상대방의 닉네임
   var _enteredTime;
   @override
   void initState() {
@@ -299,13 +301,18 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   if (snapshot_board.data['개설자핸드폰번호'] == _userPhoneNumber) {
                     _userIsHost = true;
                     _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
+                    _myNickname = snapshot_board.data['개설자닉네임'];
+                    _otherNickname = snapshot_board.data['참가자닉네임'];
                   } else {
                     _userIsHost = false;
                     _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
+                    _myNickname = snapshot_board.data['참가자닉네임'];
+                    _otherNickname = snapshot_board.data['개설자닉네임'];
                   }
 
-                  if (snapshot_board.data['참여시간'] != '') {
-                    _enteredTime = DateTime.parse(snapshot_board.data['참여시간']);
+                  if (snapshot_board.data['참가자참여시간'] != '') {
+                    _enteredTime =
+                        DateTime.parse(snapshot_board.data['참가자참여시간']);
                   }
                   return Scaffold(
                     appBar: AppBar(
@@ -365,7 +372,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                             color: Colors.grey,
                                           ),
                                           title: Text(
-                                              '상대방 반띵 횟수 : ' +
+                                              '${_otherNickname} 님의 반띵 횟수 : ' +
                                                   snapshot_other_user
                                                       .data['이용횟수']
                                                       .toString(),
@@ -381,6 +388,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                         title: Text('반띵 완료하기',
                                             style: text_grey_20()),
                                         onTap: () {
+                                          // TODO: 둘다 반띵 완료하면 처리
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (context) =>
@@ -408,10 +416,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                                 snapshot_board.data.reference
                                                     .updateData({
                                                   '참가자핸드폰번호': '',
-                                                  '참여시간': ''
+                                                  '참가자참여시간': '',
+                                                  '참가자닉네임': '',
                                                 });
                                                 chatReference.add({
-                                                  'text': '상대방을 내보냈습니다.',
+                                                  'text':
+                                                      '${_otherNickname} 님을 내보냈습니다.',
                                                   'sender_phone': '공지',
                                                   'sender_nickname': "",
                                                   'time': DateTime.now(),
@@ -434,7 +444,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                                     .updateData(
                                                         {'채팅중인방ID': ''});
                                                 chatReference.add({
-                                                  'text': '상대방이 반띵을 취소하였습니다.',
+                                                  'text':
+                                                      '${_otherNickname} 님이 반띵을 취소하였습니다.',
                                                   'sender_phone': '공지',
                                                   'sender_nickname': "",
                                                   'time': DateTime.now(),
@@ -443,7 +454,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                                 snapshot_board.data.reference
                                                     .updateData({
                                                   '참가자핸드폰번호': '',
-                                                  '참여시간': ''
+                                                  '참가자참여시간': '',
+                                                  '참가자닉네임': '',
                                                 });
                                                 Navigator.of(context)
                                                     .pushReplacement(
@@ -539,7 +551,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       chatReference.add({
         'text': text,
         'sender_phone': _userPhoneNumber,
-        'sender_nickname': "사용자",
+        'sender_nickname': _myNickname,
         'time': DateTime.now(),
         'delivered': false,
       }).then((documentReference) {
