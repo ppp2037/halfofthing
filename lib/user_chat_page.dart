@@ -245,10 +245,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             return Center(child: CircularProgressIndicator());
           }
           _chattingRoomID = snapshot_user.data['채팅중인방ID'];
-          chatReference = Firestore.instance
-              .collection("채팅")
-              .document(_chattingRoomID)
-              .collection('messages');
+
           if (_chattingRoomID == '') {
             // 사용자가 채팅중인 방이 없을 경우
             return Scaffold(
@@ -297,6 +294,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   if (!snapshot_board.hasData) {
                     return Center(child: CircularProgressIndicator());
                   }
+                  chatReference =
+                      snapshot_board.data.reference.collection("messages");
                   // 사용자가 채팅방의 개설자인지 참여자인지 구분, 상대방 핸드폰번호 저장
                   if (snapshot_board.data['개설자핸드폰번호'] == _userPhoneNumber) {
                     _userIsHost = true;
@@ -485,8 +484,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                         children: <Widget>[
                           StreamBuilder<QuerySnapshot>(
                             stream: Firestore.instance
-                                .collection("채팅")
-                                .document(snapshot_user.data['채팅중인방ID'])
+                                .collection("게시판")
+                                .document(_chattingRoomID)
                                 .collection('messages')
                                 .orderBy('time', descending: true)
                                 .snapshots(),

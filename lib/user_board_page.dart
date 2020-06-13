@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:halfofthing/settings/nickname_adj_list.dart';
+import 'package:halfofthing/settings/nickname_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
 import 'user_settings_feedback_page.dart';
@@ -39,30 +38,29 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.black),
-        backgroundColor: Colors.white10,
-        elevation: 0,
-        title: Text(
-          '반띵',
-          style: GoogleFonts.poorStory(color: Colors.pink, fontSize: 30),
-        ),
-      ),
-      endDrawer: StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
             .document(_userPhoneNumber)
             .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        builder: (context, snapshot_user) {
+          if (!snapshot_user.hasData) {
             return Center(child: CircularProgressIndicator());
-          } else {
-            if (snapshot.data['채팅중인방ID'] != '') {
-              _userIsChatting = true;
-            }
-            Map<String, dynamic> documentFields = snapshot.data.data;
-            return Drawer(
+          }
+          if (snapshot_user.data['채팅중인방ID'] != '') {
+            _userIsChatting = true;
+          }
+          return Scaffold(
+            appBar: AppBar(
+              iconTheme: IconThemeData(color: Colors.black),
+              backgroundColor: Colors.white10,
+              elevation: 0,
+              title: Text(
+                '반띵',
+                style: GoogleFonts.poorStory(color: Colors.pink, fontSize: 30),
+              ),
+            ),
+            endDrawer: Drawer(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
@@ -83,7 +81,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
                             Container(
                               width: 10,
                             ),
-                            Text(snapshot.data['이름'], style: text_white_20()),
+                            Text(snapshot_user.data['이름'],
+                                style: text_white_20()),
                           ],
                         ),
                         Container(
@@ -100,7 +99,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                               width: 10,
                             ),
                             Text(
-                              snapshot.data['위치'],
+                              snapshot_user.data['위치'],
                               style: text_white_20(),
                             ),
                           ],
@@ -119,7 +118,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
                               width: 10,
                             ),
                             Text(
-                              '이용횟수  :  ' + snapshot.data['이용횟수'].toString(),
+                              '이용횟수  :  ' +
+                                  snapshot_user.data['이용횟수'].toString(),
                               style: text_white_20(),
                             ),
                           ],
@@ -249,33 +249,32 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   ),
                 ],
               ),
-            );
-          }
-        },
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance
-            .collection('게시판')
-            .where('위치', isEqualTo: _userLocation)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return Center(child: CircularProgressIndicator());
-          if (snapshot.data.documents.isEmpty)
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('반띵중인 사람이 없어요', style: text_grey_15()),
-                Container(
-                  height: 20,
-                ),
-                Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
-              ],
-            );
-          return _buildList(context, snapshot.data.documents, _userPhoneNumber);
-        },
-      ),
-    );
+            ),
+            body: StreamBuilder<QuerySnapshot>(
+              stream: Firestore.instance
+                  .collection('게시판')
+                  .where('위치', isEqualTo: _userLocation)
+                  .snapshots(),
+              builder: (context, snapshot_board) {
+                if (!snapshot_board.hasData)
+                  return Center(child: CircularProgressIndicator());
+                if (snapshot_board.data.documents.isEmpty)
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                      Container(
+                        height: 20,
+                      ),
+                      Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                    ],
+                  );
+                return _buildList(
+                    context, snapshot_board.data.documents, _userPhoneNumber);
+              },
+            ),
+          );
+        });
   }
 
   Widget _buildList(
@@ -283,16 +282,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
     snapshot.sort((a, b) =>
         Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
 
-    Firestore.instance
-        .collection("사용자")
-        .document(_userPhoneNumber)
-        .get()
-        .then((DocumentSnapshot ds) {
-      if (ds['채팅중인방ID'] != '') {
-        // 사용자가 현재 채팅중일 경우
-        _userIsChatting = true;
-      }
-    });
     return ListView(
       padding: const EdgeInsets.only(bottom: 20.0),
       children: snapshot
@@ -301,9 +290,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
     );
   }
 
-  Widget _buildListItem(
-      BuildContext context, DocumentSnapshot data, String _userPhoneNumber) {
-    final record = Record.fromSnapshot(data);
+  Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
+      String _userPhoneNumber) {
+    final record = Record.fromSnapshot(data_board);
     String orderTimeStr = record.time.toString().substring(8, 10) +
         "시 " +
         record.time.toString().substring(10, 12) +
@@ -402,23 +391,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 // 2. 사용자 Collection의 참여중인채팅방ID=record.boardname으로 업데이트
                                 // 3. 채팅방으로 이동
                                 String nickName = randomNickname();
-                                Firestore.instance
-                                    .collection('게시판')
-                                    .document(record.boardname)
-                                    .updateData({
+                                data_board.reference.updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
                                   '참가자참여시간': DateTime.now().toString(),
                                   '참가자닉네임': nickName,
                                 });
-                                Firestore.instance
-                                    .collection('사용자')
-                                    .document(_userPhoneNumber)
-                                    .updateData({
-                                  '채팅중인방ID': record.boardname,
-                                });
-                                Firestore.instance
-                                    .collection("채팅")
-                                    .document(record.boardname)
+                                data_board.reference
                                     .collection('messages')
                                     .add({
                                   'text': "$nickName 님이 입장하셨습니다.",
@@ -426,6 +404,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                   'sender_nickname': "",
                                   'time': DateTime.now(),
                                   'delivered': true,
+                                });
+                                Firestore.instance
+                                    .collection('사용자')
+                                    .document(_userPhoneNumber)
+                                    .updateData({
+                                  '채팅중인방ID': record.boardname,
                                 });
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(

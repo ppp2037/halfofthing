@@ -4,10 +4,9 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'settings/nickname_adj_list.dart';
-
 import 'background_page.dart';
 import 'settings/styles.dart';
+import 'package:halfofthing/settings/nickname_list.dart';
 
 class User_Create_page extends StatefulWidget {
   @override
