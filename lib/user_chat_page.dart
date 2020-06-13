@@ -425,7 +425,19 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                                   'sender_phone': '공지',
                                                   'sender_nickname': "",
                                                   'time': DateTime.now(),
-                                                  'delivered': false,
+                                                  'delivered': true,
+                                                });
+                                                // 참가자를 내보냈을 때 :
+                                                // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
+                                                chatReference
+                                                    .where('delivered',
+                                                        isEqualTo: false)
+                                                    .getDocuments()
+                                                    .then((QuerySnapshot ds) {
+                                                  print("delivered 값 변경");
+                                                  ds.documents.forEach((doc) =>
+                                                      doc.reference.updateData(
+                                                          {'delivered': true}));
                                                 });
                                                 Navigator.pop(context);
                                               },
