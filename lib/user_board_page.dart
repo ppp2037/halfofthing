@@ -58,7 +58,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
             return Center(child: CircularProgressIndicator());
           } else {
             if (snapshot.data['채팅중인방ID'] != '') {
-              print("사용자는 채팅중이다.");
               _userIsChatting = true;
             }
             Map<String, dynamic> documentFields = snapshot.data.data;
@@ -308,7 +307,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
         "시 " +
         record.time.toString().substring(10, 12) +
         "분";
-    // print("주문 시간 : ${record.time} => $orderTimeStr");
     return GestureDetector(
       onTap: () {
         if (_userPhoneNumber == record.phoneNumber ||

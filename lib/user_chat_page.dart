@@ -249,28 +249,40 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               .collection('messages');
           if (_chattingRoomID == '') {
             // 사용자가 채팅중인 방이 없을 경우
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  '현재 진행중인 반띵이 없어요',
-                  style: text_grey_15(),
-                ),
-                Container(
-                  height: 60,
-                ),
-                Text(
-                  '왼쪽 다른 반띵에 참가하거나',
-                  style: text_grey_15(),
-                ),
-                Container(
-                  height: 20,
-                ),
-                Text(
-                  '가운데 시작을 눌러 반띵을 시작해보세요',
-                  style: text_grey_15(),
-                ),
-              ],
+            return Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                            builder: (context) => Background_Page()))),
+                backgroundColor: Colors.white10,
+                elevation: 0,
+                iconTheme: IconThemeData(color: Colors.black),
+              ),
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    '현재 진행중인 반띵이 없어요',
+                    style: text_grey_15(),
+                  ),
+                  Container(
+                    height: 60,
+                  ),
+                  Text(
+                    '왼쪽 다른 반띵에 참가하거나',
+                    style: text_grey_15(),
+                  ),
+                  Container(
+                    height: 20,
+                  ),
+                  Text(
+                    '가운데 시작을 눌러 반띵을 시작해보세요',
+                    style: text_grey_15(),
+                  ),
+                ],
+              ),
             );
           } else {
             // 사용자가 채팅중인 방이 있을 경우 => 채팅중인 방으로 연결
@@ -298,7 +310,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   return Scaffold(
                     appBar: AppBar(
                       leading: IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.black),
+                          icon: Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context)
                               .pushReplacement(MaterialPageRoute(
                                   builder: (context) => Background_Page()))),
@@ -426,7 +438,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                                   'sender_phone': '공지',
                                                   'sender_nickname': "",
                                                   'time': DateTime.now(),
-                                                  'delivered': false,
+                                                  'delivered': true,
                                                 });
                                                 snapshot_board.data.reference
                                                     .updateData({

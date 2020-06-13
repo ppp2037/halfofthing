@@ -41,35 +41,42 @@ class _Background_PageState extends State<Background_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: WillPopScope(
-        child: Center(
-          child: _widgetOptions[_selectedIndex],
-        ),
-        onWillPop: onWillPop,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-              icon: Icon(Icons.library_books), title: Text('게시판')),
-          BottomNavigationBarItem(icon: Icon(Icons.add), title: Text('시작')),
-          BottomNavigationBarItem(
-              icon: Badge(
-                animationType: BadgeAnimationType.scale,
-                shape: BadgeShape.circle,
-                position: BadgePosition.topRight(top: -15),
-                badgeColor: Colors.pink,
-                badgeContent: Text('3',style: text_white_15(),),
-              child: Icon(Icons.chat)), title: Text('채팅')),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.pink,
-        selectedIconTheme: IconThemeData(size: 35),
-        onTap: _onItemTapped,
-      ),
-    );
+    return _selectedIndex == 2
+        ? Scaffold(body: _widgetOptions[_selectedIndex])
+        : Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: WillPopScope(
+              child: Center(
+                child: _widgetOptions[_selectedIndex],
+              ),
+              onWillPop: onWillPop,
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.library_books), title: Text('게시판')),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.add), title: Text('시작')),
+                BottomNavigationBarItem(
+                    icon: Badge(
+                        animationType: BadgeAnimationType.scale,
+                        shape: BadgeShape.circle,
+                        position: BadgePosition.topRight(top: -15),
+                        badgeColor: Colors.pink,
+                        badgeContent: Text(
+                          '3',
+                          style: text_white_15(),
+                        ),
+                        child: Icon(Icons.chat)),
+                    title: Text('채팅')),
+              ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Colors.pink,
+              selectedIconTheme: IconThemeData(size: 35),
+              onTap: _onItemTapped,
+            ),
+          );
   }
 }
