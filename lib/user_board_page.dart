@@ -331,6 +331,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     Navigator.pop(context);
                   });
                   return popUpDialog(context, "이미 반띵중인 게시물이예요.");
+                } else if (record.blockedList.contains(_userPhoneNumber)) {
+                  // 이미 내보낸 사용자인 경우 입장 불가
+                  Future.delayed(Duration(seconds: 2), () {
+                    Navigator.pop(context);
+                  });
+                  return popUpDialog(context, "님 차단당함 ^^");
                 } else {
                   // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
                   return AlertDialog(
@@ -498,17 +504,13 @@ Widget popUpDialog(BuildContext context, String text) {
 }
 
 class Record {
-  final String phoneNumber;
-  final String phoneNumber2;
-  final String restaurant;
-  final String time;
-  final String location;
-  final String boardname;
-  final String meetingPlace;
-  final String enteredTime;
+  final String phoneNumber, phoneNumber2;
+  final String restaurant, time, location, boardname, meetingPlace;
+  final String enteredTime; // 참가자가 참여를 시작한 시간
   final String createdTime; // 생성시간
   final bool completed; // 완료된 게시물인지
   final DocumentReference reference;
+  final List<dynamic> blockedList;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
       : assert(map['개설자핸드폰번호'] != null),
@@ -528,7 +530,8 @@ class Record {
         boardname = map['게시판이름'],
         enteredTime = map['참가자참여시간'],
         createdTime = map['생성시간'],
-        completed = (map['반띵완료_참가자'] as bool) && (map['반띵완료_개설자'] as bool);
+        completed = (map['반띵완료_참가자'] as bool) && (map['반띵완료_개설자'] as bool),
+        blockedList = map['내보낸사용자'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);

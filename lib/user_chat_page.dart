@@ -637,11 +637,16 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       title: Text('참가자 내보내기', style: text_grey_20()),
       onTap: () {
         snapshot_other_user.data.reference.updateData({'채팅중인방ID': ''});
+
+        List<dynamic> blockList = List.from(snapshot_board.data['내보낸사용자']);
+        blockList.add(_otherPhoneNumber);
         snapshot_board.data.reference.updateData({
           '참가자핸드폰번호': '',
           '참가자참여시간': '',
           '참가자닉네임': '',
+          '내보낸사용자': FieldValue.arrayUnion(blockList)
         });
+
         chatReference.add({
           'text': '${_otherNickname} 님을 내보냈습니다.',
           'sender_phone': '공지',

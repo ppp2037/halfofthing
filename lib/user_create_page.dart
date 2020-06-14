@@ -243,7 +243,8 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '참가자닉네임': '',
                             '생성시간': DateTime.now().toString(),
                             '반띵완료_개설자': false,
-                            '반띵완료_참가자': false
+                            '반띵완료_참가자': false,
+                            '내보낸사용자': []
                           });
                           Firestore.instance
                               .collection('사용자')
