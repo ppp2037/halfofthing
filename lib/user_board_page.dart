@@ -488,13 +488,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
       ),
     );
   }
+}
 
-  Widget popUpDialog(BuildContext context, String text) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      content: SizedBox(width: 150, height: 80, child: new Text(text)),
-    );
-  }
+Widget popUpDialog(BuildContext context, String text) {
+  return AlertDialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+    content: SizedBox(width: 150, height: 80, child: new Text(text)),
+  );
 }
 
 class Record {

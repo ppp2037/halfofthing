@@ -35,7 +35,6 @@ class _Background_PageState extends State<Background_Page> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
-        print("user : $_userPhoneNumber");
       });
     })();
   }
@@ -118,7 +117,7 @@ class _Background_PageState extends State<Background_Page> {
           } else {
             _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
           }
-
+          // FIXME: 새로고침하지 않아도 초기 화면에서 숫자 표시하도록 변경해야 함
           CollectionReference chatReference =
               snapshot_board.data.reference.collection("messages");
           int unread = 0;
@@ -126,16 +125,12 @@ class _Background_PageState extends State<Background_Page> {
               .where('sender_phone', isEqualTo: _otherPhoneNumber)
               .getDocuments()
               .then((QuerySnapshot ds) {
-            print("상대방이 보낸 메세지");
             ds.documents.forEach((doc) {
               if (doc['delivered'] == false) {
-                print("안읽은 메세지 : ${doc['text']}");
                 unread++;
               }
             });
-            // print("안읽은 메세지 수 : $unread");
             unreadMessages = unread;
-            print("안읽은 메세지 수 : $unreadMessages");
           });
           return unreadMessages == 0
               ? Icon(Icons.chat)
