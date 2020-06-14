@@ -240,7 +240,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '게시판이름': _boardID,
                             '참가자참여시간': '',
                             '개설자닉네임': randomNickname(),
-                            '참가자닉네임': ''
+                            '참가자닉네임': '',
+                            '생성시간': DateTime.now().toString(),
+                            '반띵완료_개설자': false,
+                            '반띵완료_참가자': false
                           });
                           Firestore.instance
                               .collection('사용자')

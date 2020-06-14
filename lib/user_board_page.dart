@@ -299,7 +299,16 @@ class _User_Board_PageState extends State<User_Board_Page> {
         "분";
     return GestureDetector(
       onTap: () {
-        if (_userPhoneNumber == record.phoneNumber ||
+        if (record.completed) {
+          return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                Future.delayed(Duration(seconds: 2), () {
+                  Navigator.pop(context);
+                });
+                return popUpDialog(context, "이미 반띵이 완료된 게시물이예요.");
+              });
+        } else if (_userPhoneNumber == record.phoneNumber ||
             _userPhoneNumber == record.phoneNumber2) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
@@ -312,30 +321,16 @@ class _User_Board_PageState extends State<User_Board_Page> {
               builder: (BuildContext context) {
                 if (_userIsChatting) {
                   // 사용자가 현재 채팅중일 경우 => 입장 불가 Dialog 띄우기
-                  print("채팅중 다이얼로그");
                   Future.delayed(Duration(seconds: 2), () {
                     Navigator.pop(context);
                   });
-                  return AlertDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0)),
-                    content: SizedBox(
-                        width: 150,
-                        height: 80,
-                        child: new Text("현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요")),
-                  );
+                  return popUpDialog(context, "현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요");
                 } else if (record.phoneNumber2 != '') {
                   // 다른 사람이 참여중인 게시물인 경우 (반띵중)
-                  print("반띵중 다이얼로그");
                   Future.delayed(Duration(seconds: 2), () {
                     Navigator.pop(context);
                   });
-                  return AlertDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0)),
-                    content: SizedBox(
-                        width: 150, height: 80, child: new Text("이미 반띵중이에요.")),
-                  );
+                  return popUpDialog(context, "이미 반띵중인 게시물이예요.");
                 } else {
                   // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
                   return AlertDialog(
@@ -386,10 +381,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
                             GestureDetector(
                               onTap: () {
                                 // 게시물에 새로 참가하기
-                                // =>
-                                // 1. 게시판 Collection의 참가자핸드폰번호=_userPhoneNumber로 업데이트,
-                                // 2. 사용자 Collection의 참여중인채팅방ID=record.boardname으로 업데이트
-                                // 3. 채팅방으로 이동
                                 String nickName = randomNickname();
                                 data_board.reference.updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
@@ -452,23 +443,28 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         record.restaurant,
                         style: text_grey_20(),
                       ),
-                      _userPhoneNumber == record.phoneNumber
+                      record.completed
                           ? Text(
-                              '나의 게시글',
+                              '완료된 게시글',
                               style: text_grey_15(),
                             )
-                          : _userPhoneNumber == record.phoneNumber2
+                          : _userPhoneNumber == record.phoneNumber
                               ? Text(
-                                  '내가 참여중',
+                                  '나의 게시글',
                                   style: text_grey_15(),
                                 )
-                              : record.phoneNumber2 != ''
-                                  // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                              : _userPhoneNumber == record.phoneNumber2
                                   ? Text(
-                                      '반띵중',
+                                      '내가 참여중',
                                       style: text_grey_15(),
                                     )
-                                  : Container(),
+                                  : record.phoneNumber2 != ''
+                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                      ? Text(
+                                          '반띵중',
+                                          style: text_grey_15(),
+                                        )
+                                      : Container(),
                     ],
                   ),
                   Container(
@@ -492,6 +488,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
       ),
     );
   }
+
+  Widget popUpDialog(BuildContext context, String text) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      content: SizedBox(width: 150, height: 80, child: new Text(text)),
+    );
+  }
 }
 
 class Record {
@@ -503,6 +506,8 @@ class Record {
   final String boardname;
   final String meetingPlace;
   final String enteredTime;
+  final String createdTime; // 생성시간
+  final bool completed; // 완료된 게시물인지
   final DocumentReference reference;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
@@ -513,6 +518,7 @@ class Record {
         assert(map['위치'] != null),
         assert(map['만날장소'] != null),
         assert(map['게시판이름'] != null),
+        assert(map['생성시간'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
@@ -520,7 +526,9 @@ class Record {
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
-        enteredTime = map['참가자참여시간'];
+        enteredTime = map['참가자참여시간'],
+        createdTime = map['생성시간'],
+        completed = (map['반띵완료_참가자'] as bool) && (map['반띵완료_개설자'] as bool);
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'background_page.dart';
 import 'settings/styles.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'survey_page.dart';
 
 class User_Chat_Page extends StatefulWidget {
@@ -23,6 +24,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   String _otherPhoneNumber; // 상대방의 핸드폰번호
   String _myNickname; // 사용자의 닉네임
   String _otherNickname; // 상대방의 닉네임
+  bool _myCompleted, _otherCompleted; // 나와 상대방의 반띵완료 클릭 여부 저장
   var _enteredTime;
   @override
   void initState() {
@@ -245,7 +247,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             return Center(child: CircularProgressIndicator());
           }
           _chattingRoomID = snapshot_user.data['채팅중인방ID'];
-
+          print("_chattingroomID : $_chattingRoomID");
           if (_chattingRoomID == '') {
             // 사용자가 채팅중인 방이 없을 경우
             return Scaffold(
@@ -302,215 +304,275 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
                     _myNickname = snapshot_board.data['개설자닉네임'];
                     _otherNickname = snapshot_board.data['참가자닉네임'];
+                    _myCompleted = snapshot_board.data['반띵완료_개설자'] as bool;
+                    _otherCompleted = snapshot_board.data['반띵완료_참가자'] as bool;
                   } else {
                     _userIsHost = false;
                     _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
                     _myNickname = snapshot_board.data['참가자닉네임'];
                     _otherNickname = snapshot_board.data['개설자닉네임'];
+                    _myCompleted = snapshot_board.data['반띵완료_참가자'] as bool;
+                    _otherCompleted = snapshot_board.data['반띵완료_개설자'] as bool;
                   }
-
+                  print(
+                      "mycount : $_myCompleted, othercount : $_otherCompleted");
                   if (snapshot_board.data['참가자참여시간'] != '') {
+                    // 참가자가 없을 경우
                     _enteredTime =
                         DateTime.parse(snapshot_board.data['참가자참여시간']);
-                  }
-                  return Scaffold(
-                    appBar: AppBar(
-                      leading: IconButton(
-                          icon: Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                                  builder: (context) => Background_Page()))),
-                      title: Text(
-                        _userIsHost && _otherPhoneNumber == ''
-                            ? '참여중인 사람이 없어요 ㅜ.ㅜ'
-                            : '반띵을 완료하면 우측상단 완료를 눌러주세요',
-                        style: text_grey_15(),
+                    return Scaffold(
+                      appBar: AppBar(
+                        leading: IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: () => Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                                    builder: (context) => Background_Page()))),
+                        title: Text(
+                          '참여중인 사람이 없어요 ㅜ.ㅜ',
+                          style: text_grey_15(),
+                        ),
+                        // automaticallyImplyLeading: false,
+                        backgroundColor: Colors.white10,
+                        elevation: 0,
+                        iconTheme: IconThemeData(color: Colors.black),
                       ),
-                      // automaticallyImplyLeading: false,
-                      backgroundColor: Colors.white10,
-                      elevation: 0,
-                      iconTheme: IconThemeData(color: Colors.black),
-                    ),
-                    endDrawer: Drawer(
-                      child: _userIsHost && _otherPhoneNumber == ''
-                          // 자신이 개설자인데 참가자가 없을 경우
-                          ? Column(
+                      endDrawer: Drawer(
+                          child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
+                            ListTile(
+                                leading: Icon(
+                                  Icons.restaurant,
+                                  color: Colors.grey,
+                                ),
+                                title: Text('게시물 삭제하기', style: text_grey_20()),
+                                onTap: () {
+                                  // 게시물 삭제
+                                  snapshot_user.data.reference
+                                      .updateData({'채팅중인방ID': ''});
+                                  snapshot_board.data.reference.delete();
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => Background_Page()));
+                                })
+                          ])),
+                      body: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          children: <Widget>[
+                            Expanded(child: Container()),
+                            Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                color: Colors.white,
+                                child: _buildTextComposer()),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  // FIXME: 반띵을 완료하고 다시 게시물을 작성해 입장한 사용자들 튕김 현상 있음
+                  return StreamBuilder<DocumentSnapshot>(
+                      stream: Firestore.instance
+                          .collection('사용자')
+                          .document(_otherPhoneNumber)
+                          .snapshots(),
+                      builder: (context, snapshot_other_user) {
+                        if (!snapshot_other_user.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (_myCompleted && _otherCompleted) {
+                          // 둘다 반띵완료를 누른 경우
+                          print("둘다 반띵 완료");
+                          // AlertDialog(
+                          //   shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(8.0)),
+                          //   content: SizedBox(
+                          //       width: 150,
+                          //       height: 80,
+                          //       child: new Text("반띵이 완료되었어요!")),
+                          // );
+                          // 사용자 2명 db의 게시물 삭제
+                          snapshot_user.data.reference
+                              .updateData({'채팅중인방ID': ''});
+                          snapshot_other_user.data.reference
+                              .updateData({'채팅중인방ID': ''});
+                          return Container();
+                        }
+
+                        return Scaffold(
+                          appBar: AppBar(
+                            leading: IconButton(
+                                icon: Icon(Icons.arrow_back),
+                                onPressed: () => Navigator.of(context)
+                                    .pushReplacement(MaterialPageRoute(
+                                        builder: (context) =>
+                                            Background_Page()))),
+                            title: Text(
+                              (_myCompleted || _otherCompleted)
+                                  ? '반띵을 완료하면 우측상단 완료를 눌러주세요'
+                                  : _myCompleted
+                                      ? '상대방의 완료를 기다리고 있어요!'
+                                      : '상대방이 반띵을 완료하였어요!',
+                              style: text_grey_15(),
+                            ),
+                            // automaticallyImplyLeading: false,
+                            backgroundColor: Colors.white10,
+                            elevation: 0,
+                            iconTheme: IconThemeData(color: Colors.black),
+                          ),
+                          endDrawer: Drawer(
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  // 채팅중인 상대방이 있을 경우
                                   ListTile(
                                       leading: Icon(
-                                        Icons.restaurant,
+                                        Icons.account_circle,
                                         color: Colors.grey,
                                       ),
-                                      title: Text('게시물 삭제하기',
-                                          style: text_grey_20()),
-                                      onTap: () {
-                                        // 게시물 삭제
-                                        snapshot_user.data.reference
-                                            .updateData({'채팅중인방ID': ''});
-                                        snapshot_board.data.reference.delete();
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    Background_Page()));
-                                      })
-                                ])
-                          : StreamBuilder<DocumentSnapshot>(
-                              stream: Firestore.instance
-                                  .collection('사용자')
-                                  .document(_otherPhoneNumber)
-                                  .snapshots(),
-                              builder: (context, snapshot_other_user) {
-                                return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      // 채팅중인 상대방이 있을 경우
+                                      title: Text(
+                                          '${_otherNickname} 님의 반띵 횟수 : ' +
+                                              snapshot_other_user.data['이용횟수']
+                                                  .toString(),
+                                          style: text_grey_20())),
+                                  Container(
+                                    height: 40,
+                                  ),
+                                  ListTile(
+                                    leading: Icon(
+                                      Icons.restaurant,
+                                      color: Colors.grey,
+                                    ),
+                                    title:
+                                        Text('반띵 완료하기', style: text_grey_20()),
+                                    onTap: () {
+                                      // TODO: 둘다 반띵 완료하면 처리
+                                      // 완료하기 버튼 클릭 시 -> 설문 페이지 팝업 -> 완료 클릭 시 채팅방으로 다시 이동
+
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                              builder: (context) => Survey_Page(
+                                                    snapshot_board:
+                                                        snapshot_board,
+                                                    userIsHost: _userIsHost,
+                                                  )));
+                                    },
+                                  ),
+                                  Container(
+                                    height: 40,
+                                  ),
+                                  _userIsHost
+                                      ?
+                                      // 자신이 방 개설자인 경우
                                       ListTile(
                                           leading: Icon(
-                                            Icons.account_circle,
+                                            Icons.clear,
                                             color: Colors.grey,
                                           ),
-                                          title: Text(
-                                              '${_otherNickname} 님의 반띵 횟수 : ' +
-                                                  snapshot_other_user
-                                                      .data['이용횟수']
-                                                      .toString(),
-                                              style: text_grey_20())),
-                                      Container(
-                                        height: 40,
-                                      ),
+                                          title: Text('참가자 내보내기',
+                                              style: text_grey_20()),
+                                          onTap: () {
+                                            snapshot_other_user.data.reference
+                                                .updateData({'채팅중인방ID': ''});
+                                            snapshot_board.data.reference
+                                                .updateData({
+                                              '참가자핸드폰번호': '',
+                                              '참가자참여시간': '',
+                                              '참가자닉네임': '',
+                                            });
+                                            chatReference.add({
+                                              'text':
+                                                  '${_otherNickname} 님을 내보냈습니다.',
+                                              'sender_phone': '공지',
+                                              'sender_nickname': "",
+                                              'time': DateTime.now(),
+                                              'delivered': true,
+                                            });
+                                            // 참가자를 내보냈을 때 :
+                                            // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
+                                            chatReference
+                                                .where('delivered',
+                                                    isEqualTo: false)
+                                                .getDocuments()
+                                                .then((QuerySnapshot ds) {
+                                              print("delivered 값 변경");
+                                              ds.documents.forEach((doc) =>
+                                                  doc.reference.updateData(
+                                                      {'delivered': true}));
+                                            });
+                                            Navigator.pop(context);
+                                          },
+                                        )
+                                      :
+                                      // 자신이 방 참가자인 경우
                                       ListTile(
-                                        leading: Icon(
-                                          Icons.restaurant,
-                                          color: Colors.grey,
+                                          leading: Icon(
+                                            Icons.clear,
+                                            color: Colors.grey,
+                                          ),
+                                          title: Text('다른 반띵하기',
+                                              style: text_grey_20()),
+                                          onTap: () {
+                                            snapshot_user.data.reference
+                                                .updateData({'채팅중인방ID': ''});
+                                            chatReference.add({
+                                              'text':
+                                                  '${_otherNickname} 님이 반띵을 취소하였습니다.',
+                                              'sender_phone': '공지',
+                                              'sender_nickname': "",
+                                              'time': DateTime.now(),
+                                              'delivered': true,
+                                            });
+                                            snapshot_board.data.reference
+                                                .updateData({
+                                              '참가자핸드폰번호': '',
+                                              '참가자참여시간': '',
+                                              '참가자닉네임': '',
+                                            });
+                                            Navigator.of(context)
+                                                .pushReplacement(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Background_Page()));
+                                          },
                                         ),
-                                        title: Text('반띵 완료하기',
-                                            style: text_grey_20()),
-                                        onTap: () {
-                                          // TODO: 둘다 반띵 완료하면 처리
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Survey_Page()));
-                                        },
-                                      ),
-                                      Container(
-                                        height: 40,
-                                      ),
-                                      _userIsHost
-                                          ?
-                                          // 자신이 방 개설자인 경우
-                                          ListTile(
-                                              leading: Icon(
-                                                Icons.clear,
-                                                color: Colors.grey,
-                                              ),
-                                              title: Text('참가자 내보내기',
-                                                  style: text_grey_20()),
-                                              onTap: () {
-                                                snapshot_other_user
-                                                    .data.reference
-                                                    .updateData(
-                                                        {'채팅중인방ID': ''});
-                                                snapshot_board.data.reference
-                                                    .updateData({
-                                                  '참가자핸드폰번호': '',
-                                                  '참가자참여시간': '',
-                                                  '참가자닉네임': '',
-                                                });
-                                                chatReference.add({
-                                                  'text':
-                                                      '${_otherNickname} 님을 내보냈습니다.',
-                                                  'sender_phone': '공지',
-                                                  'sender_nickname': "",
-                                                  'time': DateTime.now(),
-                                                  'delivered': true,
-                                                });
-                                                // 참가자를 내보냈을 때 :
-                                                // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
-                                                chatReference
-                                                    .where('delivered',
-                                                        isEqualTo: false)
-                                                    .getDocuments()
-                                                    .then((QuerySnapshot ds) {
-                                                  print("delivered 값 변경");
-                                                  ds.documents.forEach((doc) =>
-                                                      doc.reference.updateData(
-                                                          {'delivered': true}));
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                            )
-                                          :
-                                          // 자신이 방 참가자인 경우
-                                          ListTile(
-                                              leading: Icon(
-                                                Icons.clear,
-                                                color: Colors.grey,
-                                              ),
-                                              title: Text('다른 반띵하기',
-                                                  style: text_grey_20()),
-                                              onTap: () {
-                                                snapshot_user.data.reference
-                                                    .updateData(
-                                                        {'채팅중인방ID': ''});
-                                                chatReference.add({
-                                                  'text':
-                                                      '${_otherNickname} 님이 반띵을 취소하였습니다.',
-                                                  'sender_phone': '공지',
-                                                  'sender_nickname': "",
-                                                  'time': DateTime.now(),
-                                                  'delivered': true,
-                                                });
-                                                snapshot_board.data.reference
-                                                    .updateData({
-                                                  '참가자핸드폰번호': '',
-                                                  '참가자참여시간': '',
-                                                  '참가자닉네임': '',
-                                                });
-                                                Navigator.of(context)
-                                                    .pushReplacement(
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                Background_Page()));
-                                              },
-                                            ),
-                                    ]);
-                              }),
-                    ),
-                    body: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        children: <Widget>[
-                          StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection("게시판")
-                                .document(_chattingRoomID)
-                                .collection('messages')
-                                .orderBy('time', descending: true)
-                                .snapshots(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<QuerySnapshot> snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
-                                    child: CircularProgressIndicator());
-                              return Expanded(
-                                child: ListView(
-                                  reverse: true,
-                                  children: generateMessages(snapshot),
-                                ),
-                              );
-                            },
+                                ]),
                           ),
-                          Card(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              color: Colors.white,
-                              child: _buildTextComposer()),
-                        ],
-                      ),
-                    ),
-                  );
+                          body: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              children: <Widget>[
+                                StreamBuilder<QuerySnapshot>(
+                                  stream: Firestore.instance
+                                      .collection("게시판")
+                                      .document(_chattingRoomID)
+                                      .collection('messages')
+                                      .orderBy('time', descending: true)
+                                      .snapshots(),
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                                    if (!snapshot.hasData)
+                                      return Center(
+                                          child: CircularProgressIndicator());
+                                    return Expanded(
+                                      child: ListView(
+                                        reverse: true,
+                                        children: generateMessages(snapshot),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    color: Colors.white,
+                                    child: _buildTextComposer()),
+                              ],
+                            ),
+                          ),
+                        );
+                      });
                 });
           }
         });
