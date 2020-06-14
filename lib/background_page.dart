@@ -2,10 +2,11 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_board_page.dart';
 import 'user_chat_page.dart';
 import 'user_create_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Background_Page extends StatefulWidget {
   @override
@@ -21,6 +22,23 @@ class _Background_PageState extends State<Background_Page> {
     User_Create_page(),
     User_Chat_Page(),
   ];
+
+  String _userPhoneNumber;
+  String _otherPhoneNumber;
+  String _chattingRoomID;
+  int unreadMessages = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    (() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _userPhoneNumber = prefs.getString('prefsPhoneNumber');
+        print("user : $_userPhoneNumber");
+      });
+    })();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -43,40 +61,94 @@ class _Background_PageState extends State<Background_Page> {
   Widget build(BuildContext context) {
     return _selectedIndex == 2
         ? Scaffold(body: _widgetOptions[_selectedIndex])
-        : Scaffold(
-            resizeToAvoidBottomInset: false,
-            body: WillPopScope(
-              child: Center(
-                child: _widgetOptions[_selectedIndex],
-              ),
-              onWillPop: onWillPop,
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              items: <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.library_books), title: Text('게시판')),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.add), title: Text('시작')),
-                BottomNavigationBarItem(
-                    icon: Badge(
-                        animationType: BadgeAnimationType.scale,
-                        shape: BadgeShape.circle,
-                        position: BadgePosition.topRight(top: -15),
-                        badgeColor: Colors.pink,
-                        badgeContent: Text(
-                          '3',
-                          style: text_white_15(),
-                        ),
-                        child: Icon(Icons.chat)),
-                    title: Text('채팅')),
-              ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.pink,
-              selectedIconTheme: IconThemeData(size: 35),
-              onTap: _onItemTapped,
-            ),
-          );
+        : StreamBuilder<DocumentSnapshot>(
+            stream: Firestore.instance
+                .collection('사용자')
+                .document(_userPhoneNumber)
+                .snapshots(),
+            builder: (context, snapshot_user) {
+              if (!snapshot_user.hasData) {
+                return Container();
+              }
+              _chattingRoomID = snapshot_user.data['채팅중인방ID'];
+              return Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: WillPopScope(
+                  child: Center(
+                    child: _widgetOptions[_selectedIndex],
+                  ),
+                  onWillPop: onWillPop,
+                ),
+                bottomNavigationBar: BottomNavigationBar(
+                  showSelectedLabels: false,
+                  showUnselectedLabels: false,
+                  items: <BottomNavigationBarItem>[
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.library_books), title: Text('게시판')),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.add), title: Text('시작')),
+                    BottomNavigationBarItem(
+                        icon: _chattingRoomID == ''
+                            ? Icon(Icons.chat)
+                            : calculateUnreadMessages(context),
+                        title: Text('채팅')),
+                  ],
+                  currentIndex: _selectedIndex,
+                  selectedItemColor: Colors.pink,
+                  selectedIconTheme: IconThemeData(size: 35),
+                  onTap: _onItemTapped,
+                ),
+              );
+            });
+  }
+
+  Widget calculateUnreadMessages(BuildContext context) {
+    // _chattingRoomID !=''일 경우에만 수행
+    return StreamBuilder<DocumentSnapshot>(
+        stream: Firestore.instance
+            .collection('게시판')
+            .document(_chattingRoomID)
+            .snapshots(),
+        builder: (context, snapshot_board) {
+          if (!snapshot_board.hasData) {
+            return Container();
+          }
+          if (_userPhoneNumber == snapshot_board.data['개설자핸드폰번호']) {
+            _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
+          } else {
+            _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
+          }
+
+          CollectionReference chatReference =
+              snapshot_board.data.reference.collection("messages");
+          int unread = 0;
+          chatReference
+              .where('sender_phone', isEqualTo: _otherPhoneNumber)
+              .getDocuments()
+              .then((QuerySnapshot ds) {
+            print("상대방이 보낸 메세지");
+            ds.documents.forEach((doc) {
+              if (doc['delivered'] == false) {
+                print("안읽은 메세지 : ${doc['text']}");
+                unread++;
+              }
+            });
+            // print("안읽은 메세지 수 : $unread");
+            unreadMessages = unread;
+            print("안읽은 메세지 수 : $unreadMessages");
+          });
+          return unreadMessages == 0
+              ? Icon(Icons.chat)
+              : Badge(
+                  animationType: BadgeAnimationType.scale,
+                  shape: BadgeShape.circle,
+                  position: BadgePosition.topRight(top: -15),
+                  badgeColor: Colors.pink,
+                  badgeContent: Text(
+                    unreadMessages.toString(),
+                    style: text_white_15(),
+                  ),
+                  child: Icon(Icons.chat));
+        });
   }
 }

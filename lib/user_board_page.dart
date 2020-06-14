@@ -403,7 +403,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
                                   'time': DateTime.now(),
-                                  'delivered': true,
+                                  'delivered': false,
                                 });
                                 Firestore.instance
                                     .collection('사용자')
