@@ -22,7 +22,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   String _chattingRoomID;
   bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   bool _myCompleted, _otherCompleted; // 나와 상대방의 반띵완료 클릭 여부 저장
-  String _otherOrderCount;
   var _enteredTime;
   @override
   void initState() {
@@ -364,10 +363,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                         if (_myCompleted && _otherCompleted) {
                           // 둘다 반띵완료를 누른 경우
                           // boardPage.popUpDialog(context, "반띵이 완료되었어요!");
-                          snapshot_user.data.reference
-                              .updateData({'채팅중인방ID': ''});
-                          snapshot_other_user.data.reference
-                              .updateData({'채팅중인방ID': ''});
+                          snapshot_user.data.reference.updateData({
+                            '채팅중인방ID': '',
+                            '이용횟수': snapshot_user.data['이용횟수'] + 1
+                          });
                           return Container();
                         }
                         return Scaffold(
@@ -495,7 +494,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       child: Row(
         children: <Widget>[
           Flexible(
-              child: _userIsHost && _otherPhoneNumber == ''
+              child: _userIsHost && _otherPhoneNumber == null
                   // 내가 개설한 채팅방에 참여중인 사람이 없으면 텍스트 입력 disable
                   ? TextField(
                       enabled: false,
@@ -588,6 +587,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('반띵 완료하기', style: text_grey_20()),
       onTap: () {
+        Navigator.of(context).pop();
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => Survey_Page(
                   snapshot_board: snapshot_board,
