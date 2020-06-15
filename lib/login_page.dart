@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'add_account_page.dart';
 import 'background_page.dart';
 import 'find_password_page.dart';
+import 'settings/make_password_encryption.dart';
 
 class Login_Page extends StatefulWidget {
   @override
@@ -39,6 +40,9 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
 
   String _phoneNumber; // 사용자가 입력한 핸드폰번호 값
   String _password; // 사용자가 입력한 비밀번호 값
+
+  String _iv_salt;
+  String _fortuna_key;
 
   AnimationController _bounceInOutController;
   Animation _bounceInOutAnimation;
@@ -194,9 +198,11 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                             _comparePhoneNumber = doc['핸드폰번호'];
                             _comparePassword = doc['비밀번호'];
                             _userLocation = doc['위치'];
+                            _iv_salt = doc['ivsalt'];
+                            _fortuna_key = doc['key'];
                           });
                           if (_comparePhoneNumber == _phoneNumber &&
-                              _comparePassword == _password) {
+                              _comparePassword == make_encryption(_password, _iv_salt, _fortuna_key)) {
                             (() async {
                               SharedPreferences prefs =
                                   await SharedPreferences.getInstance();
