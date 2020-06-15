@@ -67,7 +67,7 @@ class _Background_PageState extends State<Background_Page> {
                 .snapshots(),
             builder: (context, snapshot_user) {
               if (!snapshot_user.hasData) {
-                return CircularProgressIndicator();
+                return Container();
               }
               _chattingRoomID = snapshot_user.data['채팅중인방ID'];
               return Scaffold(
@@ -109,7 +109,7 @@ class _Background_PageState extends State<Background_Page> {
             .document(_chattingRoomID)
             .snapshots(),
         builder: (context, snapshot_board) {
-          if (!snapshot_board.hasData) return CircularProgressIndicator();
+          if (!snapshot_board.hasData) return Icon(Icons.chat);
           if (_userPhoneNumber == snapshot_board.data['개설자핸드폰번호']) {
             _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
           } else {
@@ -122,7 +122,7 @@ class _Background_PageState extends State<Background_Page> {
                 .where('delivered', isEqualTo: false)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return CircularProgressIndicator();
+              if (!snapshot.hasData) return Icon(Icons.chat);
               if (snapshot.data.documents.length.toString() == '0')
                 return Icon(Icons.chat);
               return Badge(
