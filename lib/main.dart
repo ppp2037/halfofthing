@@ -70,13 +70,13 @@ class _HalfofthingState extends State<Halfofthing> {
       debugShowCheckedModeBanner: false,
       title: '반띵',
       theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
-          brightness: Brightness.light,
-          primarySwatch: Colors.grey,
-          fontFamily: 'Spoqa_Han_Sans_Regular'),
+          primarySwatch: Colors.pink,
+          fontFamily: 'Spoqa_Han_Sans_Regular',
+          brightness: Brightness.light),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
-      ),
+          primarySwatch: Colors.pink,
+          fontFamily: 'Spoqa_Han_Sans_Regular',
+          brightness: Brightness.dark),
       home: _userIsLogin ? Login_Page() : Background_Page(),
     );
   }
