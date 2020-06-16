@@ -73,34 +73,36 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
     // 나의 말풍선
     return <Widget>[
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          timeStampText(documentSnapshot),
-          deliveredIcon(documentSnapshot),
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            color: Colors.pink,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(documentSnapshot.data['sender_nickname'],
-                      style: text_white_15()),
-                  Container(
-                    height: 5,
+      Column(
+        children: <Widget>[
+          Text(documentSnapshot.data['sender_nickname'],
+              style: text_white_15()),
+          Container(
+            height: 5,
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              timeStampText(documentSnapshot),
+              deliveredIcon(documentSnapshot),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                color: Colors.pink,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  child: Center(
+                    child: Text(
+                      documentSnapshot.data['text'],
+                      style: text_white_15(),
+                    ),
                   ),
-                  Text(
-                    documentSnapshot.data['text'],
-                    style: text_white_15(),
-                  ),
-                ],
-              ),
-            ),
-          )
+                ),
+              )
+            ],
+          ),
         ],
       )
     ];
@@ -110,35 +112,34 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 상대방의 말풍선
     documentSnapshot.reference.updateData({'delivered': true});
     return <Widget>[
-      new Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(documentSnapshot.data['sender_nickname'],
+              style: text_white_15()),
+          Container(
+            height: 5,
+          ),
+          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               color: Colors.white,
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(documentSnapshot.data['sender_nickname'],
-                        style: text_black_15()),
-                    Container(
-                      height: 5,
-                    ),
-                    Text(
-                      documentSnapshot.data['text'],
-                      style: text_black_15(),
-                    ),
-                  ],
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: Center(
+                  child: Text(
+                    documentSnapshot.data['text'],
+                    style: text_black_15(),
+                  ),
                 ),
               ),
             ),
             timeStampText(documentSnapshot)
-          ])
+          ]),
+        ],
+      )
     ];
   }
 

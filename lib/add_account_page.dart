@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
 import 'package:search_widget/search_widget.dart';
 
+import 'settings/make_password_encryption.dart';
 import 'settings/university_list.dart';
 
 class Add_Account_Page extends StatefulWidget {
@@ -49,6 +50,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   String _passwordCheck;
 
   String _comparePhoneNumber;
+
+  // for password
+  var _ivsalt = make_ivslat();
+  var _fortuna_key = make_key();
 
   @override
   Widget build(BuildContext context) {
@@ -337,7 +342,9 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                         '핸드폰번호': _phoneNumber,
                                                         '위치': _selectedItem
                                                             .location,
-                                                        '비밀번호': _password,
+                                                        'ivsalt': _ivsalt,
+                                                        'key': _fortuna_key,
+                                                        '비밀번호': make_encryption(_password, _ivsalt, _fortuna_key),
                                                         '로그인여부': 'N',
                                                         '인증여부': 'N',
                                                         '이용횟수': 0,

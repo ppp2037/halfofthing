@@ -32,31 +32,10 @@ class _Background_PageState extends State<Background_Page> {
   void initState() {
     super.initState();
     (() async {
-      prefs = await SharedPreferences.getInstance();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
       });
-      print("background - userPhone : $_userPhoneNumber");
-      await Firestore.instance
-          .collection('사용자')
-          .document(_userPhoneNumber)
-          .get()
-          .then((DocumentSnapshot ds) {
-        _chattingRoomID = ds['채팅중인방ID'];
-        print("background - chattingroom : $_chattingRoomID");
-      }).catchError((onError) => print(onError));
-      await Firestore.instance
-          .collection('게시판')
-          .document(_chattingRoomID)
-          .get()
-          .then((DocumentSnapshot ds) {
-        if (_userPhoneNumber == ds['개설자핸드폰번호']) {
-          _otherPhoneNumber = ds['참가자핸드폰번호'];
-        } else {
-          _otherPhoneNumber = ds['개설자핸드폰번호'];
-        }
-      }).catchError((onError) => print(onError));
-      print("background - _otherPhoneNumber : $_otherPhoneNumber");
     })();
   }
 
@@ -79,13 +58,19 @@ class _Background_PageState extends State<Background_Page> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "background - build => UserPhone : $_userPhoneNumber, chattingroom : $_chattingRoomID, _otherPhoneNumber : $_otherPhoneNumber");
     return _selectedIndex == 2
         ? Scaffold(body: _widgetOptions[_selectedIndex])
-        : _chattingRoomID == null
-            ? Container()
-            : Scaffold(
+        : StreamBuilder<DocumentSnapshot>(
+            stream: Firestore.instance
+                .collection('사용자')
+                .document(_userPhoneNumber)
+                .snapshots(),
+            builder: (context, snapshot_user) {
+              if (!snapshot_user.hasData) {
+                return Container();
+              }
+              _chattingRoomID = snapshot_user.data['채팅중인방ID'];
+              return Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: WillPopScope(
                   child: Center(
@@ -113,32 +98,47 @@ class _Background_PageState extends State<Background_Page> {
                   onTap: _onItemTapped,
                 ),
               );
+            });
   }
 
   Widget calculateUnreadMessages(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: Firestore.instance
-          .collection('게시판')
-          .document(_chattingRoomID)
-          .collection('messages')
-          .where('sender_phone', isEqualTo: _otherPhoneNumber)
-          .where('delivered', isEqualTo: false)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return Icon(Icons.chat);
-        if (snapshot.data.documents.length.toString() == '0')
-          return Icon(Icons.chat);
-        return Badge(
-            animationType: BadgeAnimationType.slide,
-            shape: BadgeShape.circle,
-            position: BadgePosition.topRight(top: -15),
-            badgeColor: Colors.pink,
-            badgeContent: Text(
-              snapshot.data.documents.length.toString(),
-              style: text_white_15(),
-            ),
-            child: Icon(Icons.chat));
-      },
-    );
+    // _chattingRoomID !=''일 경우에만 수행
+    return StreamBuilder<DocumentSnapshot>(
+        stream: Firestore.instance
+            .collection('게시판')
+            .document(_chattingRoomID)
+            .snapshots(),
+        builder: (context, snapshot_board) {
+          if (!snapshot_board.hasData) return Icon(Icons.chat);
+          if (_userPhoneNumber == snapshot_board.data['개설자핸드폰번호']) {
+            _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
+          } else {
+            _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
+          }
+          return StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance
+                .collection('게시판')
+                .document(_chattingRoomID)
+                .collection('messages')
+                .where('sender_phone', isEqualTo: _otherPhoneNumber)
+                .where('delivered', isEqualTo: false)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Icon(Icons.chat);
+              if (snapshot.data.documents.length.toString() == '0')
+                return Icon(Icons.chat);
+              return Badge(
+                  animationType: BadgeAnimationType.slide,
+                  shape: BadgeShape.circle,
+                  position: BadgePosition.topRight(top: -15),
+                  badgeColor: Colors.pink,
+                  badgeContent: Text(
+                    snapshot.data.documents.length.toString(),
+                    style: text_white_15(),
+                  ),
+                  child: Icon(Icons.chat));
+            },
+          );
+        });
   }
 }
