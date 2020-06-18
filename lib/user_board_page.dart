@@ -12,6 +12,7 @@ import 'user_settings_help_page.dart';
 import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
+import 'package:intl/intl.dart';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -293,6 +294,25 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
+    // var now = DateTime.now();
+    // var format = DateFormat('HH시mm분');
+    // DateTime date = data_board.data['주문시간'].toDate;
+    // var diff = date.difference(now);
+    // var time = '';
+
+    // if (diff.inSeconds <= 0 ||
+    //     diff.inSeconds > 0 && diff.inMinutes == 0 ||
+    //     diff.inMinutes > 0 && diff.inHours == 0 ||
+    //     diff.inHours > 0 && diff.inDays == 0) {
+    //   time = '' + format.format(date);
+    // } else {
+    //   if (diff.inDays == 1) {
+    //     time = '어제 ' + format.format(date);
+    //   } else {
+    //     time = diff.inDays.toString() + '일 전';
+    //   }
+    // }
+
     String orderTimeStr = record.time.toString().substring(8, 10) +
         "시 " +
         record.time.toString().substring(10, 12) +
@@ -312,7 +332,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             _userPhoneNumber == record.phoneNumber2) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => User_Chat_Page()));
         } else {
@@ -396,7 +416,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 data_board.reference
                                     .collection('messages')
                                     .add({
-                                  'text': "$nickName 님이 입장하셨습니다.",
+                                  'text': "${nickName}님이 입장하셨습니다.",
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
                                   'time': DateTime.now(),

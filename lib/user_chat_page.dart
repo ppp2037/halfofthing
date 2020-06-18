@@ -9,7 +9,6 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'survey_page.dart';
 
 class User_Chat_Page extends StatefulWidget {
-  User_Chat_Page({Key key}) : super(key: key);
   @override
   _User_Chat_PageState createState() => _User_Chat_PageState();
 }
@@ -18,13 +17,18 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   CollectionReference chatReference;
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
-  String _userPhoneNumber, _otherPhoneNumber = '', _myNickname, _otherNickname;
-  String _chattingRoomID = '';
+  String _userPhoneNumber,
+      _otherPhoneNumber = '',
+      _myNickname,
+      _otherNickname,
+      _chattingRoomID = '',
+      _myOrders,
+      _otherOrders;
+  var _enteredTime;
   bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   bool _myCompleted = false, _otherCompleted = false; // 나와 상대방의 반띵완료 클릭 여부 저장
-  String _myOrders, _otherOrders;
-  var _enteredTime;
   List<dynamic> blockList;
+  String _restaurant, _orderTime, _meetingPlace;
   AsyncSnapshot<DocumentSnapshot> userSnapshot,
       otherUserSnapshot,
       boardSnapshot;
@@ -271,6 +275,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   this.boardSnapshot = boardSnapshot;
                   chatReference =
                       boardSnapshot.data.reference.collection("messages");
+                  _restaurant = boardSnapshot.data['식당이름'];
+                  _orderTime = boardSnapshot.data['주문시간'];
+                  _meetingPlace = boardSnapshot.data['만날장소'];
                   // 사용자가 채팅방의 개설자인지 참여자인지 구분, 자신과 상대방 정보 저장
                   blockList = List.from(boardSnapshot.data['내보낸사용자']);
                   if (_userPhoneNumber == boardSnapshot.data['개설자핸드폰번호']) {
@@ -306,16 +313,22 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                           onPressed: () => Navigator.of(context)
                               .pushReplacement(MaterialPageRoute(
                                   builder: (context) => Background_Page()))),
-                      title: Text(
-                        _otherPhoneNumber == ''
-                            ? '참여중인 사람이 없어요 ㅜ.ㅜ'
-                            : !(_myCompleted || _otherCompleted)
-                                ? '반띵을 완료하면 우측상단 완료를 눌러주세요'
-                                : _myCompleted
-                                    ? '상대방의 완료를 기다리고 있어요!'
-                                    : '상대방이 반띵을 완료하였어요!',
-                        style: text_grey_15(),
-                      ),
+                      title: _otherPhoneNumber == ''
+                          ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_grey_15())
+                          : (_myCompleted && !_otherCompleted)
+                              ? Text(
+                                  '상대방의 완료를 기다리고 있어요!',
+                                  style: text_grey_15(),
+                                )
+                              : drawer_completeOrder(context),
+                      // : !(_myCompleted || _otherCompleted)
+                      //     ? drawer_completeOrder(context)
+                      //     : Text(
+                      //         _myCompleted
+                      //             ? '상대방의 완료를 기다리고 있어요!'
+                      //             : '상대방이 반띵을 완료하였어요!',
+                      //         style: text_grey_15(),
+                      //       ),
                       backgroundColor: Colors.white10,
                       elevation: 0,
                       iconTheme: IconThemeData(color: Colors.black),
@@ -455,60 +468,31 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Widget drawerAll(BuildContext context) {
+    // var time = DateTime.parse(_orderTime);
+    // Format format = Forma
     return Drawer(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: _otherPhoneNumber == ''
-              ? <Widget>[drawer_delete(context)]
-              : _userIsHost
-                  ? _myCompleted // 자신이 개설자이고 완료버튼을 누른 경우
-                      ? <Widget>[
-                          drawer_otherOrderCount(
-                              // 상대방의 반띵횟수 출력
-                              context)
-                        ]
-                      : <Widget>[
-                          drawer_otherOrderCount(
-                              // 상대방의 반띵횟수 출력
-                              context),
-                          Container(
-                            height: 40,
-                          ),
-                          drawer_completeOrder(
-                            // 완료하기 버튼 표시
-                            context,
-                          ),
-                          Container(
-                            height: 40,
-                          ),
-                          drawer_otherExit(
-                            // 상대방 내보내기 버튼 표시
-                            context,
-                          ),
-                        ]
-                  : _myCompleted // 자신이 참가자이고 완료버튼을 누른 경우
-                      ? <Widget>[
-                          drawer_otherOrderCount(
-                              // 상대방의 반띵횟수 출력
-                              context)
-                        ]
-                      : <Widget>[
-                          drawer_otherOrderCount(
-                              // 상대방의 반띵횟수 출력
-                              context),
-                          Container(
-                            height: 40,
-                          ),
-                          drawer_completeOrder(
-                            context,
-                          ),
-                          Container(
-                            height: 40,
-                          ),
-                          drawer_userExit(
-                            context,
-                          ) // 참가자 스스로 반띵 나가기 버튼
-                        ]),
+          children: <Widget>[
+            Text('주문할 음식점 : $_restaurant', style: text_grey_20()),
+            Text('주문할 시간 : $_orderTime', style: text_grey_20()),
+            Text('만날 장소 : $_meetingPlace', style: text_grey_20()),
+            _otherPhoneNumber == ''
+                ? drawer_delete(context) // 참가자가 없을 경우 => 게시물 삭제
+                : drawer_otherOrderCount(
+                    // 참가자가 있을 경우 => 상대방의 반띵횟수 출력
+                    context),
+            _userIsHost && !_myCompleted && !_otherCompleted
+                ? drawer_otherExit(
+                    // 자신이 개설자이고 자신과 상대방 둘다 완료버튼을 누르지 않은 경우 => 상대방 내보내기 버튼 표시
+                    context,
+                  )
+                : !_myCompleted && !_otherCompleted
+                    ? drawer_userExit(
+                        context,
+                      ) // 자신이 참가자이고 자신과 상대방 둘다 완료버튼을 누르지 않은 경우 => 참가자 스스로 반띵 나가기 버튼
+                    : Container()
+          ]),
     );
   }
 
@@ -547,28 +531,39 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 Icons.account_circle,
                 color: Colors.grey,
               ),
-              title: Text('${_otherNickname} 님의 반띵 횟수 : ${_otherOrders}',
+              title: Text('${_otherNickname}님의 반띵 횟수 : ${_otherOrders}',
                   style: text_grey_20()));
         });
   }
 
   Widget drawer_completeOrder(BuildContext context) {
     // 주문 완료
-    return ListTile(
-      leading: Icon(
-        Icons.restaurant,
-        color: Colors.grey,
+    return Center(
+        child: RaisedButton(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        // mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.restaurant,
+            color: Colors.pink,
+          ),
+          SizedBox(width: 10),
+          Text('반띵 완료하기', style: text_pink_20()),
+        ],
       ),
-      title: Text('반띵 완료하기', style: text_grey_20()),
-      onTap: () {
-        Navigator.of(context).pop();
+      onPressed: () {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => Survey_Page(
                   snapshot_board: boardSnapshot,
                   userIsHost: _userIsHost,
                 )));
       },
-    );
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.0),
+          side: BorderSide(color: Colors.pink)),
+    ));
   }
 
   Widget drawer_userExit(BuildContext context) {
@@ -582,7 +577,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       onTap: () {
         userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
         chatReference.add({
-          'text': '${_otherNickname} 님이 반띵을 취소하였습니다.',
+          'text': '${_otherNickname}님이 반띵을 취소하였습니다.',
           'sender_phone': '공지',
           'sender_nickname': "",
           'time': DateTime.now(),
@@ -618,7 +613,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         });
 
         chatReference.add({
-          'text': '${_otherNickname} 님을 내보냈습니다.',
+          'text': '${_otherNickname}님을 내보냈습니다.',
           'sender_phone': '공지',
           'sender_nickname': "",
           'time': DateTime.now(),

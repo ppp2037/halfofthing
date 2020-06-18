@@ -65,11 +65,11 @@ class _Background_PageState extends State<Background_Page> {
                 .collection('사용자')
                 .document(_userPhoneNumber)
                 .snapshots(),
-            builder: (context, snapshot_user) {
-              if (!snapshot_user.hasData) {
+            builder: (context, userSnapshot) {
+              if (!userSnapshot.hasData) {
                 return Container();
               }
-              _chattingRoomID = snapshot_user.data['채팅중인방ID'];
+              _chattingRoomID = userSnapshot.data['채팅중인방ID'];
               return Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: WillPopScope(

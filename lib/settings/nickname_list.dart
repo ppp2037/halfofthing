@@ -11,6 +11,7 @@ String randomNickname() {
   var random = Random();
 
   var nickName = adjList[random.nextInt(adjList.length)] +
+      " " +
       foodList[random.nextInt(foodList.length)];
   print("닉네임 : $nickName");
   return nickName;
