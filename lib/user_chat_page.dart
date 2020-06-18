@@ -28,7 +28,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   bool _myCompleted = false, _otherCompleted = false; // 나와 상대방의 반띵완료 클릭 여부 저장
   List<dynamic> blockList;
-  String _restaurant, _orderTime, _meetingPlace;
+  var _orderTime;
+  String _restaurant, _meetingPlace;
   AsyncSnapshot<DocumentSnapshot> userSnapshot,
       otherUserSnapshot,
       boardSnapshot;
@@ -296,8 +297,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     _otherNickname = boardSnapshot.data['개설자닉네임'];
                     _myCompleted = boardSnapshot.data['반띵완료_참가자'] as bool;
                     _otherCompleted = boardSnapshot.data['반띵완료_개설자'] as bool;
-                    _enteredTime = DateTime.parse(
-                        boardSnapshot.data['참가자참여시간'].toString());
+                    _enteredTime =
+                        ((boardSnapshot.data['참가자참여시간']) as Timestamp).toDate();
                   }
                   if (_myCompleted && _otherCompleted) {
                     // 둘다 반띵완료를 누른 경우
@@ -321,14 +322,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                   style: text_grey_15(),
                                 )
                               : drawer_completeOrder(context),
-                      // : !(_myCompleted || _otherCompleted)
-                      //     ? drawer_completeOrder(context)
-                      //     : Text(
-                      //         _myCompleted
-                      //             ? '상대방의 완료를 기다리고 있어요!'
-                      //             : '상대방이 반띵을 완료하였어요!',
-                      //         style: text_grey_15(),
-                      //       ),
                       backgroundColor: Colors.white10,
                       elevation: 0,
                       iconTheme: IconThemeData(color: Colors.black),
@@ -468,14 +461,15 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Widget drawerAll(BuildContext context) {
-    // var time = DateTime.parse(_orderTime);
-    // Format format = Forma
+    var format = DateFormat('MM월 dd일 HH:mm 주문예정');
+    DateTime date = _orderTime.toDate();
+    String orderTimeStr = format.format(date).toString();
     return Drawer(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('주문할 음식점 : $_restaurant', style: text_grey_20()),
-            Text('주문할 시간 : $_orderTime', style: text_grey_20()),
+            Text('$orderTimeStr', style: text_grey_20()),
             Text('만날 장소 : $_meetingPlace', style: text_grey_20()),
             _otherPhoneNumber == ''
                 ? drawer_delete(context) // 참가자가 없을 경우 => 게시물 삭제

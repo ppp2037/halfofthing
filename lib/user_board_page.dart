@@ -280,8 +280,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
   Widget _buildList(
       BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
-    snapshot.sort((a, b) =>
-        Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
+    snapshot.sort((a, b) => Record.fromSnapshot(a)
+        .orderTime
+        .compareTo(Record.fromSnapshot(b).orderTime));
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 20.0),
@@ -294,11 +295,14 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
+    // TODO: orderTime 타임스탬프 형식 -> 현재 시간과 비교해서 0시간 0분 후 주문예정 으로 출력 => StreamController() 사용
+
     // var now = DateTime.now();
-    // var format = DateFormat('HH시mm분');
-    // DateTime date = data_board.data['주문시간'].toDate;
+    var format = DateFormat('HH시mm분');
+    DateTime date = ((record.orderTime) as Timestamp).toDate();
     // var diff = date.difference(now);
     // var time = '';
+    String orderTimeStr = format.format(date).toString();
 
     // if (diff.inSeconds <= 0 ||
     //     diff.inSeconds > 0 && diff.inMinutes == 0 ||
@@ -313,10 +317,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
     //   }
     // }
 
-    String orderTimeStr = record.time.toString().substring(8, 10) +
-        "시 " +
-        record.time.toString().substring(10, 12) +
-        "분";
     return GestureDetector(
       onTap: () {
         if (record.completed) {
@@ -410,7 +410,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 String nickName = randomNickname();
                                 data_board.reference.updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
-                                  '참가자참여시간': DateTime.now().toString(),
+                                  '참가자참여시간': DateTime.now(),
                                   '참가자닉네임': nickName,
                                 });
                                 data_board.reference
@@ -525,9 +525,8 @@ Widget popUpDialog(BuildContext context, String text) {
 
 class Record {
   final String phoneNumber, phoneNumber2;
-  final String restaurant, time, location, boardname, meetingPlace;
-  final String enteredTime; // 참가자가 참여를 시작한 시간
-  final String createdTime; // 생성시간
+  final String restaurant, location, boardname, meetingPlace;
+  var orderTime, enteredTime, createdTime;
   final bool completed; // 완료된 게시물인지
   final DocumentReference reference;
   final List<dynamic> blockedList;
@@ -544,7 +543,7 @@ class Record {
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
-        time = map['주문시간'],
+        orderTime = map['주문시간'],
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
@@ -558,5 +557,5 @@ class Record {
 
   @override
   String toString() =>
-      "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$meetingPlace:$boardname>";
+      "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname>";
 }
