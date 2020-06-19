@@ -40,7 +40,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
-        // print("UserPhone : $_userPhoneNumber");
       });
     })();
   }
@@ -48,7 +47,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   Widget timeStampText(DocumentSnapshot documentSnapshot) {
     var now = DateTime.now();
     var format = DateFormat('HH:mm');
-    DateTime date = documentSnapshot.data['time'].toDate();
+    DateTime date = (documentSnapshot.data['time']).toDate();
     var diff = date.difference(now);
     var time = '';
 
@@ -120,7 +119,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
     // 상대방의 말풍선
-    documentSnapshot.reference.updateData({'delivered': true});
+    // TODO:
+    Firestore.instance.runTransaction((transaction) async {
+      await transaction.update(documentSnapshot.reference, {'delivered': true});
+    });
+
     return <Widget>[
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +158,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   List<Widget> generateNoticeLayout(DocumentSnapshot documentSnapshot) {
     // 공지 말풍선
-    documentSnapshot.reference.updateData({'delivered': true});
+    documentSnapshot.reference.updateData({'delivered': false});
     return <Widget>[
       new Row(children: [
         Card(
@@ -217,7 +220,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       // 참가자인 경우 : 참여시간 이후의 메세지만 출력
       return snapshot.data.documents
           .map<Widget>((doc) =>
-              (doc.data['time'].toDate().difference(_enteredTime).inSeconds) > 0
+              ((doc.data['time']).toDate().difference(_enteredTime).inSeconds) >
+                      0
+
                   // 메세지 받은 시간 - 참여시간 > 0 인 경우에만 출력
                   ? doc.data['sender_phone'] != _userPhoneNumber
                       ?
@@ -387,7 +392,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                           _isWritting = messageText.length > 0;
                         });
                       },
-                      onSubmitted: _sendText,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                       ),
@@ -397,29 +401,33 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               Icons.send,
               color: _isWritting ? Colors.pink : Colors.grey,
             ),
-            onPressed:
-                _isWritting ? () => _sendText(_textController.text) : null,
+            onPressed: _isWritting
+                ? () => onSendMessage(_textController.text, 0)
+                : null,
           ),
         ],
       ),
     );
   }
 
-  Future<Null> _sendText(String text) async {
-    print('send start');
+  void onSendMessage(String text, int type) {
+    // type: 0 = 일반 메세지, 1 = 공지 메세지
     if (text.isNotEmpty) {
       _textController.clear();
-      chatReference.add({
-        'text': text,
-        'sender_phone': _userPhoneNumber,
-        'sender_nickname': _myNickname,
-        'time': DateTime.now(),
-        'delivered': false,
-      }).then((documentReference) {
-        setState(() {
-          _isWritting = false;
-        });
-      }).catchError((e) {});
+      var documentReference = chatReference
+          .document(DateTime.now().millisecondsSinceEpoch.toString());
+      Firestore.instance.runTransaction((transaction) async {
+        await transaction.set(
+          documentReference,
+          {
+            'text': text,
+            'sender_phone': type == 1 ? '공지' : _userPhoneNumber,
+            'sender_nickname': type == 1 ? '' : _myNickname,
+            'time': DateTime.now(),
+            'delivered': false,
+          },
+        );
+      });
     }
   }
 
@@ -539,7 +547,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         child: RaisedButton(
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        // mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.restaurant,
@@ -573,12 +580,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       title: Text('다른 반띵하기', style: text_grey_20()),
       onTap: () {
         userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
-        chatReference.add({
-          'text': '${_otherNickname}님이 반띵을 취소하였습니다.',
-          'sender_phone': '공지',
-          'sender_nickname': "",
-          'time': DateTime.now(),
-          'delivered': true,
+        setState(() {
+          onSendMessage('${_otherNickname}님이 반띵을 취소하였습니다.', 1);
         });
         boardSnapshot.data.reference.updateData({
           '참가자핸드폰번호': '',
@@ -608,13 +611,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           '참가자닉네임': '',
           '내보낸사용자': FieldValue.arrayUnion(blockList)
         });
-
-        chatReference.add({
-          'text': '${_otherNickname}님을 내보냈습니다.',
-          'sender_phone': '공지',
-          'sender_nickname': "",
-          'time': DateTime.now(),
-          'delivered': true,
+        setState(() {
+          onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
         });
         // 참가자를 내보냈을 때 :
         // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
@@ -626,6 +624,19 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           ds.documents
               .forEach((doc) => doc.reference.updateData({'delivered': true}));
         });
+        // TODO:
+        // chatReference
+        //     .where('delivered', isEqualTo: false)
+        //     .getDocuments()
+        //     .then((QuerySnapshot ds) {
+        //   print("delivered 값 변경");
+        //   ds.documents.forEach((doc) {
+        //     Firestore.instance.runTransaction((transaction) async {
+        //       await transaction.update(doc.reference, {'delivered': true});
+        //     });
+        //   });
+        // });
+
         Navigator.pop(context);
       },
     );
