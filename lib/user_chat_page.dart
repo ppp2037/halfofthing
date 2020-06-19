@@ -119,11 +119,14 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
     // 상대방의 말풍선
-    // TODO:
-    Firestore.instance.runTransaction((transaction) async {
-      await transaction.update(documentSnapshot.reference, {'delivered': true});
-    });
-
+    // TODO: 모든 메세지가 아니라 delivered==false인 메세지만 업데이트해야 함.
+    if (documentSnapshot.data['delivered'] as bool == false) {
+      print("delivered update");
+      Firestore.instance.runTransaction((transaction) async {
+        await transaction
+            .update(documentSnapshot.reference, {'delivered': true});
+      });
+    }
     return <Widget>[
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,6 +364,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                                   borderRadius: BorderRadius.circular(20)),
                               color: Colors.white,
                               child: _buildTextComposer()),
+                          Container(
+                            height: 20,
+                          )
                         ],
                       ),
                     ),
@@ -376,26 +382,27 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       child: Row(
         children: <Widget>[
           Flexible(
-              child: _userIsHost && _otherPhoneNumber == null
-                  // 내가 개설한 채팅방에 참여중인 사람이 없으면 텍스트 입력 disable
-                  ? TextField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                    )
-                  : TextField(
-                      style: text_black_15(),
-                      controller: _textController,
-                      onChanged: (String messageText) {
-                        setState(() {
-                          _isWritting = messageText.length > 0;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                    )),
+            child: _userIsHost && _otherPhoneNumber == null
+                // 내가 개설한 채팅방에 참여중인 사람이 없으면 텍스트 입력 disable
+                ? TextField(
+                    enabled: false,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                    ),
+                  )
+                : TextField(
+                    style: text_black_15(),
+                    controller: _textController,
+                    onChanged: (String messageText) {
+                      setState(() {
+                        _isWritting = messageText.length > 0;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                    ),
+                  ),
+          ),
           IconButton(
             icon: Icon(
               Icons.send,
@@ -617,10 +624,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         // 참가자를 내보냈을 때 :
         // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
         chatReference
+            .where('sender_phone', isEqualTo: _userPhoneNumber)
             .where('delivered', isEqualTo: false)
             .getDocuments()
             .then((QuerySnapshot ds) {
-          print("delivered 값 변경");
           ds.documents
               .forEach((doc) => doc.reference.updateData({'delivered': true}));
         });
