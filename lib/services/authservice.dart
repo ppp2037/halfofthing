@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:halfofthing/screens/dashboard.dart';
-import 'package:halfofthing/screens/loginpage.dart';
+import 'package:halfofthing/screens/validation_complite.dart';
+import 'package:halfofthing/screens/validation_page.dart';
 
 class AuthService {
 

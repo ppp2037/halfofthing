@@ -6,7 +6,7 @@ import 'package:search_widget/search_widget.dart';
 
 import 'settings/make_password_encryption.dart';
 import 'settings/university_list.dart';
-import 'screens/loginpage.dart';
+import 'screens/validation_page.dart';
 import 'services/authservice.dart';
 
 class Add_Account_Page extends StatefulWidget {
