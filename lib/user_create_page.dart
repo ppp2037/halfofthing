@@ -209,7 +209,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                                   isForce2Digits: true,
                                   onTimeChange: (time) {
                                     setState(() {
-                                      _orderTime = Timestamp.fromDate(time);
+                                      _orderTime = time;
                                     });
                                   },
                                 ),
@@ -226,12 +226,17 @@ class _User_Create_pageState extends State<User_Create_page> {
                           var _userOrderId =
                               DateFormat('yyyyMMddHHmmss').format(_currentTime);
                           var _boardID = _userPhoneNumber + '_' + _userOrderId;
+                          var now = DateTime.now();
+                          // 현재 시각 - time 시각 >0 이면 다음날로 설정
+                          if (now.hour > _orderTime.hour) {
+                            _orderTime = _orderTime.add(new Duration(days: 1));
+                          }
                           Firestore.instance
                               .collection('게시판')
                               .document(_userPhoneNumber + '_' + _userOrderId)
                               .setData({
                             '식당이름': _restaurant,
-                            '주문시간': _orderTime,
+                            '주문시간': Timestamp.fromDate(_orderTime),
                             '위치': _userLocation,
                             '만날장소': _meetingPlace,
                             '개설자핸드폰번호': _userPhoneNumber,

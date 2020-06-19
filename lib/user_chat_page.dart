@@ -476,12 +476,15 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 : drawer_otherOrderCount(
                     // 참가자가 있을 경우 => 상대방의 반띵횟수 출력
                     context),
-            _userIsHost && !_myCompleted && !_otherCompleted
+            _userIsHost &&
+                    !_myCompleted &&
+                    !_otherCompleted &&
+                    _otherPhoneNumber != ''
                 ? drawer_otherExit(
                     // 자신이 개설자이고 자신과 상대방 둘다 완료버튼을 누르지 않은 경우 => 상대방 내보내기 버튼 표시
                     context,
                   )
-                : !_myCompleted && !_otherCompleted
+                : !_myCompleted && !_otherCompleted && _otherPhoneNumber != ''
                     ? drawer_userExit(
                         context,
                       ) // 자신이 참가자이고 자신과 상대방 둘다 완료버튼을 누르지 않은 경우 => 참가자 스스로 반띵 나가기 버튼

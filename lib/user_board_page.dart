@@ -13,6 +13,7 @@ import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -24,10 +25,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
   String _userLocation;
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
-
+  DateTime currentTime;
+  // Timer _timer;
   @override
   void initState() {
     super.initState();
+    currentTime = DateTime.now();
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
@@ -36,6 +39,19 @@ class _User_Board_PageState extends State<User_Board_Page> {
       });
     })();
   }
+
+  // void startTimer() {
+  //   const tenMin = Duration(minutes: 10);
+  //   _timer = new Timer.periodic(
+  //     tenMin,
+  //     (Timer timer) => setState(
+  //       () {
+  //         print("time past");
+  //         currentTime = currentTime.add(new Duration(minutes: 10));
+  //       },
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +286,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
                     ],
                   );
+                // startTimer();
                 return _buildList(
                     context, snapshot_board.data.documents, _userPhoneNumber);
               },
@@ -295,27 +312,20 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
-    // TODO: orderTime 타임스탬프 형식 -> 현재 시간과 비교해서 0시간 0분 후 주문예정 으로 출력 => StreamController() 사용
 
-    // var now = DateTime.now();
-    var format = DateFormat('HH시mm분');
-    DateTime date = ((record.orderTime) as Timestamp).toDate();
-    // var diff = date.difference(now);
-    // var time = '';
-    String orderTimeStr = format.format(date).toString();
-
-    // if (diff.inSeconds <= 0 ||
-    //     diff.inSeconds > 0 && diff.inMinutes == 0 ||
-    //     diff.inMinutes > 0 && diff.inHours == 0 ||
-    //     diff.inHours > 0 && diff.inDays == 0) {
-    //   time = '' + format.format(date);
-    // } else {
-    //   if (diff.inDays == 1) {
-    //     time = '어제 ' + format.format(date);
-    //   } else {
-    //     time = diff.inDays.toString() + '일 전';
-    //   }
-    // }
+    DateTime orderDate = ((record.orderTime) as Timestamp).toDate();
+    var diff = orderDate.difference(currentTime);
+    var remainTime = '';
+    if (currentTime.isAfter(orderDate)) {
+      remainTime = '지난 주문';
+    } else {
+      if (diff.inHours > 0) {
+        remainTime = remainTime + '${(diff.inHours).toString()}시간 ';
+      }
+      // 10분 단위로 계산
+      var minutes = ((diff.inMinutes % 60) ~/ 10) * 10;
+      remainTime = remainTime + '${minutes.toString()}분 후 주문예정 ';
+    }
 
     return GestureDetector(
       onTap: () {
@@ -370,7 +380,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         Container(
                           height: 20,
                         ),
-                        Text('시간 : ' + orderTimeStr, style: text_pink_20()),
+                        Text(remainTime, style: text_pink_20()),
                         Container(
                           height: 20,
                         ),
@@ -499,7 +509,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
+                      Text(remainTime + '\t\t\t' + record.meetingPlace,
                           style: text_grey_20()),
                     ],
                   ),
