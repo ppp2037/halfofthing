@@ -349,7 +349,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
       } else {
         orderTime = orderTime + ' 오전';
       }
-      var format = DateFormat(' hh시 mm분 주문예정');
+      var format = DateFormat(' h시 mm분 주문예정');
       orderTime = orderTime + format.format(orderDate);
     }
 

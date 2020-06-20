@@ -46,7 +46,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   Widget timeStampText(DocumentSnapshot documentSnapshot) {
     var now = DateTime.now();
-    var format = DateFormat('HH:mm');
+    var format = DateFormat('H:mm');
     DateTime date = (documentSnapshot.data['time']).toDate();
     var diff = date.difference(now);
     var time = '';
@@ -396,10 +396,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       child: Row(
         children: <Widget>[
           Flexible(
-            child: _userIsHost && _otherPhoneNumber == null
+            child: _userIsHost && _otherPhoneNumber == ''
                 // 내가 개설한 채팅방에 참여중인 사람이 없으면 텍스트 입력 disable
                 ? TextField(
                     enabled: false,
+                    controller: _textController,
                     decoration: InputDecoration(
                       border: InputBorder.none,
                     ),
@@ -420,7 +421,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           IconButton(
             icon: Icon(
               Icons.send,
-              color: _isWritting ? Colors.pink : Colors.grey,
+              color: _isWritting && _otherPhoneNumber != ''
+                  ? Colors.pink
+                  : Colors.grey,
             ),
             onPressed: _textController.text != ''
                 ? () => onSendMessage(_textController.text, 0)
@@ -492,9 +495,22 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Widget drawerAll(BuildContext context) {
-    var format = DateFormat('MM월 dd일 HH:mm 주문예정');
+    String orderTimeStr = '';
     DateTime date = _orderTime.toDate();
-    String orderTimeStr = format.format(date).toString();
+    var now = DateTime.now();
+    var diff = now.difference(date);
+    if (diff.inDays > 0) {
+      orderTimeStr = orderTimeStr + '내일';
+    } else {
+      orderTimeStr = orderTimeStr + '오늘';
+    }
+    if (date.hour > 12) {
+      orderTimeStr = orderTimeStr + ' 오후';
+    } else {
+      orderTimeStr = orderTimeStr + ' 오전';
+    }
+    var format = DateFormat(' h:mm 주문예정');
+    orderTimeStr = orderTimeStr + format.format(date);
     return Drawer(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
