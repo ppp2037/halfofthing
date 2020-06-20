@@ -14,7 +14,6 @@ import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -27,7 +26,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
   DateTime currentTime;
-  // Timer _timer;
   @override
   void initState() {
     super.initState();
@@ -40,19 +38,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
       });
     })();
   }
-
-  // void startTimer() {
-  //   const tenMin = Duration(minutes: 10);
-  //   _timer = new Timer.periodic(
-  //     tenMin,
-  //     (Timer timer) => setState(
-  //       () {
-  //         print("time past");
-  //         currentTime = currentTime.add(new Duration(minutes: 10));
-  //       },
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +249,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                           height: 20,
                         ),
                         Text(
-                          'Copyright © 2020 gauntlet Inc.',
+                          'Copyright © 2020 NomadCAT Inc.',
                           style: text_grey_10(),
                         ),
                         Container(
@@ -285,40 +270,114 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   .collection('게시판')
                   .where('위치', isEqualTo: _userLocation)
                   .snapshots(),
-              builder: (context, snapshot_board) {
-                if (!snapshot_board.hasData)
+              builder: (context, boardSnapshot) {
+                if (!boardSnapshot.hasData)
                   return Center(child: CircularProgressIndicator());
-                if (snapshot_board.data.documents.isEmpty)
+                if (boardSnapshot.data.documents.isEmpty)
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text('반띵중인 사람이 없어요', style: text_grey_15()),
                       Container(
-                        height: 20,
+                        height: 15,
                       ),
                       Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
                     ],
                   );
-                // startTimer();
-                return _buildList(
-                    context, snapshot_board.data.documents, _userPhoneNumber);
+                return StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                        .collection('완료내역')
+                        .where('위치', isEqualTo: _userLocation)
+                        .snapshots(),
+                    builder: (context, completedSnapshot) {
+                      if (!completedSnapshot.hasData) {
+                        return _buildList(context, boardSnapshot.data.documents,
+                            _userPhoneNumber, null);
+                      }
+                      return _buildList(context, boardSnapshot.data.documents,
+                          _userPhoneNumber, completedSnapshot.data.documents);
+                    });
               },
             ),
           );
         });
   }
 
-  Widget _buildList(
-      BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
-    snapshot.sort((a, b) => Record.fromSnapshot(a)
+  Widget _buildList(BuildContext context, List<DocumentSnapshot> boardSnapshot,
+      _userPhoneNumber, List<DocumentSnapshot> completedSnapshot) {
+    boardSnapshot.sort((a, b) => Record.fromSnapshot(a)
         .orderTime
         .compareTo(Record.fromSnapshot(b).orderTime));
-
+    var itemList = boardSnapshot
+        .map((data) => _buildListItem(context, data, _userPhoneNumber))
+        .toList();
+    if (completedSnapshot != null) {
+      var completedItemList = completedSnapshot
+          .map((data) => _buildCompletedListItem(context, data))
+          .toList();
+      itemList.addAll(completedItemList);
+    }
     return ListView(
       padding: const EdgeInsets.only(bottom: 20.0),
-      children: snapshot
-          .map((data) => _buildListItem(context, data, _userPhoneNumber))
-          .toList(),
+      children: itemList,
+    );
+  }
+
+  Widget _buildCompletedListItem(
+      BuildContext context, DocumentSnapshot completedData) {
+    return GestureDetector(
+      onTap: () {
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              Future.delayed(Duration(seconds: 1), () {
+                Navigator.pop(context);
+              });
+              return popUpDialog(context, "이미 반띵이 완료된 게시물이에요.");
+            });
+      },
+      child: ListTile(
+        title: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        completedData.data['식당이름'],
+                        style: text_grey_20(),
+                      ),
+                      Text(
+                        '반띵완료',
+                        style: text_grey_15(),
+                      )
+                    ],
+                  ),
+                  Container(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.place,
+                        color: Colors.grey,
+                      ),
+                      Container(width: 5),
+                      Text(completedData.data['만날장소'], style: text_grey_15())
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              thickness: 1,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -327,44 +386,24 @@ class _User_Board_PageState extends State<User_Board_Page> {
     final record = Record.fromSnapshot(data_board);
     DateTime orderDate = ((record.orderTime) as Timestamp).toDate();
     var diff = orderDate.difference(currentTime);
-    var remainTime = '', orderTime = '';
-    if (currentTime.isAfter(orderDate)) {
-      remainTime = '지난 주문';
-    } else {
-      if (diff.inHours > 0) {
-        remainTime = remainTime + '${(diff.inHours).toString()}시간 ';
-      }
-      // 10분 단위로 계산
-      var minutes = ((diff.inMinutes % 60) ~/ 10) * 10;
-      remainTime = remainTime + '${minutes.toString()}분 후 주문예정 ';
+    var orderTime = '';
 
-      // 정확한 시간으로 계산
-      if (diff.inDays > 0) {
-        orderTime = orderTime + '내일';
-      } else {
-        orderTime = orderTime + '오늘';
-      }
-      if (orderDate.hour > 12) {
-        orderTime = orderTime + ' 오후';
-      } else {
-        orderTime = orderTime + ' 오전';
-      }
-      var format = DateFormat(' h시 mm분 주문예정');
-      orderTime = orderTime + format.format(orderDate);
+    if (diff.inDays > 0) {
+      orderTime = orderTime + '내일';
+    } else {
+      orderTime = orderTime + '오늘';
     }
+    if (orderDate.hour > 12) {
+      orderTime = orderTime + ' 오후';
+    } else {
+      orderTime = orderTime + ' 오전';
+    }
+    var format = DateFormat(' h:mm 주문예정');
+    orderTime = orderTime + format.format(orderDate);
 
     return GestureDetector(
       onTap: () {
-        if (record.completed) {
-          return showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                Future.delayed(Duration(seconds: 2), () {
-                  Navigator.pop(context);
-                });
-                return popUpDialog(context, "이미 반띵이 완료된 게시물이예요.");
-              });
-        } else if (_userPhoneNumber == record.phoneNumber ||
+        if (_userPhoneNumber == record.phoneNumber ||
             _userPhoneNumber == record.phoneNumber2) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
@@ -377,22 +416,22 @@ class _User_Board_PageState extends State<User_Board_Page> {
               builder: (BuildContext context) {
                 if (_userIsChatting) {
                   // 사용자가 현재 채팅중일 경우 => 입장 불가 Dialog 띄우기
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
                   return popUpDialog(context, "현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요");
                 } else if (record.phoneNumber2 != '') {
                   // 다른 사람이 참여중인 게시물인 경우 (반띵중)
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "이미 반띵중인 게시물이예요.");
+                  return popUpDialog(context, "이미 반띵중인 게시물이에요.");
                 } else if (record.blockedList.contains(_userPhoneNumber)) {
                   // 이미 내보낸 사용자인 경우 입장 불가
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "님 차단당함 ^^");
+                  return popUpDialog(context, "들어갈 수 없는 게시물이에요ㅜ.ㅜ");
                 } else {
                   // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
                   return AlertDialog(
@@ -505,28 +544,28 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         record.restaurant,
                         style: text_grey_20(),
                       ),
-                      record.completed
+                      _userPhoneNumber == record.phoneNumber
                           ? Text(
-                              '완료된 게시글',
-                              style: text_grey_15(),
+                              '내 주문',
+                              style: text_red_15_bold(),
                             )
-                          : _userPhoneNumber == record.phoneNumber
+                          : _userPhoneNumber == record.phoneNumber2
                               ? Text(
-                                  '나의 게시글',
-                                  style: text_grey_15(),
+                                  '내가 참여중',
+                                  style: text_red_15_bold(),
                                 )
-                              : _userPhoneNumber == record.phoneNumber2
-                                  ? Text(
-                                      '내가 참여중',
-                                      style: text_grey_15(),
-                                    )
-                                  : record.phoneNumber2 != ''
-                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                                      ? Text(
+                              : record.phoneNumber2 != ''
+                                  // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                  ? Card(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(7.0),
+                                        child: Text(
                                           '반띵중',
                                           style: text_grey_15(),
-                                        )
-                                      : Container(),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(),
                     ],
                   ),
                   Container(
@@ -535,10 +574,26 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      record.completed
-                          ? Text(record.meetingPlace, style: text_grey_20())
-                          : Text(remainTime + '\t\t\t' + record.meetingPlace,
-                              style: text_grey_20()),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.place,
+                            color: Colors.grey,
+                          ),
+                          Container(width: 5),
+                          Text(record.meetingPlace, style: text_grey_15())
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            color: Colors.grey,
+                          ),
+                          Container(width: 5),
+                          Text(orderTime, style: text_grey_15())
+                        ],
+                      )
                     ],
                   ),
                 ],
@@ -557,7 +612,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
 Widget popUpDialog(BuildContext context, String text) {
   return AlertDialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-    content: SizedBox(width: 150, height: 80, child: new Text(text)),
+    content: SizedBox(width: 150, height: 50, child: new Text(text)),
   );
 }
 
@@ -565,7 +620,6 @@ class Record {
   final String phoneNumber, phoneNumber2;
   final String restaurant, location, boardname, meetingPlace;
   var orderTime, enteredTime, createdTime;
-  final bool completed; // 완료된 게시물인지
   final DocumentReference reference;
   final List<dynamic> blockedList;
 
@@ -587,7 +641,6 @@ class Record {
         boardname = map['게시판이름'],
         enteredTime = map['참가자참여시간'],
         createdTime = map['생성시간'],
-        completed = (map['반띵완료_참가자'] as bool) && (map['반띵완료_개설자'] as bool),
         blockedList = map['내보낸사용자'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)

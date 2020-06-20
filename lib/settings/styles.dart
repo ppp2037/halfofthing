@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-
 TextStyle text_black_10() {
   return TextStyle(
     color: Colors.black,
@@ -147,5 +146,13 @@ TextStyle text_pink_40() {
   return TextStyle(
     color: Colors.pink,
     fontSize: 40,
+  );
+}
+
+TextStyle text_red_15_bold() {
+  return TextStyle(
+    color: Colors.red[300],
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
   );
 }

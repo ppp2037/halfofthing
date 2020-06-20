@@ -18,6 +18,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
   String _userPhoneNumber,
+      _userLocation,
       _otherPhoneNumber = '',
       _myNickname,
       _otherNickname,
@@ -40,6 +41,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
+        _userLocation = prefs.getString('prefsLocation');
       });
     })();
   }
@@ -324,8 +326,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                       '식당이름': _restaurant,
                       '주문시간': _orderTime,
                       '만날장소': _meetingPlace,
-                      '사용자': _users
+                      '사용자': _users,
+                      '위치': _userLocation
                     });
+                    boardSnapshot.data.reference.delete();
                     return Container();
                   }
                   return Scaffold(
@@ -515,9 +519,27 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('주문할 음식점 : $_restaurant', style: text_grey_20()),
-            Text('$orderTimeStr', style: text_grey_20()),
-            Text('만날 장소 : $_meetingPlace', style: text_grey_20()),
+            ListTile(
+              leading: Icon(Icons.restaurant),
+              title: Text(
+                _restaurant,
+                style: text_grey_20(),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.access_time),
+              title: Text(
+                orderTimeStr,
+                style: text_grey_15(),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.place),
+              title: Text(
+                '만날 장소 : $_meetingPlace',
+                style: text_grey_15(),
+              ),
+            ),
             _otherPhoneNumber == ''
                 ? drawer_delete(context) // 참가자가 없을 경우 => 게시물 삭제
                 : drawer_otherOrderCount(
@@ -576,7 +598,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 color: Colors.grey,
               ),
               title: Text('${_otherNickname}님의 반띵 횟수 : ${_otherOrders}',
-                  style: text_grey_20()));
+                  style: text_grey_15()));
         });
   }
 
