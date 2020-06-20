@@ -7,6 +7,7 @@ import 'background_page.dart';
 import 'settings/styles.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'survey_page.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class User_Chat_Page extends StatefulWidget {
   @override
@@ -85,15 +86,17 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 나의 말풍선
     return <Widget>[
       Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          Text(documentSnapshot.data['sender_nickname'],
-              style: text_black_15()),
+          Text(
+            documentSnapshot.data['sender_nickname'],
+            style: text_black_15(),
+          ),
           Container(
             height: 5,
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               timeStampText(documentSnapshot),
               deliveredIcon(documentSnapshot),
@@ -101,17 +104,15 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 color: Colors.pink,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  child: Center(
-                    child: Text(
-                      documentSnapshot.data['text'],
-                      style: text_white_15(),
-                    ),
+                child: Container(
+                  constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    documentSnapshot.data['text'],
+                    style: text_white_15(),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],
@@ -143,14 +144,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               color: Colors.white,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Center(
-                  child: Text(
-                    documentSnapshot.data['text'],
-                    style: text_black_15(),
-                  ),
+              child: Container(
+                constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  documentSnapshot.data['text'],
+                  style: text_black_15(),
                 ),
               ),
             ),

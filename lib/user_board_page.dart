@@ -352,7 +352,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       ),
                       Text(
                         '반띵완료',
-                        style: text_grey_15(),
+                        style: text_lightGrey_13(),
                       )
                     ],
                   ),
@@ -363,7 +363,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     children: [
                       Icon(
                         Icons.place,
-                        color: Colors.grey,
+                        color: Colors.grey[400],
                       ),
                       Container(width: 5),
                       Text(completedData.data['만날장소'], style: text_grey_15())
@@ -400,11 +400,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
     }
     var format = DateFormat(' h:mm 주문예정');
     orderTime = orderTime + format.format(orderDate);
+    var _myRoom = false;
+    if (_userPhoneNumber == record.phoneNumber ||
+        _userPhoneNumber == record.phoneNumber2) _myRoom = true;
 
     return GestureDetector(
       onTap: () {
-        if (_userPhoneNumber == record.phoneNumber ||
-            _userPhoneNumber == record.phoneNumber2) {
+        if (_myRoom) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
           // Navigator.of(context).pop();
@@ -419,7 +421,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요");
+                  return popUpDialog(
+                      context, "현재 진행중인 채팅방이 있기 때문에\n입장하실 수 없어요");
                 } else if (record.phoneNumber2 != '') {
                   // 다른 사람이 참여중인 게시물인 경우 (반띵중)
                   Future.delayed(Duration(seconds: 1), () {
@@ -533,70 +536,69 @@ class _User_Board_PageState extends State<User_Board_Page> {
       child: ListTile(
         title: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        record.restaurant,
-                        style: text_grey_20(),
-                      ),
-                      _userPhoneNumber == record.phoneNumber
-                          ? Text(
-                              '내 주문',
-                              style: text_red_15_bold(),
-                            )
-                          : _userPhoneNumber == record.phoneNumber2
-                              ? Text(
-                                  '내가 참여중',
-                                  style: text_red_15_bold(),
-                                )
-                              : record.phoneNumber2 != ''
-                                  // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                                  ? Card(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(7.0),
-                                        child: Text(
-                                          '반띵중',
-                                          style: text_grey_15(),
-                                        ),
-                                      ),
-                                    )
-                                  : Container(),
-                    ],
-                  ),
-                  Container(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.place,
-                            color: Colors.grey,
-                          ),
-                          Container(width: 5),
-                          Text(record.meetingPlace, style: text_grey_15())
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            color: Colors.grey,
-                          ),
-                          Container(width: 5),
-                          Text(orderTime, style: text_grey_15())
-                        ],
-                      )
-                    ],
-                  ),
-                ],
+            Ink(
+              // color: Colors.amber[50],
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          record.restaurant,
+                          style: text_grey_20(),
+                        ),
+                        _userPhoneNumber == record.phoneNumber
+                            ? Text(
+                                'My 주문',
+                                style: text_red_15_bold(),
+                              )
+                            : _userPhoneNumber == record.phoneNumber2
+                                ? Text(
+                                    '내가 참여중',
+                                    style: text_red_15_bold(),
+                                  )
+                                : record.phoneNumber2 != ''
+                                    // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                    ? Text(
+                                        '반띵중',
+                                        style: text_green_15_bold(),
+                                      )
+                                    : Container(),
+                      ],
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.place,
+                              color: Colors.grey[400],
+                            ),
+                            Container(width: 5),
+                            Text(record.meetingPlace, style: text_grey_15())
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.grey[400],
+                            ),
+                            Container(width: 5),
+                            Text(orderTime, style: text_grey_15())
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Divider(
@@ -611,8 +613,16 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
 Widget popUpDialog(BuildContext context, String text) {
   return AlertDialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-    content: SizedBox(width: 150, height: 50, child: new Text(text)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+    content: SizedBox(
+        width: 270,
+        height: 50,
+        child: Center(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+          ),
+        )),
   );
 }
 
