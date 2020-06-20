@@ -119,9 +119,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
     // 상대방의 말풍선
-    // TODO: 모든 메세지가 아니라 delivered==false인 메세지만 업데이트해야 함.
     if (documentSnapshot.data['delivered'] as bool == false) {
-      print("delivered update");
+      print(
+          "delivered update : ${documentSnapshot.data['text']} from ${documentSnapshot.data['sender_phone']}");
       Firestore.instance.runTransaction((transaction) async {
         await transaction
             .update(documentSnapshot.reference, {'delivered': true});
@@ -408,7 +408,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               Icons.send,
               color: _isWritting ? Colors.pink : Colors.grey,
             ),
-            onPressed: _isWritting
+            onPressed: _textController.text != ''
                 ? () => onSendMessage(_textController.text, 0)
                 : null,
           ),
@@ -434,6 +434,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             'delivered': false,
           },
         );
+        print("onSendMessage - transaction");
       });
     }
   }
@@ -610,40 +611,33 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('참가자 내보내기', style: text_grey_20()),
       onTap: () {
-        otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
-        blockList.add(_otherPhoneNumber);
-        boardSnapshot.data.reference.updateData({
-          '참가자핸드폰번호': '',
-          '참가자참여시간': '',
-          '참가자닉네임': '',
-          '내보낸사용자': FieldValue.arrayUnion(blockList)
-        });
         setState(() {
-          onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
-        });
-        // 참가자를 내보냈을 때 :
-        // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
-        chatReference
-            .where('sender_phone', isEqualTo: _userPhoneNumber)
-            .where('delivered', isEqualTo: false)
-            .getDocuments()
-            .then((QuerySnapshot ds) {
-          ds.documents
-              .forEach((doc) => doc.reference.updateData({'delivered': true}));
-        });
-        // TODO:
-        // chatReference
-        //     .where('delivered', isEqualTo: false)
-        //     .getDocuments()
-        //     .then((QuerySnapshot ds) {
-        //   print("delivered 값 변경");
-        //   ds.documents.forEach((doc) {
-        //     Firestore.instance.runTransaction((transaction) async {
-        //       await transaction.update(doc.reference, {'delivered': true});
-        //     });
-        //   });
-        // });
+          // 참가자를 내보냈을 때 :
+          // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
+          chatReference
+              .where('sender_phone', isEqualTo: _userPhoneNumber)
+              .where('delivered', isEqualTo: false)
+              .getDocuments()
+              .then((QuerySnapshot ds) {
+            ds.documents.forEach((doc) {
+              Firestore.instance.runTransaction((transaction) async {
+                await transaction.update(doc.reference, {'delivered': true});
+                print("참가자 내보냄 - 내 메세지 delivered 값 변경");
+              });
+            });
 
+            blockList.add(_otherPhoneNumber);
+            onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
+
+            boardSnapshot.data.reference.updateData({
+              '참가자핸드폰번호': '',
+              '참가자참여시간': '',
+              '참가자닉네임': '',
+              '내보낸사용자': FieldValue.arrayUnion(blockList)
+            });
+            otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+          });
+        });
         Navigator.pop(context);
       },
     );
