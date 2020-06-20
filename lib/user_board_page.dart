@@ -4,6 +4,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
+import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
@@ -71,6 +72,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             appBar: AppBar(
               iconTheme: IconThemeData(color: Colors.black),
               backgroundColor: Colors.white10,
+              brightness: Brightness.light,
               elevation: 0,
               title: Text(
                 '반띵',
@@ -153,6 +155,17 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => User_Settings_Howto_Page()));
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.history),
+                    title: Text(
+                      '주문내역',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_History_Page()));
                     },
                   ),
                   ListTile(
@@ -312,10 +325,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
-
     DateTime orderDate = ((record.orderTime) as Timestamp).toDate();
     var diff = orderDate.difference(currentTime);
-    var remainTime = '';
+    var remainTime = '', orderTime = '';
     if (currentTime.isAfter(orderDate)) {
       remainTime = '지난 주문';
     } else {
@@ -325,6 +337,20 @@ class _User_Board_PageState extends State<User_Board_Page> {
       // 10분 단위로 계산
       var minutes = ((diff.inMinutes % 60) ~/ 10) * 10;
       remainTime = remainTime + '${minutes.toString()}분 후 주문예정 ';
+
+      // 정확한 시간으로 계산
+      if (diff.inDays > 0) {
+        orderTime = orderTime + '내일';
+      } else {
+        orderTime = orderTime + '오늘';
+      }
+      if (orderDate.hour > 12) {
+        orderTime = orderTime + ' 오후';
+      } else {
+        orderTime = orderTime + ' 오전';
+      }
+      var format = DateFormat(' hh시 mm분 주문예정');
+      orderTime = orderTime + format.format(orderDate);
     }
 
     return GestureDetector(
@@ -380,7 +406,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         Container(
                           height: 20,
                         ),
-                        Text(remainTime, style: text_pink_20()),
+                        Text(orderTime, style: text_pink_20()),
                         Container(
                           height: 20,
                         ),
@@ -509,8 +535,10 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(remainTime + '\t\t\t' + record.meetingPlace,
-                          style: text_grey_20()),
+                      record.completed
+                          ? Text(record.meetingPlace, style: text_grey_20())
+                          : Text(remainTime + '\t\t\t' + record.meetingPlace,
+                              style: text_grey_20()),
                     ],
                   ),
                 ],

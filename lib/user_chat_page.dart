@@ -85,7 +85,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       Column(
         children: <Widget>[
           Text(documentSnapshot.data['sender_nickname'],
-              style: text_white_15()),
+              style: text_black_15()),
           Container(
             height: 5,
           ),
@@ -132,7 +132,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(documentSnapshot.data['sender_nickname'],
-              style: text_white_15()),
+              style: text_black_15()),
           Container(
             height: 5,
           ),
@@ -313,10 +313,24 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     // boardPage.popUpDialog(context, "반띵이 완료되었어요!");
                     userSnapshot.data.reference.updateData(
                         {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1});
+                    List<dynamic> _users = [
+                      _userPhoneNumber,
+                      _otherPhoneNumber
+                    ];
+                    Firestore.instance
+                        .collection('완료내역')
+                        .document(_chattingRoomID)
+                        .setData({
+                      '식당이름': _restaurant,
+                      '주문시간': _orderTime,
+                      '만날장소': _meetingPlace,
+                      '사용자': _users
+                    });
                     return Container();
                   }
                   return Scaffold(
                     appBar: AppBar(
+                      brightness: Brightness.light,
                       leading: IconButton(
                           icon: Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context)
@@ -442,6 +456,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   Widget noChattingRoom(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.light,
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pushReplacement(
