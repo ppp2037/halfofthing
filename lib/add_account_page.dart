@@ -62,6 +62,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
       appBar: AppBar(
         title: Text('회원가입'),
         centerTitle: true,
+        brightness: Brightness.light,
       ),
       body: _isRegionSelected
           ? Column(
@@ -344,7 +345,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                             .location,
                                                         'ivsalt': _ivsalt,
                                                         'key': _fortuna_key,
-                                                        '비밀번호': make_encryption(_password, _ivsalt, _fortuna_key),
+                                                        '비밀번호': make_encryption(
+                                                            _password,
+                                                            _ivsalt,
+                                                            _fortuna_key),
                                                         '로그인여부': 'N',
                                                         '인증여부': 'N',
                                                         '이용횟수': 0,

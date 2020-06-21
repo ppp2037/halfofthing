@@ -55,6 +55,7 @@ class _Survey_PageState extends State<Survey_Page> {
       appBar: AppBar(
         title: Text('설문'),
         centerTitle: true,
+        brightness: Brightness.light,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
