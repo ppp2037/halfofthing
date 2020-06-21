@@ -207,6 +207,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                                   itemHeight: 50,
                                   itemWidth: 40,
                                   isForce2Digits: true,
+                                  minutesInterval: 10,
                                   onTimeChange: (time) {
                                     setState(() {
                                       _orderTime = time;

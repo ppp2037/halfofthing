@@ -14,6 +14,7 @@ import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -308,9 +309,10 @@ class _User_Board_PageState extends State<User_Board_Page> {
     boardSnapshot.sort((a, b) => Record.fromSnapshot(a)
         .orderTime
         .compareTo(Record.fromSnapshot(b).orderTime));
-    var itemList = boardSnapshot
-        .map((data) => _buildListItem(context, data, _userPhoneNumber))
-        .toList();
+    var itemList = boardSnapshot.map((data) {
+      // if (_userPhoneNumber != data.data['개설자핸드폰번호'])
+      return _buildListItem(context, data, _userPhoneNumber);
+    }).toList();
     if (completedSnapshot != null) {
       var completedItemList = completedSnapshot
           .map((data) => _buildCompletedListItem(context, data))
@@ -551,9 +553,31 @@ class _User_Board_PageState extends State<User_Board_Page> {
                           style: text_grey_20(),
                         ),
                         _userPhoneNumber == record.phoneNumber
-                            ? Text(
-                                'My 주문',
-                                style: text_red_15_bold(),
+                            ? Row(
+                                children: [
+                                  Text(
+                                    'My 주문',
+                                    style: text_red_15_bold(),
+                                  ),
+                                  Container(width: 4),
+                                  IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Colors.red[300],
+                                      ),
+                                      iconSize: 20,
+                                      onPressed: () {
+                                        return showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return editOrderInfo(
+                                                  context,
+                                                  record.restaurant,
+                                                  record.meetingPlace,
+                                                  data_board);
+                                            });
+                                      }),
+                                ],
                               )
                             : _userPhoneNumber == record.phoneNumber2
                                 ? Text(
@@ -606,6 +630,141 @@ class _User_Board_PageState extends State<User_Board_Page> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget editOrderInfo(BuildContext context, var restaurant, var meetingPlace,
+      DocumentSnapshot boardSnapshot) {
+    var _editMeetingPlace, _editOrderTime;
+    print("editOrder");
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text('주문 정보 변경하기', style: text_grey_15()),
+          Container(
+            height: 20,
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons.restaurant,
+                color: Colors.grey,
+              ),
+              Container(
+                width: 15,
+              ),
+              Text(restaurant, style: text_grey_15()),
+            ],
+          ),
+          Container(
+            height: 20,
+          ),
+          Form(
+            child: TextFormField(
+              onChanged: (String str) {
+                setState(() {
+                  _editMeetingPlace = str;
+                });
+              },
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.place,
+                    color: Colors.pink,
+                  ),
+                  hintText: meetingPlace,
+                  // hintStyle: text_pink_15(),
+                  border: InputBorder.none),
+            ),
+          ),
+          Container(
+            height: 20,
+          ),
+          Row(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.access_time,
+                    color: Colors.pink,
+                  ),
+                  Container(
+                    width: 10,
+                  ),
+                  Text(
+                    '받을 시간',
+                    style: text_pink_15(),
+                  ),
+                ],
+              ),
+              Flexible(
+                child: TimePickerSpinner(
+                  is24HourMode: true,
+                  normalTextStyle: text_grey_15(),
+                  highlightedTextStyle: text_pink_15(),
+                  spacing: 10,
+                  itemHeight: 40,
+                  itemWidth: 40,
+                  isForce2Digits: true,
+                  minutesInterval: 10,
+                  onTimeChange: (time) {
+                    setState(() {
+                      _editOrderTime = time;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Center(
+                      child: Text('취소', style: text_grey_15()),
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  if (_editMeetingPlace == null)
+                    _editMeetingPlace = meetingPlace;
+                  boardSnapshot.reference.updateData({
+                    '만날장소': _editMeetingPlace,
+                    '주문시간': Timestamp.fromDate(_editOrderTime)
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Center(
+                      child: Text('완료', style: text_grey_15()),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
