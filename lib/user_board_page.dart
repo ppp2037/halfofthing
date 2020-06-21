@@ -52,6 +52,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
           }
           return Scaffold(
             appBar: AppBar(
+              brightness: Brightness.light,
               iconTheme: IconThemeData(color: Colors.black),
               backgroundColor: Colors.white10,
               elevation: 0,
