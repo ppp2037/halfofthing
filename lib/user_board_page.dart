@@ -4,6 +4,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
+import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
@@ -12,6 +13,8 @@ import 'user_settings_help_page.dart';
 import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -23,10 +26,11 @@ class _User_Board_PageState extends State<User_Board_Page> {
   String _userLocation;
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
-
+  DateTime currentTime;
   @override
   void initState() {
     super.initState();
+    currentTime = DateTime.now();
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
@@ -52,9 +56,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
           }
           return Scaffold(
             appBar: AppBar(
-              brightness: Brightness.light,
               iconTheme: IconThemeData(color: Colors.black),
               backgroundColor: Colors.white10,
+              brightness: Brightness.light,
               elevation: 0,
               title: Text(
                 '반띵',
@@ -140,6 +144,17 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
+                    leading: Icon(Icons.history),
+                    title: Text(
+                      '주문내역',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_History_Page()));
+                    },
+                  ),
+                  ListTile(
                     leading: Icon(Icons.notifications),
                     title: Text(
                       '공지사항',
@@ -215,7 +230,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     onTap: () {
                       (() async {
                         SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                         setState(() {
                           prefs.clear();
                         });
@@ -235,7 +250,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                           height: 20,
                         ),
                         Text(
-                          'Copyright © 2020 gauntlet Inc.',
+                          'Copyright © 2020 NomadCAT Inc.',
                           style: text_grey_10(),
                         ),
                         Container(
@@ -256,64 +271,147 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   .collection('게시판')
                   .where('위치', isEqualTo: _userLocation)
                   .snapshots(),
-              builder: (context, snapshot_board) {
-                if (!snapshot_board.hasData)
+              builder: (context, boardSnapshot) {
+                if (!boardSnapshot.hasData)
                   return Center(child: CircularProgressIndicator());
-                if (snapshot_board.data.documents.isEmpty)
+                if (boardSnapshot.data.documents.isEmpty)
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text('반띵중인 사람이 없어요', style: text_grey_15()),
                       Container(
-                        height: 20,
+                        height: 15,
                       ),
                       Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
                     ],
                   );
-                return _buildList(
-                    context, snapshot_board.data.documents, _userPhoneNumber);
+                return StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                        .collection('완료내역')
+                        .where('위치', isEqualTo: _userLocation)
+                        .snapshots(),
+                    builder: (context, completedSnapshot) {
+                      if (!completedSnapshot.hasData) {
+                        return _buildList(context, boardSnapshot.data.documents,
+                            _userPhoneNumber, null);
+                      }
+                      return _buildList(context, boardSnapshot.data.documents,
+                          _userPhoneNumber, completedSnapshot.data.documents);
+                    });
               },
             ),
           );
         });
   }
 
-  Widget _buildList(
-      BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
-    snapshot.sort((a, b) =>
-        Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
-
+  Widget _buildList(BuildContext context, List<DocumentSnapshot> boardSnapshot,
+      _userPhoneNumber, List<DocumentSnapshot> completedSnapshot) {
+    boardSnapshot.sort((a, b) => Record.fromSnapshot(a)
+        .orderTime
+        .compareTo(Record.fromSnapshot(b).orderTime));
+    var itemList = boardSnapshot.map((data) {
+      // if (_userPhoneNumber != data.data['개설자핸드폰번호'])
+      return _buildListItem(context, data, _userPhoneNumber);
+    }).toList();
+    if (completedSnapshot != null) {
+      var completedItemList = completedSnapshot
+          .map((data) => _buildCompletedListItem(context, data))
+          .toList();
+      itemList.addAll(completedItemList);
+    }
     return ListView(
       padding: const EdgeInsets.only(bottom: 20.0),
-      children: snapshot
-          .map((data) => _buildListItem(context, data, _userPhoneNumber))
-          .toList(),
+      children: itemList,
+    );
+  }
+
+  Widget _buildCompletedListItem(
+      BuildContext context, DocumentSnapshot completedData) {
+    return GestureDetector(
+      onTap: () {
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              Future.delayed(Duration(seconds: 1), () {
+                Navigator.pop(context);
+              });
+              return popUpDialog(context, "이미 반띵이 완료된 게시물이에요.");
+            });
+      },
+      child: ListTile(
+        title: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        completedData.data['식당이름'],
+                        style: text_grey_20(),
+                      ),
+                      Text(
+                        '반띵완료',
+                        style: text_lightGrey_13(),
+                      )
+                    ],
+                  ),
+                  Container(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.place,
+                        color: Colors.grey[400],
+                      ),
+                      Container(width: 5),
+                      Text(completedData.data['만날장소'], style: text_grey_15())
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              thickness: 1,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
-    String orderTimeStr = record.time.toString().substring(8, 10) +
-        "시 " +
-        record.time.toString().substring(10, 12) +
-        "분";
+    DateTime orderDate = ((record.orderTime) as Timestamp).toDate();
+    var diff = orderDate.difference(currentTime);
+    var orderTime = '';
+
+    if (diff.inDays > 0) {
+      orderTime = orderTime + '내일';
+    } else {
+      orderTime = orderTime + '오늘';
+    }
+    if (orderDate.hour > 12) {
+      orderTime = orderTime + ' 오후';
+    } else {
+      orderTime = orderTime + ' 오전';
+    }
+    var format = DateFormat(' h:mm 주문예정');
+    orderTime = orderTime + format.format(orderDate);
+    var _myRoom = false;
+    if (_userPhoneNumber == record.phoneNumber ||
+        _userPhoneNumber == record.phoneNumber2) _myRoom = true;
+
     return GestureDetector(
       onTap: () {
-        if (record.completed) {
-          return showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                Future.delayed(Duration(seconds: 2), () {
-                  Navigator.pop(context);
-                });
-                return popUpDialog(context, "이미 반띵이 완료된 게시물이예요.");
-              });
-        } else if (_userPhoneNumber == record.phoneNumber ||
-            _userPhoneNumber == record.phoneNumber2) {
+        if (_myRoom) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => User_Chat_Page()));
         } else {
@@ -322,22 +420,23 @@ class _User_Board_PageState extends State<User_Board_Page> {
               builder: (BuildContext context) {
                 if (_userIsChatting) {
                   // 사용자가 현재 채팅중일 경우 => 입장 불가 Dialog 띄우기
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "현재 진행중인 채팅방이 있기 때문에 입장하실 수 없어요");
+                  return popUpDialog(
+                      context, "현재 진행중인 채팅방이 있기 때문에\n입장하실 수 없어요");
                 } else if (record.phoneNumber2 != '') {
                   // 다른 사람이 참여중인 게시물인 경우 (반띵중)
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "이미 반띵중인 게시물이예요.");
+                  return popUpDialog(context, "이미 반띵중인 게시물이에요.");
                 } else if (record.blockedList.contains(_userPhoneNumber)) {
                   // 이미 내보낸 사용자인 경우 입장 불가
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     Navigator.pop(context);
                   });
-                  return popUpDialog(context, "님 차단당함 ^^");
+                  return popUpDialog(context, "들어갈 수 없는 게시물이에요ㅜ.ㅜ");
                 } else {
                   // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
                   return AlertDialog(
@@ -351,7 +450,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         Container(
                           height: 20,
                         ),
-                        Text('시간 : ' + orderTimeStr, style: text_pink_20()),
+                        Text(orderTime, style: text_pink_20()),
                         Container(
                           height: 20,
                         ),
@@ -391,13 +490,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 String nickName = randomNickname();
                                 data_board.reference.updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
-                                  '참가자참여시간': DateTime.now().toString(),
+                                  '참가자참여시간': DateTime.now(),
                                   '참가자닉네임': nickName,
                                 });
                                 data_board.reference
                                     .collection('messages')
                                     .add({
-                                  'text': "$nickName 님이 입장하셨습니다.",
+                                  'text': "${nickName}님이 입장하셨습니다.",
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
                                   'time': DateTime.now(),
@@ -439,52 +538,91 @@ class _User_Board_PageState extends State<User_Board_Page> {
       child: ListTile(
         title: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        record.restaurant,
-                        style: text_grey_20(),
-                      ),
-                      record.completed
-                          ? Text(
-                              '완료된 게시글',
-                              style: text_grey_15(),
-                            )
-                          : _userPhoneNumber == record.phoneNumber
-                              ? Text(
-                                  '나의 게시글',
-                                  style: text_grey_15(),
-                                )
-                              : _userPhoneNumber == record.phoneNumber2
-                                  ? Text(
-                                      '내가 참여중',
-                                      style: text_grey_15(),
-                                    )
-                                  : record.phoneNumber2 != ''
-                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                                      ? Text(
-                                          '반띵중',
-                                          style: text_grey_15(),
-                                        )
-                                      : Container(),
-                    ],
-                  ),
-                  Container(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
-                          style: text_grey_20()),
-                    ],
-                  ),
-                ],
+            Ink(
+              // color: Colors.amber[50],
+              child: Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          record.restaurant,
+                          style: text_grey_20(),
+                        ),
+                        _userPhoneNumber == record.phoneNumber
+                            ? Row(
+                          children: [
+                            Text(
+                              'My 주문',
+                              style: text_red_15_bold(),
+                            ),
+                            Container(width: 4),
+                            IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: Colors.red[300],
+                                ),
+                                iconSize: 20,
+                                onPressed: () {
+                                  return showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return editOrderInfo(
+                                            context,
+                                            record.restaurant,
+                                            record.meetingPlace,
+                                            data_board);
+                                      });
+                                }),
+                          ],
+                        )
+                            : _userPhoneNumber == record.phoneNumber2
+                            ? Text(
+                          '내가 참여중',
+                          style: text_red_15_bold(),
+                        )
+                            : record.phoneNumber2 != ''
+                        // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                            ? Text(
+                          '반띵중',
+                          style: text_green_15_bold(),
+                        )
+                            : Container(),
+                      ],
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.place,
+                              color: Colors.grey[400],
+                            ),
+                            Container(width: 5),
+                            Text(record.meetingPlace, style: text_grey_15())
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.grey[400],
+                            ),
+                            Container(width: 5),
+                            Text(orderTime, style: text_grey_15())
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Divider(
@@ -495,21 +633,162 @@ class _User_Board_PageState extends State<User_Board_Page> {
       ),
     );
   }
+
+  Widget editOrderInfo(BuildContext context, var restaurant, var meetingPlace,
+      DocumentSnapshot boardSnapshot) {
+    var _editMeetingPlace, _editOrderTime;
+    print("editOrder");
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text('주문 정보 변경하기', style: text_grey_15()),
+          Container(
+            height: 20,
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons.restaurant,
+                color: Colors.grey,
+              ),
+              Container(
+                width: 15,
+              ),
+              Text(restaurant, style: text_grey_15()),
+            ],
+          ),
+          Container(
+            height: 20,
+          ),
+          Form(
+            child: TextFormField(
+              onChanged: (String str) {
+                setState(() {
+                  _editMeetingPlace = str;
+                });
+              },
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.place,
+                    color: Colors.pink,
+                  ),
+                  hintText: meetingPlace,
+                  // hintStyle: text_pink_15(),
+                  border: InputBorder.none),
+            ),
+          ),
+          Container(
+            height: 20,
+          ),
+          Row(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.access_time,
+                    color: Colors.pink,
+                  ),
+                  Container(
+                    width: 10,
+                  ),
+                  Text(
+                    '받을 시간',
+                    style: text_pink_15(),
+                  ),
+                ],
+              ),
+              Flexible(
+                child: TimePickerSpinner(
+                  is24HourMode: true,
+                  normalTextStyle: text_grey_15(),
+                  highlightedTextStyle: text_pink_15(),
+                  spacing: 10,
+                  itemHeight: 40,
+                  itemWidth: 40,
+                  isForce2Digits: true,
+                  minutesInterval: 10,
+                  onTimeChange: (time) {
+                    setState(() {
+                      _editOrderTime = time;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Center(
+                      child: Text('취소', style: text_grey_15()),
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  if (_editMeetingPlace == null)
+                    _editMeetingPlace = meetingPlace;
+                  boardSnapshot.reference.updateData({
+                    '만날장소': _editMeetingPlace,
+                    '주문시간': Timestamp.fromDate(_editOrderTime)
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Center(
+                      child: Text('완료', style: text_grey_15()),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
 }
 
 Widget popUpDialog(BuildContext context, String text) {
   return AlertDialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-    content: SizedBox(width: 150, height: 80, child: new Text(text)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+    content: SizedBox(
+        width: 270,
+        height: 50,
+        child: Center(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+          ),
+        )),
   );
 }
 
 class Record {
   final String phoneNumber, phoneNumber2;
-  final String restaurant, time, location, boardname, meetingPlace;
-  final String enteredTime; // 참가자가 참여를 시작한 시간
-  final String createdTime; // 생성시간
-  final bool completed; // 완료된 게시물인지
+  final String restaurant, location, boardname, meetingPlace;
+  var orderTime, enteredTime, createdTime;
   final DocumentReference reference;
   final List<dynamic> blockedList;
 
@@ -525,13 +804,12 @@ class Record {
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
-        time = map['주문시간'],
+        orderTime = map['주문시간'],
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
         enteredTime = map['참가자참여시간'],
         createdTime = map['생성시간'],
-        completed = (map['반띵완료_참가자'] as bool) && (map['반띵완료_개설자'] as bool),
         blockedList = map['내보낸사용자'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
@@ -539,5 +817,5 @@ class Record {
 
   @override
   String toString() =>
-      "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$meetingPlace:$boardname>";
+      "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname>";
 }

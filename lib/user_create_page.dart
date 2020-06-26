@@ -31,7 +31,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   }
 
   String _restaurant;
-  var _time;
+  var _orderTime;
   String _meetingPlace;
   String _boardCreatTime;
 
@@ -207,10 +207,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                             itemHeight: 50,
                             itemWidth: 40,
                             isForce2Digits: true,
+                            minutesInterval: 10,
                             onTimeChange: (time) {
                               setState(() {
-                                _time = DateFormat('yyyyMMddHHmmss')
-                                    .format(time);
+                                _orderTime = time;
                               });
                             },
                           ),
@@ -227,12 +227,17 @@ class _User_Create_pageState extends State<User_Create_page> {
                     var _userOrderId =
                     DateFormat('yyyyMMddHHmmss').format(_currentTime);
                     var _boardID = _userPhoneNumber + '_' + _userOrderId;
+                    var now = DateTime.now();
+                    // 현재 시각 - time 시각 >0 이면 다음날로 설정
+                    if (now.hour > _orderTime.hour) {
+                      _orderTime = _orderTime.add(new Duration(days: 1));
+                    }
                     Firestore.instance
                         .collection('게시판')
                         .document(_userPhoneNumber + '_' + _userOrderId)
                         .setData({
                       '식당이름': _restaurant,
-                      '주문시간': _time,
+                      '주문시간': Timestamp.fromDate(_orderTime),
                       '위치': _userLocation,
                       '만날장소': _meetingPlace,
                       '개설자핸드폰번호': _userPhoneNumber,
@@ -241,7 +246,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                       '참가자참여시간': '',
                       '개설자닉네임': randomNickname(),
                       '참가자닉네임': '',
-                      '생성시간': DateTime.now().toString(),
+                      '생성시간': DateTime.now(),
                       '반띵완료_개설자': false,
                       '반띵완료_참가자': false,
                       '내보낸사용자': []
