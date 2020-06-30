@@ -13,7 +13,7 @@ class _User_Settings_Howto_PageState extends State<User_Settings_Howto_Page> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('이용방법', style: text_pink_20(),),
-        iconTheme: IconThemeData(color: Colors.pink),
+        iconTheme: IconThemeData(color: Colors.grey[700]),
         backgroundColor: Colors.white,
         brightness: Brightness.light,
         elevation: 0,

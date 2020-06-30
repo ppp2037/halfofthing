@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
 import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +13,6 @@ import 'user_settings_feedback_page.dart';
 import 'user_settings_help_page.dart';
 import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
-import 'user_settings_personalinfo_page.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
@@ -60,6 +58,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
+              automaticallyImplyLeading: false,
               iconTheme: IconThemeData(color: Colors.grey[700]),
               backgroundColor: Colors.white,
               brightness: Brightness.light,
@@ -312,7 +311,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 ],
               ),
             ),
-            body: Column(
+          body: Column(
               children: <Widget>[
                 Container(
                     height: 150,
@@ -399,8 +398,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
           .toList();
       itemList.addAll(completedItemList);
     }
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 20.0),
+    return Column(
       children: itemList,
     );
   }

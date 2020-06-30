@@ -75,18 +75,13 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Text(
-            '반띵',
-            style: text_darkgrey_30(),
+          Image.asset(
+            'images/halfofthing_logo_red_1024x1024.png',
+            width:
+                Tween(begin: 0.0, end: 140.0).evaluate(_bounceInOutAnimation),
+            height:
+                Tween(begin: 0.0, end: 140.0).evaluate(_bounceInOutAnimation),
           ),
-//          Image.asset(
-//            'images/halfofthing_logo.png',
-//            color: Colors.pink,
-//            width:
-//                Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-//            height:
-//                Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-//          ),
           Column(
             children: <Widget>[
               Container(

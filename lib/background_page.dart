@@ -40,9 +40,14 @@ class _Background_PageState extends State<Background_Page> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if(index == 2) {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => User_Chat_Page()));
+    } else{
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   Future<bool> onWillPop() {
@@ -58,9 +63,7 @@ class _Background_PageState extends State<Background_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return _selectedIndex == 2
-        ? Scaffold(body: _widgetOptions[_selectedIndex])
-        : StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<DocumentSnapshot>(
             stream: Firestore.instance
                 .collection('사용자')
                 .document(_userPhoneNumber)

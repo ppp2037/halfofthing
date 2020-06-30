@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
 import 'package:search_widget/search_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'services/authservice.dart';
 import 'settings/make_password_encryption.dart';
 import 'settings/university_list.dart';
 
@@ -18,6 +20,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   bool _isItemSelected = false;
   bool _isRegionSelected = false;
   bool _isPersonalInfoPermission = true;
+  bool _isPhoneValidate = false;
 
   final GlobalKey<FormState> _nameFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _phoneNumberFormKey = GlobalKey<FormState>();
@@ -55,9 +58,12 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('회원가입', style: text_pink_20(),),
+        title: Text(
+          '회원가입',
+          style: text_pink_20(),
+        ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.pink),
+        iconTheme: IconThemeData(color: Colors.grey[700]),
         elevation: 0,
         brightness: Brightness.light,
         backgroundColor: Colors.white,
@@ -174,9 +180,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                           child: Form(
                             key: _nameFormKey,
                             child: TextFormField(
+                              style: text_darkgrey_15(),
                               onChanged: (String str) {
                                 setState(() {
-                                  _name = str;
+                                  _name = str.trim();
                                 });
                               },
                               keyboardType: TextInputType.text,
@@ -187,10 +194,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   hintStyle: text_grey_15(),
                                   border: InputBorder.none),
                               validator: (String value) {
-                                if (value.isEmpty) {
+                                if (value.trim().isEmpty) {
                                   return '이름을 입력해주세요';
                                 }
-                                if (value.length == 1) {
+                                if (value.trim().length == 1) {
                                   return '올바른 이름을 입력해주세요';
                                 }
                                 return null;
@@ -215,9 +222,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               child: Form(
                                 key: _phoneNumberFormKey,
                                 child: TextFormField(
+                                  style: text_darkgrey_15(),
                                   onChanged: (String str) {
                                     setState(() {
-                                      _phoneNumber = str;
+                                      _phoneNumber = str.trim();
                                     });
                                   },
                                   keyboardType: TextInputType.number,
@@ -228,10 +236,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                       hintStyle: text_grey_15(),
                                       border: InputBorder.none),
                                   validator: (String value) {
-                                    if (value.isEmpty) {
+                                    if (value.trim().isEmpty) {
                                       return '핸드폰번호를 입력해주세요';
                                     }
-                                    if (value.length != 11) {
+                                    if (value.trim().length != 11) {
                                       return '올바른 핸드폰번호를 입력해주세요';
                                     }
                                     return null;
@@ -244,9 +252,18 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               top: 25,
                               right: 20,
                               child: GestureDetector(
-                                onTap: () {
+                                onTap: () async {
                                   if (_phoneNumberFormKey.currentState
                                       .validate()) {
+                                    final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder:  (context) => AuthService().handleAuth(_phoneNumber))
+                                    );
+
+                                    if(result == "True") {
+                                      _isPhoneValidate = true;
+                                    }
+
                                   } else {}
                                 },
                                 child: Text(
@@ -271,11 +288,11 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                             key: _passwordFormKey,
                             child: TextFormField(
                               style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular'),
+                                  fontFamily: 'Spoqa_Han_Sans_Regular', color: Colors.grey[700]),
                               obscureText: true,
                               onChanged: (String str) {
                                 setState(() {
-                                  _password = str;
+                                  _password = str.trim();
                                 });
                               },
                               keyboardType: TextInputType.text,
@@ -286,7 +303,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),
                               validator: (String value) {
-                                if (value.isEmpty) {
+                                if (value.trim().isEmpty) {
                                   return '비밀번호를 입력해주세요';
                                 }
                                 return null;
@@ -310,11 +327,11 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                             key: _passwordCheckFormKey,
                             child: TextFormField(
                               style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular'),
+                                  fontFamily: 'Spoqa_Han_Sans_Regular', color: Colors.grey[700]),
                               obscureText: true,
                               onChanged: (String str) {
                                 setState(() {
-                                  _passwordCheck = str;
+                                  _passwordCheck = str.trim();
                                 });
                               },
                               keyboardType: TextInputType.text,
@@ -325,7 +342,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),
                               validator: (String value) {
-                                if (value.isEmpty) {
+                                if (value.trim().isEmpty) {
                                   return '비밀번호를 입력해주세요';
                                 }
                                 return null;
@@ -371,13 +388,13 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                     children: <Widget>[
                                                       Text('이름 :',
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                       Container(
                                                         width: 10,
                                                       ),
                                                       Text(_name,
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                     ],
                                                   ),
                                                   Container(
@@ -387,13 +404,13 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                     children: <Widget>[
                                                       Text('핸드폰번호 :',
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                       Container(
                                                         width: 10,
                                                       ),
                                                       Text(_phoneNumber,
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                     ],
                                                   ),
                                                   Container(
@@ -403,7 +420,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                     children: <Widget>[
                                                       Text('위치 :',
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                       Container(
                                                         width: 10,
                                                       ),
@@ -411,14 +428,14 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                           _selectedItem
                                                               .location,
                                                           style:
-                                                              text_grey_15()),
+                                                              text_darkgrey_15()),
                                                     ],
                                                   ),
                                                   Container(
                                                     height: 40,
                                                   ),
                                                   Text('위의 정보로 등록하시겠어요?',
-                                                      style: text_grey_15()),
+                                                      style: text_darkgrey_15()),
                                                   Container(
                                                     height: 30,
                                                   ),
@@ -437,7 +454,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
-                                                                          20)),
+                                                                          60)),
                                                           elevation: 5,
                                                           color: Colors.white,
                                                           child: Padding(
@@ -451,7 +468,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                             child: Center(
                                                               child: Text('취소',
                                                                   style:
-                                                                      text_grey_15()),
+                                                                      text_darkgrey_15()),
                                                             ),
                                                           ),
                                                         ),
@@ -475,15 +492,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                                     _password,
                                                                     _ivsalt,
                                                                     _fortuna_key),
-                                                            '로그인여부': 'N',
                                                             '인증여부': 'N',
                                                             '이용횟수': 0,
                                                             '채팅중인방ID': '',
                                                           });
-                                                          Navigator.of(context)
-                                                              .popUntil((route) =>
-                                                                  route
-                                                                      .isFirst);
                                                           Fluttertoast.showToast(
                                                               msg:
                                                                   '회원가입에 성공했어요',
@@ -491,16 +503,17 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                                   ToastGravity
                                                                       .CENTER,
                                                               backgroundColor:
-                                                                  Colors.pink,
+                                                                  Colors.white,
                                                               textColor:
-                                                                  Colors.white);
+                                                                  Colors.pink,);
+                                                          Phoenix.rebirth(context);
                                                         },
                                                         child: Card(
                                                           shape: RoundedRectangleBorder(
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
-                                                                          20)),
+                                                                          60)),
                                                           elevation: 5,
                                                           color: Colors.white,
                                                           child: Padding(
@@ -514,7 +527,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                             child: Center(
                                                               child: Text('확인',
                                                                   style:
-                                                                      text_grey_15()),
+                                                                      text_darkgrey_15()),
                                                             ),
                                                           ),
                                                         ),
@@ -702,29 +715,28 @@ class SelectedItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 2,
-        horizontal: 4,
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 8,
-                bottom: 8,
+      height: 60,
+      child: Center(
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 8,
+                  bottom: 8,
+                ),
+                child: Text(selectedItem.location, style: text_darkgrey_15()),
               ),
-              child: Text(selectedItem.location, style: text_darkgrey_15()),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_outline, size: 22),
-            color: Colors.grey[700],
-            onPressed: deleteSelectedItem,
-          ),
-        ],
+            IconButton(
+              icon: Icon(Icons.delete_outline),
+              color: Colors.grey[700],
+              onPressed: deleteSelectedItem,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -739,30 +751,33 @@ class MyTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 30),
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        showCursor: true,
-        cursorColor: Colors.pink,
-        style: text_darkgrey_15(),
-        decoration: InputDecoration(
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(
-              color: Color(0x4437474F),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
+        elevation: 15,
+        child: Container(
+          height: 60,
+          child: Center(
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              showCursor: true,
+              cursorColor: Colors.pink,
+              style: text_darkgrey_15(),
+              decoration: InputDecoration(
+                suffixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey[700],
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.only(
+                  left: 16,
+                  right: 20,
+                  top: 14,
+                  bottom: 14,
+                ),
+              ),
             ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Theme.of(context).primaryColor),
-          ),
-          suffixIcon: Icon(Icons.search),
-          border: InputBorder.none,
-//          hintText: "반띵대학교...",
-          contentPadding: const EdgeInsets.only(
-            left: 16,
-            right: 20,
-            top: 14,
-            bottom: 14,
           ),
         ),
       ),
