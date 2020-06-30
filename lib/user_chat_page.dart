@@ -43,6 +43,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   void initState() {
     super.initState();
 
+    // for push notification
     registerNotification();
     configLocalNotification();
 
@@ -52,7 +53,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
       });
     })();
-
 
   }
 
@@ -271,11 +271,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
+
     print(
         "build => chattingRoom : $_chattingRoomID, userIsHost : $_userIsHost, userphone : $_userPhoneNumber, otherPhone : $_otherPhoneNumber");
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, userSnapshot) {
@@ -330,7 +331,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     // 둘다 반띵완료를 누른 경우
                     // boardPage.popUpDialog(context, "반띵이 완료되었어요!");
                     userSnapshot.data.reference.updateData(
-                        {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1});
+                        {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1, 'nickname':'',});
                     List<dynamic> _users = [
                       _userPhoneNumber,
                       _otherPhoneNumber
@@ -554,7 +555,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         title: Text('게시물 삭제하기', style: text_grey_20()),
         onTap: () {
           // 게시물 삭제
-          userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+          userSnapshot.data.reference.updateData({
+            '채팅중인방ID': '',
+            'nickname': '',
+          });
           boardSnapshot.data.reference.delete();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Background_Page()));
@@ -565,7 +569,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 상대방의 주문횟수
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_otherPhoneNumber)
             .snapshots(),
         builder: (context, otherUserSnapshot) {
@@ -622,7 +626,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('다른 반띵하기', style: text_grey_20()),
       onTap: () {
-        userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+        userSnapshot.data.reference.updateData({''
+            '채팅중인방ID': '',
+            'nickname': '',
+        });
         setState(() {
           onSendMessage('${_otherNickname}님이 반띵을 취소하였습니다.', 1);
         });
@@ -670,7 +677,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               '참가자닉네임': '',
               '내보낸사용자': FieldValue.arrayUnion(blockList)
             });
-            otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+            otherUserSnapshot.data.reference.updateData({
+              '채팅중인방ID': '',
+              'nickname': '',
+            });
           });
         });
         Navigator.pop(context);
@@ -685,10 +695,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     firebaseMessaging.requestNotificationPermissions();
 
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print('onMessage: $message');
-      Platform.isAndroid ? showNotification(message['notification']) : showNotification(message['aps']['alert']);
-      return;
-    }, onResume: (Map<String, dynamic> message) {
+      //print('onMessage: $message');
+      //Platform.isAndroid ? showNotification(message['notification']) : showNotification(message['aps']['alert']);
+      //return;
+    },onResume: (Map<String, dynamic> message) {
       print('onResume: $message');
       return;
     }, onLaunch: (Map<String, dynamic> message) {
@@ -737,5 +747,4 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 //        0, 'plain title', 'plain body', platformChannelSpecifics,
 //        payload: 'item x');
   }
-
 }

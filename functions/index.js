@@ -39,7 +39,7 @@ exports.sendNotification = functions
                   console.log(`Found user from: ${userFrom.data().nickname}`)
                   const payload = {
                     notification: {
-                      title: `"${userFrom.data().nickname}"`,
+                      title: `${userFrom.data().nickname}`,
                       body: contentMessage,
                       badge: '1',
                       sound: 'default'

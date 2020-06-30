@@ -37,6 +37,7 @@ class _User_Create_pageState extends State<User_Create_page> {
 
   String _userPhoneNumber;
   String _userLocation;
+  String _randomNickNmae = randomNickname();
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _User_Create_pageState extends State<User_Create_page> {
       resizeToAvoidBottomInset: false,
       body: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot) {
@@ -251,9 +252,12 @@ class _User_Create_pageState extends State<User_Create_page> {
                       '내보낸사용자': []
                     });
                     Firestore.instance
-                        .collection('사용자')
+                        .collection('users')
                         .document(_userPhoneNumber)
-                        .updateData({'채팅중인방ID': _boardID});
+                        .updateData({
+                      '채팅중인방ID': _boardID,
+                      'nickname': _randomNickNmae,
+                        });
 
                     Fluttertoast.showToast(
                         msg: '새로운 반띵이 등록되었어요',

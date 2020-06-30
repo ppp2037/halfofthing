@@ -62,7 +62,7 @@ class _Background_PageState extends State<Background_Page> {
         ? Scaffold(body: _widgetOptions[_selectedIndex])
         : StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, userSnapshot) {

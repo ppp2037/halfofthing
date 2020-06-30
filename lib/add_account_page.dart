@@ -268,12 +268,12 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                             if (_password == _passwordCheck) {
                               if(_phone_val == true) {
                                 Firestore.instance
-                                    .collection('사용자')
-                                    .where('핸드폰번호', isEqualTo: _phoneNumber)
+                                    .collection('users')
+                                    .where('id', isEqualTo: _phoneNumber)
                                     .getDocuments()
                                     .then((QuerySnapshot ds) {
                                   ds.documents.forEach((doc) =>
-                                  _comparePhoneNumber = doc['핸드폰번호']);
+                                  _comparePhoneNumber = doc['id']);
                                   if (_comparePhoneNumber != _phoneNumber) {
                                     showDialog(
                                         context: context,
@@ -375,12 +375,12 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                     GestureDetector(
                                                       onTap: () {
                                                         Firestore.instance
-                                                            .collection('사용자')
+                                                            .collection('users')
                                                             .document(
                                                             _phoneNumber)
                                                             .setData({
                                                           '이름': _name,
-                                                          '핸드폰번호': _phoneNumber,
+                                                          'id': _phoneNumber,
                                                           '위치': _selectedItem
                                                               .location,
                                                           'ivsalt': _ivsalt,
@@ -393,6 +393,8 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                           '인증여부': _phone_val,
                                                           '이용횟수': 0,
                                                           '채팅중인방ID': '',
+                                                          'pushToken':'',
+                                                          'nickname':'',
                                                         });
                                                         Navigator.of(context)
                                                             .popUntil((route) =>
