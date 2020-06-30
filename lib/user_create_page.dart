@@ -15,13 +15,13 @@ class User_Create_page extends StatefulWidget {
 
 class _User_Create_pageState extends State<User_Create_page> {
   final GlobalKey<FormState> _restaurantFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+  GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final TextEditingController _restaurantController =
-      TextEditingController(); //컨트롤러 생성
+  TextEditingController(); //컨트롤러 생성
   final GlobalKey<FormState> _meetingPlaceFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+  GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final TextEditingController _meetingPlaceController =
-      TextEditingController(); //컨트롤러 생성
+  TextEditingController(); //컨트롤러 생성
 
   @override
   void dispose() {
@@ -31,7 +31,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   }
 
   String _restaurant;
-  var _time;
+  var _orderTime;
   String _meetingPlace;
   String _boardCreatTime;
 
@@ -68,223 +68,227 @@ class _User_Create_pageState extends State<User_Create_page> {
             return Center(child: CircularProgressIndicator());
           return snapshot.data['채팅중인방ID'] != ''
               ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      '지금 진행중인 반띵이 있어요',
-                      style: text_grey_15(),
-                    ),
-                    Container(
-                      height: 60,
-                    ),
-                    Text(
-                      '새로운 반띵을 시작하려면',
-                      style: text_grey_15(),
-                    ),
-                    Container(
-                      height: 20,
-                    ),
-                    Text(
-                      '기존 반띵을 취소해주세요',
-                      style: text_grey_15(),
-                    ),
-                  ],
-                )
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                '지금 진행중인 반띵이 있어요',
+                style: text_grey_15(),
+              ),
+              Container(
+                height: 60,
+              ),
+              Text(
+                '새로운 반띵을 시작하려면',
+                style: text_grey_15(),
+              ),
+              Container(
+                height: 20,
+              ),
+              Text(
+                '기존 반띵을 취소해주세요',
+                style: text_grey_15(),
+              ),
+            ],
+          )
               : Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Center(
-                        child: Text(
-                          '반띵할 사람이 생기면 알림으로 알려드려요',
-                          style: text_grey_15(),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _restaurantFormKey,
-                            child: TextFormField(
-                              onChanged: (String str) {
-                                setState(() {
-                                  _restaurant = str;
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _restaurantController,
-                              decoration: InputDecoration(
-                                  icon: Icon(Icons.restaurant),
-                                  hintText: '식당 이름',
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.isEmpty) {
-                                  return '식당 이름을 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _meetingPlaceFormKey,
-                            child: TextFormField(
-                              onChanged: (String str) {
-                                setState(() {
-                                  _meetingPlace = str;
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _meetingPlaceController,
-                              decoration: InputDecoration(
-                                  icon: Icon(Icons.place),
-                                  hintText: '만날 장소',
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.isEmpty) {
-                                  return '만날 장소를 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.access_time,
-                                    color: Colors.grey,
-                                  ),
-                                  Container(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    '받을 시간',
-                                    style: text_grey_15(),
-                                  ),
-                                ],
-                              ),
-                              Flexible(
-                                child: TimePickerSpinner(
-                                  is24HourMode: true,
-                                  normalTextStyle: text_grey_15(),
-                                  highlightedTextStyle: text_pink_20(),
-                                  spacing: 20,
-                                  itemHeight: 50,
-                                  itemWidth: 40,
-                                  isForce2Digits: true,
-                                  onTimeChange: (time) {
-                                    setState(() {
-                                      _time = DateFormat('yyyyMMddHHmmss')
-                                          .format(time);
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (_restaurantFormKey.currentState.validate()) {
-                          var _currentTime = DateTime.now();
-                          var _userOrderId =
-                              DateFormat('yyyyMMddHHmmss').format(_currentTime);
-                          var _boardID = _userPhoneNumber + '_' + _userOrderId;
-                          Firestore.instance
-                              .collection('게시판')
-                              .document(_userPhoneNumber + '_' + _userOrderId)
-                              .setData({
-                            '식당이름': _restaurant,
-                            '주문시간': _time,
-                            '위치': _userLocation,
-                            '만날장소': _meetingPlace,
-                            '개설자핸드폰번호': _userPhoneNumber,
-                            '참가자핸드폰번호': '',
-                            '게시판이름': _boardID,
-                            '참가자참여시간': '',
-                            '개설자닉네임': randomNickname(),
-                            '참가자닉네임': '',
-                            '생성시간': DateTime.now().toString(),
-                            '반띵완료_개설자': false,
-                            '반띵완료_참가자': false,
-                            '내보낸사용자': []
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text(
+                    '반띵할 사람이 생기면 알림으로 알려드려요',
+                    style: text_grey_15(),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 40, right: 40, bottom: 20),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 15, top: 5, bottom: 5),
+                    child: Form(
+                      key: _restaurantFormKey,
+                      child: TextFormField(
+                        onChanged: (String str) {
+                          setState(() {
+                            _restaurant = str;
                           });
-                          Firestore.instance
-                              .collection('사용자')
-                              .document(_userPhoneNumber)
-                              .updateData({'채팅중인방ID': _boardID});
-
-                          Fluttertoast.showToast(
-                              msg: '새로운 반띵이 등록되었어요',
-                              gravity: ToastGravity.CENTER,
-                              backgroundColor: Colors.pink,
-                              textColor: Colors.white);
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) => Background_Page()));
-                        } else {}
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 40, right: 40, bottom: 20),
-                        child: Card(
-                          color: Colors.pink,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                          elevation: 15,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 15, top: 5, bottom: 5),
-                            child: Container(
-                                height: 50,
-                                child: Center(
-                                    child: Text(
-                                  '반띵하기',
-                                  style: text_white_20(),
-                                ))),
-                          ),
-                        ),
+                        },
+                        keyboardType: TextInputType.text,
+                        controller: _restaurantController,
+                        decoration: InputDecoration(
+                            icon: Icon(Icons.restaurant),
+                            hintText: '식당 이름',
+                            border: InputBorder.none),
+                        validator: (String value) {
+                          if (value.isEmpty) {
+                            return '식당 이름을 입력해주세요';
+                          }
+                          return null;
+                        },
                       ),
                     ),
-                  ],
-                );
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 40, right: 40, bottom: 20),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 15, top: 5, bottom: 5),
+                    child: Form(
+                      key: _meetingPlaceFormKey,
+                      child: TextFormField(
+                        onChanged: (String str) {
+                          setState(() {
+                            _meetingPlace = str;
+                          });
+                        },
+                        keyboardType: TextInputType.text,
+                        controller: _meetingPlaceController,
+                        decoration: InputDecoration(
+                            icon: Icon(Icons.place),
+                            hintText: '만날 장소',
+                            border: InputBorder.none),
+                        validator: (String value) {
+                          if (value.isEmpty) {
+                            return '만날 장소를 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 40, right: 40, bottom: 20),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.grey,
+                            ),
+                            Container(
+                              width: 10,
+                            ),
+                            Text(
+                              '받을 시간',
+                              style: text_grey_15(),
+                            ),
+                          ],
+                        ),
+                        Flexible(
+                          child: TimePickerSpinner(
+                            is24HourMode: true,
+                            normalTextStyle: text_grey_15(),
+                            highlightedTextStyle: text_pink_20(),
+                            spacing: 20,
+                            itemHeight: 50,
+                            itemWidth: 40,
+                            isForce2Digits: true,
+                            onTimeChange: (time) {
+                              setState(() {
+                                _orderTime = time;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  if (_restaurantFormKey.currentState.validate()) {
+                    var _currentTime = DateTime.now();
+                    var _userOrderId =
+                    DateFormat('yyyyMMddHHmmss').format(_currentTime);
+                    var _boardID = _userPhoneNumber + '_' + _userOrderId;
+                    var now = DateTime.now();
+                    // 현재 시각 - time 시각 >0 이면 다음날로 설정
+                    if (now.hour > _orderTime.hour) {
+                      _orderTime = _orderTime.add(new Duration(days: 1));
+                    }
+                    Firestore.instance
+                        .collection('notice_board')
+                        .document(_userPhoneNumber + '_' + _userOrderId)
+                        .setData({
+                      '식당이름': _restaurant,
+                      '주문시간': Timestamp.fromDate(_orderTime),
+                      '위치': _userLocation,
+                      '만날장소': _meetingPlace,
+                      '개설자핸드폰번호': _userPhoneNumber,
+                      '참가자핸드폰번호': '',
+                      '게시판이름': _boardID,
+                      '참가자참여시간': '',
+                      '개설자닉네임': randomNickname(),
+                      '참가자닉네임': '',
+                      '생성시간': DateTime.now(),
+                      '반띵완료_개설자': false,
+                      '반띵완료_참가자': false,
+                      '내보낸사용자': []
+                    });
+                    Firestore.instance
+                        .collection('사용자')
+                        .document(_userPhoneNumber)
+                        .updateData({'채팅중인방ID': _boardID});
+
+                    Fluttertoast.showToast(
+                        msg: '새로운 반띵이 등록되었어요',
+                        gravity: ToastGravity.CENTER,
+                        backgroundColor: Colors.pink,
+                        textColor: Colors.white);
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                            builder: (context) => Background_Page()));
+                  } else {}
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 40, right: 40, bottom: 20),
+                  child: Card(
+                    color: Colors.pink,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    elevation: 15,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 15, top: 5, bottom: 5),
+                      child: Container(
+                          height: 50,
+                          child: Center(
+                              child: Text(
+                                '반띵하기',
+                                style: text_white_20(),
+                              ))),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
         },
       ),
     );

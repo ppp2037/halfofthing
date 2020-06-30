@@ -4,6 +4,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
+import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
@@ -12,6 +13,8 @@ import 'user_settings_help_page.dart';
 import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'user_settings_personalinfo_page.dart';
+import 'package:intl/intl.dart';
+import 'dart:async';
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -23,10 +26,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
   String _userLocation;
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
-
+  DateTime currentTime;
+  // Timer _timer;
   @override
   void initState() {
     super.initState();
+    currentTime = DateTime.now();
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
@@ -35,6 +40,19 @@ class _User_Board_PageState extends State<User_Board_Page> {
       });
     })();
   }
+
+  // void startTimer() {
+  //   const tenMin = Duration(minutes: 10);
+  //   _timer = new Timer.periodic(
+  //     tenMin,
+  //     (Timer timer) => setState(
+  //       () {
+  //         print("time past");
+  //         currentTime = currentTime.add(new Duration(minutes: 10));
+  //       },
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +72,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             appBar: AppBar(
               iconTheme: IconThemeData(color: Colors.black),
               backgroundColor: Colors.white10,
+              brightness: Brightness.light,
               elevation: 0,
               title: Text(
                 '반띵',
@@ -139,6 +158,17 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
+                    leading: Icon(Icons.history),
+                    title: Text(
+                      '주문내역',
+                      style: text_grey_15(),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => User_History_Page()));
+                    },
+                  ),
+                  ListTile(
                     leading: Icon(Icons.notifications),
                     title: Text(
                       '공지사항',
@@ -214,7 +244,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     onTap: () {
                       (() async {
                         SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                         setState(() {
                           prefs.clear();
                         });
@@ -252,7 +282,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             ),
             body: StreamBuilder<QuerySnapshot>(
               stream: Firestore.instance
-                  .collection('게시판')
+                  .collection('notice_board')
                   .where('위치', isEqualTo: _userLocation)
                   .snapshots(),
               builder: (context, snapshot_board) {
@@ -269,6 +299,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
                     ],
                   );
+                // startTimer();
                 return _buildList(
                     context, snapshot_board.data.documents, _userPhoneNumber);
               },
@@ -279,8 +310,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
   Widget _buildList(
       BuildContext context, List<DocumentSnapshot> snapshot, _userPhoneNumber) {
-    snapshot.sort((a, b) =>
-        Record.fromSnapshot(a).time.compareTo(Record.fromSnapshot(b).time));
+    snapshot.sort((a, b) => Record.fromSnapshot(a)
+        .orderTime
+        .compareTo(Record.fromSnapshot(b).orderTime));
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 20.0),
@@ -293,10 +325,34 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget _buildListItem(BuildContext context, DocumentSnapshot data_board,
       String _userPhoneNumber) {
     final record = Record.fromSnapshot(data_board);
-    String orderTimeStr = record.time.toString().substring(8, 10) +
-        "시 " +
-        record.time.toString().substring(10, 12) +
-        "분";
+    DateTime orderDate = ((record.orderTime) as Timestamp).toDate();
+    var diff = orderDate.difference(currentTime);
+    var remainTime = '', orderTime = '';
+    if (currentTime.isAfter(orderDate)) {
+      remainTime = '지난 주문';
+    } else {
+      if (diff.inHours > 0) {
+        remainTime = remainTime + '${(diff.inHours).toString()}시간 ';
+      }
+      // 10분 단위로 계산
+      var minutes = ((diff.inMinutes % 60) ~/ 10) * 10;
+      remainTime = remainTime + '${minutes.toString()}분 후 주문예정 ';
+
+      // 정확한 시간으로 계산
+      if (diff.inDays > 0) {
+        orderTime = orderTime + '내일';
+      } else {
+        orderTime = orderTime + '오늘';
+      }
+      if (orderDate.hour > 12) {
+        orderTime = orderTime + ' 오후';
+      } else {
+        orderTime = orderTime + ' 오전';
+      }
+      var format = DateFormat(' hh시 mm분 주문예정');
+      orderTime = orderTime + format.format(orderDate);
+    }
+
     return GestureDetector(
       onTap: () {
         if (record.completed) {
@@ -312,7 +368,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             _userPhoneNumber == record.phoneNumber2) {
           // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
           // => 채팅방으로 바로 이동
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => User_Chat_Page()));
         } else {
@@ -350,7 +406,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         Container(
                           height: 20,
                         ),
-                        Text('시간 : ' + orderTimeStr, style: text_pink_20()),
+                        Text(orderTime, style: text_pink_20()),
                         Container(
                           height: 20,
                         ),
@@ -390,13 +446,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                 String nickName = randomNickname();
                                 data_board.reference.updateData({
                                   '참가자핸드폰번호': _userPhoneNumber,
-                                  '참가자참여시간': DateTime.now().toString(),
+                                  '참가자참여시간': DateTime.now(),
                                   '참가자닉네임': nickName,
                                 });
                                 data_board.reference
                                     .collection('messages')
                                     .add({
-                                  'text': "$nickName 님이 입장하셨습니다.",
+                                  'text': "${nickName}님이 입장하셨습니다.",
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
                                   'time': DateTime.now(),
@@ -451,26 +507,26 @@ class _User_Board_PageState extends State<User_Board_Page> {
                       ),
                       record.completed
                           ? Text(
-                              '완료된 게시글',
-                              style: text_grey_15(),
-                            )
+                        '완료된 게시글',
+                        style: text_grey_15(),
+                      )
                           : _userPhoneNumber == record.phoneNumber
-                              ? Text(
-                                  '나의 게시글',
-                                  style: text_grey_15(),
-                                )
-                              : _userPhoneNumber == record.phoneNumber2
-                                  ? Text(
-                                      '내가 참여중',
-                                      style: text_grey_15(),
-                                    )
-                                  : record.phoneNumber2 != ''
-                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                                      ? Text(
-                                          '반띵중',
-                                          style: text_grey_15(),
-                                        )
-                                      : Container(),
+                          ? Text(
+                        '나의 게시글',
+                        style: text_grey_15(),
+                      )
+                          : _userPhoneNumber == record.phoneNumber2
+                          ? Text(
+                        '내가 참여중',
+                        style: text_grey_15(),
+                      )
+                          : record.phoneNumber2 != ''
+                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                          ? Text(
+                        '반띵중',
+                        style: text_grey_15(),
+                      )
+                          : Container(),
                     ],
                   ),
                   Container(
@@ -479,7 +535,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(orderTimeStr + '\t\t\t' + record.meetingPlace,
+                      record.completed
+                          ? Text(record.meetingPlace, style: text_grey_20())
+                          : Text(remainTime + '\t\t\t' + record.meetingPlace,
                           style: text_grey_20()),
                     ],
                   ),
@@ -505,9 +563,8 @@ Widget popUpDialog(BuildContext context, String text) {
 
 class Record {
   final String phoneNumber, phoneNumber2;
-  final String restaurant, time, location, boardname, meetingPlace;
-  final String enteredTime; // 참가자가 참여를 시작한 시간
-  final String createdTime; // 생성시간
+  final String restaurant, location, boardname, meetingPlace;
+  var orderTime, enteredTime, createdTime;
   final bool completed; // 완료된 게시물인지
   final DocumentReference reference;
   final List<dynamic> blockedList;
@@ -524,7 +581,7 @@ class Record {
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
-        time = map['주문시간'],
+        orderTime = map['주문시간'],
         location = map['위치'],
         meetingPlace = map['만날장소'],
         boardname = map['게시판이름'],
@@ -538,5 +595,5 @@ class Record {
 
   @override
   String toString() =>
-      "Record<$phoneNumber:$phoneNumber2:$restaurant:$time:$location:$meetingPlace:$boardname>";
+      "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname>";
 }

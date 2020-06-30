@@ -61,51 +61,51 @@ class _Background_PageState extends State<Background_Page> {
     return _selectedIndex == 2
         ? Scaffold(body: _widgetOptions[_selectedIndex])
         : StreamBuilder<DocumentSnapshot>(
-            stream: Firestore.instance
-                .collection('사용자')
-                .document(_userPhoneNumber)
-                .snapshots(),
-            builder: (context, snapshot_user) {
-              if (!snapshot_user.hasData) {
-                return Container();
-              }
-              _chattingRoomID = snapshot_user.data['채팅중인방ID'];
-              return Scaffold(
-                resizeToAvoidBottomInset: false,
-                body: WillPopScope(
-                  child: Center(
-                    child: _widgetOptions[_selectedIndex],
-                  ),
-                  onWillPop: onWillPop,
-                ),
-                bottomNavigationBar: BottomNavigationBar(
-                  showSelectedLabels: false,
-                  showUnselectedLabels: false,
-                  items: <BottomNavigationBarItem>[
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.library_books), title: Text('게시판')),
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.add), title: Text('시작')),
-                    BottomNavigationBarItem(
-                        icon: _chattingRoomID == ''
-                            ? Icon(Icons.chat)
-                            : calculateUnreadMessages(context),
-                        title: Text('채팅')),
-                  ],
-                  currentIndex: _selectedIndex,
-                  selectedItemColor: Colors.pink,
-                  selectedIconTheme: IconThemeData(size: 35),
-                  onTap: _onItemTapped,
-                ),
-              );
-            });
+        stream: Firestore.instance
+            .collection('사용자')
+            .document(_userPhoneNumber)
+            .snapshots(),
+        builder: (context, userSnapshot) {
+          if (!userSnapshot.hasData) {
+            return Container();
+          }
+          _chattingRoomID = userSnapshot.data['채팅중인방ID'];
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: WillPopScope(
+              child: Center(
+                child: _widgetOptions[_selectedIndex],
+              ),
+              onWillPop: onWillPop,
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.library_books), title: Text('게시판')),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.add), title: Text('시작')),
+                BottomNavigationBarItem(
+                    icon: _chattingRoomID == ''
+                        ? Icon(Icons.chat)
+                        : calculateUnreadMessages(context),
+                    title: Text('채팅')),
+              ],
+              currentIndex: _selectedIndex,
+              selectedItemColor: Colors.pink,
+              selectedIconTheme: IconThemeData(size: 35),
+              onTap: _onItemTapped,
+            ),
+          );
+        });
   }
 
   Widget calculateUnreadMessages(BuildContext context) {
     // _chattingRoomID !=''일 경우에만 수행
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('게시판')
+            .collection('notice_board')
             .document(_chattingRoomID)
             .snapshots(),
         builder: (context, snapshot_board) {
@@ -117,7 +117,7 @@ class _Background_PageState extends State<Background_Page> {
           }
           return StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance
-                .collection('게시판')
+                .collection('notice_board')
                 .document(_chattingRoomID)
                 .collection('messages')
                 .where('sender_phone', isEqualTo: _otherPhoneNumber)
