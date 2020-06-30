@@ -38,6 +38,8 @@ class _User_Create_pageState extends State<User_Create_page> {
   String _userPhoneNumber;
   String _userLocation;
 
+  bool _isItemSelected = true;
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +92,37 @@ class _User_Create_pageState extends State<User_Create_page> {
               ),
             ],
           )
-              : Column(
+              :
+          _isItemSelected ?
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Column(
+                        children: <Widget>[
+                          Container(
+                            width: 100,
+                            height: 100,
+                            color: Colors.amber,
+                          ),
+                          Text('11')
+                        ],
+                      ),
+                      Container(),
+                    ],
+                  ),
+                  GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isItemSelected = !_isItemSelected;
+                        });
+                      },
+                      child: Center(child: Text('building')))
+                ],
+              )
+              :
+          Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Padding(
@@ -107,7 +139,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                     left: 40, right: 40, bottom: 20),
                 child: Card(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                      borderRadius: BorderRadius.circular(60)),
                   elevation: 15,
                   child: Padding(
                     padding: const EdgeInsets.only(
@@ -142,7 +174,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                     left: 40, right: 40, bottom: 20),
                 child: Card(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                      borderRadius: BorderRadius.circular(60)),
                   elevation: 15,
                   child: Padding(
                     padding: const EdgeInsets.only(
@@ -272,11 +304,11 @@ class _User_Create_pageState extends State<User_Create_page> {
                   child: Card(
                     color: Colors.pink,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(60)),
                     elevation: 15,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                          left: 15, top: 5, bottom: 5),
+                          top: 5, bottom: 5),
                       child: Container(
                           height: 50,
                           child: Center(

@@ -1,3 +1,4 @@
+import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
@@ -6,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
 import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'settings/styles.dart';
 import 'user_chat_page.dart';
 import 'user_settings_feedback_page.dart';
@@ -27,6 +29,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
   DateTime currentTime;
+
   @override
   void initState() {
     super.initState();
@@ -55,99 +58,62 @@ class _User_Board_PageState extends State<User_Board_Page> {
             _userIsChatting = true;
           }
           return Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
-              iconTheme: IconThemeData(color: Colors.black),
-              backgroundColor: Colors.white10,
+              iconTheme: IconThemeData(color: Colors.grey[700]),
+              backgroundColor: Colors.white,
               brightness: Brightness.light,
               elevation: 0,
-              title: Text(
-                '반띵',
-                style: GoogleFonts.poorStory(color: Colors.pink, fontSize: 30),
-              ),
+              centerTitle: true,
+              title: Text('반띵', style: text_pink_25()),
+              leading: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => User_Settings_Howto_Page()));
+                  },
+                  child: Icon(Icons.help_outline)),
             ),
             endDrawer: Drawer(
               child: ListView(
-                padding: EdgeInsets.zero,
                 children: <Widget>[
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Colors.pink,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.account_circle,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                            Container(
-                              width: 10,
-                            ),
-                            Text(snapshot_user.data['이름'],
-                                style: text_white_20()),
-                          ],
-                        ),
-                        Container(
-                          height: 20,
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.location_on,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                            Container(
-                              width: 10,
-                            ),
-                            Text(
-                              snapshot_user.data['위치'],
-                              style: text_white_20(),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          height: 20,
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.apps,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                            Container(
-                              width: 10,
-                            ),
-                            Text(
-                              '이용횟수  :  ' +
-                                  snapshot_user.data['이용횟수'].toString(),
-                              style: text_white_20(),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                   ListTile(
-                    leading: Icon(Icons.library_books),
+                    leading: Icon(
+                      Icons.account_circle,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
-                      '이용방법',
-                      style: text_grey_15(),
+                      snapshot_user.data['이름'],
+                      style: text_darkgrey_20(),
                     ),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Settings_Howto_Page()));
-                    },
                   ),
                   ListTile(
-                    leading: Icon(Icons.history),
+                    leading: Icon(
+                      Icons.location_on,
+                      color: Colors.grey[700],
+                    ),
+                    title: Text(
+                      snapshot_user.data['위치'],
+                      style: text_darkgrey_20(),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.apps,
+                      color: Colors.grey[700],
+                    ),
+                    title: Text(
+                      '이용횟수  :  ' + snapshot_user.data['이용횟수'].toString(),
+                      style: text_darkgrey_15(),
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.history,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '주문내역',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
@@ -155,10 +121,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.notifications),
+                    leading: Icon(
+                      Icons.notifications,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '공지사항',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
@@ -166,10 +135,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.edit),
+                    leading: Icon(
+                      Icons.edit,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '개선사항',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
@@ -177,10 +149,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.help_outline),
+                    leading: Icon(
+                      Icons.help_outline,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '고객지원',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
@@ -188,12 +163,15 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.notifications_active),
+                    leading: Icon(
+                      Icons.notifications_active,
+                      color: Colors.grey[700],
+                    ),
                     title: Row(
                       children: <Widget>[
                         Text(
                           '푸시알림',
-                          style: text_grey_15(),
+                          style: text_darkgrey_15(),
                         ),
                         Container(
                           width: 30,
@@ -210,37 +188,105 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     ),
                   ),
                   ListTile(
-                    leading: Icon(Icons.lock),
+                    leading: Icon(
+                      Icons.lock,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '개인정보 처리방침',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              User_Settings_PersonalInfo_Page()));
+                      launchUrl();
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.clear),
+                    leading: Icon(
+                      Icons.clear,
+                      color: Colors.grey[700],
+                    ),
                     title: Text(
                       '로그아웃',
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                     onTap: () {
-                      (() async {
-                        SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                        setState(() {
-                          prefs.clear();
-                        });
-                      })();
-                      Fluttertoast.showToast(
-                          msg: '로그아웃 되었습니다',
-                          gravity: ToastGravity.CENTER,
-                          backgroundColor: Colors.pink,
-                          textColor: Colors.white);
-                      Phoenix.rebirth(context);
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text('로그아웃 하시겠어요?', style: text_pink_20()),
+                                  Container(
+                                    height: 30,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: <Widget>[
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          elevation: 5,
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 25,
+                                                right: 25,
+                                                top: 15,
+                                                bottom: 15),
+                                            child: Center(
+                                              child: Text('취소',
+                                                  style: text_darkgrey_15()),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          (() async {
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            setState(() {
+                                              prefs.clear();
+                                            });
+                                          })();
+                                          Phoenix.rebirth(context);
+                                        },
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          elevation: 5,
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 25,
+                                                right: 25,
+                                                top: 15,
+                                                bottom: 15),
+                                            child: Center(
+                                              child: Text('확인',
+                                                  style: text_darkgrey_15()),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            );
+                          });
                     },
                   ),
                   ListTile(
@@ -266,39 +312,73 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 ],
               ),
             ),
-            body: StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance
-                  .collection('게시판')
-                  .where('위치', isEqualTo: _userLocation)
-                  .snapshots(),
-              builder: (context, boardSnapshot) {
-                if (!boardSnapshot.hasData)
-                  return Center(child: CircularProgressIndicator());
-                if (boardSnapshot.data.documents.isEmpty)
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text('반띵중인 사람이 없어요', style: text_grey_15()),
-                      Container(
-                        height: 15,
-                      ),
-                      Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
-                    ],
-                  );
-                return StreamBuilder<QuerySnapshot>(
-                    stream: Firestore.instance
-                        .collection('완료내역')
-                        .where('위치', isEqualTo: _userLocation)
-                        .snapshots(),
-                    builder: (context, completedSnapshot) {
-                      if (!completedSnapshot.hasData) {
-                        return _buildList(context, boardSnapshot.data.documents,
-                            _userPhoneNumber, null);
-                      }
-                      return _buildList(context, boardSnapshot.data.documents,
-                          _userPhoneNumber, completedSnapshot.data.documents);
-                    });
-              },
+            body: Column(
+              children: <Widget>[
+                Container(
+                    height: 150,
+                    child: Carousel(
+                      images: [
+                        Container(
+                          color: Colors.pink,
+                        ),
+                        Container(
+                          color: Colors.lightGreen,
+                        ),
+                        Container(
+                          color: Colors.amber,
+                        ),
+                      ],
+                      dotSize: 4,
+                      dotSpacing: 15,
+                      dotColor: Colors.brown,
+                      dotIncreaseSize: 3,
+                      indicatorBgPadding: 5.0,
+                      dotBgColor: Colors.grey.withOpacity(0.0),
+                      borderRadius: false,
+                    )),
+                StreamBuilder<QuerySnapshot>(
+                  stream: Firestore.instance
+                      .collection('게시판')
+                      .where('위치', isEqualTo: _userLocation)
+                      .snapshots(),
+                  builder: (context, boardSnapshot) {
+                    if (!boardSnapshot.hasData)
+                      return Center(child: CircularProgressIndicator());
+                    if (boardSnapshot.data.documents.isEmpty)
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 150),
+                        child: Column(
+                          children: <Widget>[
+                            Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                            Container(
+                              height: 15,
+                            ),
+                            Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                          ],
+                        ),
+                      );
+                    return StreamBuilder<QuerySnapshot>(
+                        stream: Firestore.instance
+                            .collection('완료내역')
+                            .where('위치', isEqualTo: _userLocation)
+                            .snapshots(),
+                        builder: (context, completedSnapshot) {
+                          if (!completedSnapshot.hasData) {
+                            return _buildList(
+                                context,
+                                boardSnapshot.data.documents,
+                                _userPhoneNumber,
+                                null);
+                          }
+                          return _buildList(
+                              context,
+                              boardSnapshot.data.documents,
+                              _userPhoneNumber,
+                              completedSnapshot.data.documents);
+                        });
+                  },
+                ),
+              ],
             ),
           );
         });
@@ -535,100 +615,104 @@ class _User_Board_PageState extends State<User_Board_Page> {
               });
         }
       },
-      child: ListTile(
-        title: Column(
-          children: <Widget>[
-            Ink(
-              // color: Colors.amber[50],
-              child: Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          record.restaurant,
-                          style: text_grey_20(),
-                        ),
-                        _userPhoneNumber == record.phoneNumber
-                            ? Row(
-                          children: [
-                            Text(
-                              'My 주문',
-                              style: text_red_15_bold(),
-                            ),
-                            Container(width: 4),
-                            IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: Colors.red[300],
-                                ),
-                                iconSize: 20,
-                                onPressed: () {
-                                  return showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return editOrderInfo(
-                                            context,
-                                            record.restaurant,
-                                            record.meetingPlace,
-                                            data_board);
-                                      });
-                                }),
-                          ],
-                        )
-                            : _userPhoneNumber == record.phoneNumber2
-                            ? Text(
-                          '내가 참여중',
-                          style: text_red_15_bold(),
-                        )
-                            : record.phoneNumber2 != ''
-                        // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                            ? Text(
-                          '반띵중',
-                          style: text_green_15_bold(),
-                        )
-                            : Container(),
-                      ],
-                    ),
-                    Container(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.place,
-                              color: Colors.grey[400],
-                            ),
-                            Container(width: 5),
-                            Text(record.meetingPlace, style: text_grey_15())
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              color: Colors.grey[400],
-                            ),
-                            Container(width: 5),
-                            Text(orderTime, style: text_grey_15())
-                          ],
-                        )
-                      ],
-                    ),
-                  ],
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 15,
+        child: ListTile(
+          title: Column(
+            children: <Widget>[
+              Ink(
+                // color: Colors.amber[50],
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            record.restaurant,
+                            style: text_grey_20(),
+                          ),
+                          _userPhoneNumber == record.phoneNumber
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      'My 주문',
+                                      style: text_red_15_bold(),
+                                    ),
+                                    Container(width: 4),
+                                    IconButton(
+                                        icon: Icon(
+                                          Icons.edit,
+                                          color: Colors.red[300],
+                                        ),
+                                        iconSize: 20,
+                                        onPressed: () {
+                                          return showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return editOrderInfo(
+                                                    context,
+                                                    record.restaurant,
+                                                    record.meetingPlace,
+                                                    data_board);
+                                              });
+                                        }),
+                                  ],
+                                )
+                              : _userPhoneNumber == record.phoneNumber2
+                                  ? Text(
+                                      '내가 참여중',
+                                      style: text_red_15_bold(),
+                                    )
+                                  : record.phoneNumber2 != ''
+                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                      ? Text(
+                                          '반띵중',
+                                          style: text_green_15_bold(),
+                                        )
+                                      : Container(),
+                        ],
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.place,
+                                color: Colors.grey[400],
+                              ),
+                              Container(width: 5),
+                              Text(record.meetingPlace, style: text_grey_15())
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                color: Colors.grey[400],
+                              ),
+                              Container(width: 5),
+                              Text(orderTime, style: text_grey_15())
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Divider(
-              thickness: 1,
-            ),
-          ],
+//              Divider(
+//                thickness: 1,
+//              ),
+            ],
+          ),
         ),
       ),
     );
@@ -818,4 +902,14 @@ class Record {
   @override
   String toString() =>
       "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname>";
+}
+
+launchUrl() async {
+  const url =
+      'https://www.facebook.com/permalink.php?story_fbid=115352936899114&id=115341866900221&__tn__=-R';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw '인터넷 연결이 원활하지 않습니다';
+  }
 }
