@@ -7,7 +7,6 @@ import 'package:halfofthing/settings/styles.dart';
 import 'package:search_widget/search_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'services/authservice.dart';
 import 'settings/make_password_encryption.dart';
 import 'settings/university_list.dart';
 
@@ -27,13 +26,15 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   final GlobalKey<FormState> _nameFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _phoneNumberFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _phoneNumberValidateFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _phoneNumberValidateFormKey =
+      GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordCheckFormKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  final TextEditingController _phoneNumberValidateController = TextEditingController();
+  final TextEditingController _phoneNumberValidateController =
+      TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordCheckController =
       TextEditingController();
@@ -53,44 +54,36 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   String _phoneNumberValidate;
   String _password;
   String _passwordCheck;
-
   String _comparePhoneNumber;
+  String _verificationId;
+  String _phoneNumberForValidate;
 
   var _ivsalt = make_ivslat();
   var _fortuna_key = make_key();
 
-  String _verificationId;
-  String _phoneNumberForValidate;
-  bool _codeSent = false;
-
-  Future<void> verifyPhone(phoneNo) async {
-    final PhoneVerificationCompleted verified = (AuthCredential authResult) {
-      AuthService().signIn(authResult);
-    };
-
-    final PhoneVerificationFailed verificationfailed =
-        (AuthException authException) {
-      print('${authException.message}');
-    };
-
-    final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
-      this._verificationId = verId;
-      setState(() {
-        this._codeSent = true;
-      });
-    };
-
-    final PhoneCodeAutoRetrievalTimeout autoTimeout = (String verId) {
-      this._verificationId = verId;
-    };
-
+  void _requestSMSCodeUsingPhoneNumber() async {
     await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: _phoneNumberForValidate,
-        timeout: const Duration(seconds: 5),
-        verificationCompleted: verified,
-        verificationFailed: verificationfailed,
-        codeSent: smsSent,
-        codeAutoRetrievalTimeout: autoTimeout);
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (AuthCredential phoneAuthCredential) =>
+            print('Sign up with phone complete'),
+        verificationFailed: (AuthException error) =>
+            print('error message is ${error.message}'),
+        codeSent: (String verificationId, [int forceResendingToken]) {
+          setState(() => _verificationId = verificationId);
+        },
+        codeAutoRetrievalTimeout: null);
+  }
+
+  void _signInWithPhoneNumberAndSMSCode() async {
+    AuthCredential authCreds = PhoneAuthProvider.getCredential(
+        verificationId: _verificationId, smsCode: _phoneNumberValidate);
+    final FirebaseUser user =
+        (await FirebaseAuth.instance.signInWithCredential(authCreds)).user;
+
+//    setState(() => _verificationId = null);
+//    FocusScope.of(context).requestFocus(FocusNode());
+//    _showSnackBar('Sign up with phone success. Check your firebase.');
   }
 
   @override
@@ -230,7 +223,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _nameController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.account_circle, color: Colors.grey[700],),
+                                  icon: Icon(
+                                    Icons.account_circle,
+                                    color: Colors.grey[700],
+                                  ),
                                   hintText: '이름',
                                   hintStyle: text_grey_15(),
                                   border: InputBorder.none),
@@ -263,7 +259,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               child: Form(
                                 key: _phoneNumberFormKey,
                                 child: TextFormField(
-                                  enabled: _isPhoneValidateDone? false:true,
+                                  enabled: _isPhoneValidateDone ? false : true,
                                   style: text_darkgrey_15(),
                                   onChanged: (String str) {
                                     setState(() {
@@ -273,7 +269,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   keyboardType: TextInputType.number,
                                   controller: _phoneNumberController,
                                   decoration: InputDecoration(
-                                      icon: Icon(Icons.phone, color: Colors.grey[700],),
+                                      icon: Icon(
+                                        Icons.phone,
+                                        color: Colors.grey[700],
+                                      ),
                                       hintText: '핸드폰번호',
                                       hintStyle: text_grey_15(),
                                       border: InputBorder.none),
@@ -290,30 +289,40 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               ),
                             ),
                           ),
-                          Positioned(
-                              top: 25,
-                              right: 20,
-                              child: _isPhoneValidateDone? Icon(Icons.check, color: Colors.pink,) :GestureDetector(
-                                onTap: () {
-                                  if (_phoneNumberFormKey.currentState
-                                      .validate()) {
-                                    setState(() {
-                                      _isPhoneValidateClicked = !_isPhoneValidateClicked;
-                                    });
-                                    _phoneNumberForValidate = "+82" + _phoneNumber.substring(1, 11);
-                                    verifyPhone(_phoneNumberForValidate);
-                                  }
-                                },
-                                child: Text(
-                                  '인증하기',
-                                  style: text_grey_15(),
-                                ),
-                              )),
+                          _isPhoneValidateDone
+                              ? Positioned(
+                                  top: 20,
+                                  right: 20,
+                                  child: Icon(
+                                    Icons.check,
+                                    color: Colors.pink,
+                                  ))
+                              : Positioned(
+                                  top: 25,
+                                  right: 20,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (_phoneNumberFormKey.currentState
+                                          .validate()) {
+                                        setState(() {
+                                          _isPhoneValidateClicked =
+                                              !_isPhoneValidateClicked;
+                                        });
+                                        _phoneNumberForValidate = "+82" +
+                                            _phoneNumber.substring(1, 11);
+                                        _requestSMSCodeUsingPhoneNumber();
+                                      }
+                                    },
+                                    child: Text(
+                                      '인증하기',
+                                      style: text_grey_15(),
+                                    ),
+                                  )),
                         ],
                       ),
                     ),
                     Visibility(
-                      visible: _isPhoneValidateClicked ? true:false,
+                      visible: _isPhoneValidateClicked ? true : false,
                       child: Padding(
                         padding: const EdgeInsets.only(
                             left: 40, right: 40, bottom: 20),
@@ -338,7 +347,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                     keyboardType: TextInputType.number,
                                     controller: _phoneNumberValidateController,
                                     decoration: InputDecoration(
-                                        icon: Icon(Icons.check, color: Colors.grey[700],),
+                                        icon: Icon(
+                                          Icons.check,
+                                          color: Colors.grey[700],
+                                        ),
                                         hintText: '인증번호',
                                         hintStyle: text_grey_15(),
                                         border: InputBorder.none),
@@ -357,14 +369,15 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                 right: 20,
                                 child: GestureDetector(
                                   onTap: () {
-                                    if(_phoneNumberValidateFormKey.currentState.validate()){
-                                      AuthService().signInWithOTP(
-                                          _phoneNumberValidate, _verificationId);
-                                      AuthService().signOut();
+                                    if (_phoneNumberValidateFormKey.currentState
+                                        .validate()) {
                                       setState(() {
-                                        _isPhoneValidateClicked = !_isPhoneValidateClicked;
-                                        _isPhoneValidateDone = !_isPhoneValidateDone;
+                                        _isPhoneValidateClicked =
+                                            !_isPhoneValidateClicked;
+                                        _isPhoneValidateDone =
+                                            !_isPhoneValidateDone;
                                       });
+                                      _signInWithPhoneNumberAndSMSCode();
                                     }
                                   },
                                   child: Text(
@@ -401,7 +414,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _passwordController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.lock, color: Colors.grey[700],),
+                                  icon: Icon(
+                                    Icons.lock,
+                                    color: Colors.grey[700],
+                                  ),
                                   hintText: '비밀번호',
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),
@@ -441,7 +457,10 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _passwordCheckController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.lock, color: Colors.grey[700],),
+                                  icon: Icon(
+                                    Icons.lock,
+                                    color: Colors.grey[700],
+                                  ),
                                   hintText: '비밀번호 확인',
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),

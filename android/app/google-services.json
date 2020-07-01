@@ -59,6 +59,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1067764728009-b3tt6gc821p8f4erhk4tn7c6vbbreav9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nomadcat.halfofthing",
+            "certificate_hash": "53c8e7dbe20aaf6753bdce92bfe94900af1211be"
+          }
+        },
+        {
           "client_id": "1067764728009-qc9sa51dmvng9csnivfbupn86ak52esn.apps.googleusercontent.com",
           "client_type": 3
         }
