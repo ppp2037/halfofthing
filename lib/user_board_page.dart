@@ -20,7 +20,8 @@ class User_Board_Page extends StatefulWidget {
   _User_Board_PageState createState() => _User_Board_PageState();
 }
 
-class _User_Board_PageState extends State<User_Board_Page> with TickerProviderStateMixin {
+class _User_Board_PageState extends State<User_Board_Page>
+    with TickerProviderStateMixin {
   String _userPhoneNumber;
   String _userLocation;
   bool _isNotificationChecked = false;
@@ -372,18 +373,39 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
                     if (!boardSnapshot.hasData)
                       return Center(child: CircularProgressIndicator());
                     if (boardSnapshot.data.documents.isEmpty)
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 150),
-                        child: Column(
-                          children: <Widget>[
-                            Text('반띵중인 사람이 없어요', style: text_grey_15()),
-                            Container(
-                              height: 15,
-                            ),
-                            Text('가운데 시작을 눌러 반띵을 시작해보세요',
-                                style: text_grey_15()),
-                          ],
-                        ),
+                      return Column(
+                        children: <Widget>[
+                          Container(
+                            height: 40,
+                          ),
+                          Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                          Container(
+                            height: 15,
+                          ),
+                          Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                          Container(
+                            height: 40,
+                          ),
+                          StreamBuilder<QuerySnapshot>(
+                              stream: Firestore.instance
+                                  .collection('완료내역')
+                                  .where('위치', isEqualTo: _userLocation)
+                                  .snapshots(),
+                              builder: (context, completedSnapshot) {
+                                if (!completedSnapshot.hasData) {
+                                  return _buildList(
+                                      context,
+                                      boardSnapshot.data.documents,
+                                      _userPhoneNumber,
+                                      null);
+                                }
+                                return _buildList(
+                                    context,
+                                    boardSnapshot.data.documents,
+                                    _userPhoneNumber,
+                                    completedSnapshot.data.documents);
+                              }),
+                        ],
                       );
                     return StreamBuilder<QuerySnapshot>(
                         stream: Firestore.instance
@@ -465,7 +487,7 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
         padding: const EdgeInsets.only(bottom: 10),
         child: Card(
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 15,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -478,17 +500,20 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
                       Column(
                         children: <Widget>[
                           Image.asset(
-                            'images/food_images' + completedData.data['menuCategory'] + '.png',
-                            width:
-                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
-                            height:
-                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
+                            'images/food_images' +
+                                completedData.data['menuCategory'] +
+                                '.png',
+                            width: Tween(begin: 0.0, end: 60.0)
+                                .evaluate(_bounceInOutAnimation),
+                            height: Tween(begin: 0.0, end: 60.0)
+                                .evaluate(_bounceInOutAnimation),
                           ),
                           Container(
                             height: 10,
                           ),
                           Text(
-                            _selectedCategory[int.parse(completedData.data['menuCategory'])],
+                            _selectedCategory[
+                                int.parse(completedData.data['menuCategory'])],
                             style: text_grey_10(),
                           ),
                         ],
@@ -549,7 +574,10 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 75),
-                    child: Text('반띵완료', style: text_pink_15(),),
+                    child: Text(
+                      '반띵완료',
+                      style: text_pink_15(),
+                    ),
                   ),
                 ],
               ),
@@ -661,9 +689,6 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
           showDialog(
               context: context,
               builder: (BuildContext context) {
-                Future.delayed(Duration(seconds: 2), () {
-                  Navigator.pop(context);
-                });
                 return AlertDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20)),
@@ -751,7 +776,7 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
                                 '참가자닉네임': nickName,
                               });
                               data_board.reference.collection('messages').add({
-                                'text': "${nickName}님이 입장하셨습니다.",
+                                'text': "${nickName}님이 입장하셨습니다",
                                 'sender_phone': "공지",
                                 'sender_nickname': "",
                                 'time': DateTime.now(),
@@ -807,10 +832,10 @@ class _User_Board_PageState extends State<User_Board_Page> with TickerProviderSt
                         children: <Widget>[
                           Image.asset(
                             'images/food_images' + record.menuCategory + '.png',
-                            width:
-                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
-                            height:
-                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
+                            width: Tween(begin: 0.0, end: 60.0)
+                                .evaluate(_bounceInOutAnimation),
+                            height: Tween(begin: 0.0, end: 60.0)
+                                .evaluate(_bounceInOutAnimation),
                           ),
                           Container(
                             height: 10,

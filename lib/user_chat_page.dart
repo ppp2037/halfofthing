@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:halfofthing/user_board_page.dart' as boardPage;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'background_page.dart';
 import 'settings/styles.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'survey_page.dart';
@@ -14,9 +13,10 @@ class User_Chat_Page extends StatefulWidget {
 }
 
 class _User_Chat_PageState extends State<User_Chat_Page> {
+
   CollectionReference chatReference;
-  final TextEditingController _textController = new TextEditingController();
-  bool _isWritting = false;
+  final TextEditingController _textController = TextEditingController();
+  bool _isWriting = false;
   String _userPhoneNumber,
       _userLocation,
       _otherPhoneNumber = '',
@@ -34,6 +34,19 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   AsyncSnapshot<DocumentSnapshot> userSnapshot,
       otherUserSnapshot,
       boardSnapshot;
+
+  List<String> _selectedCategory = [
+    '미선택',
+    '간식/도시락',
+    '카페/디저트',
+    '분식',
+    '한식',
+    '햄버거',
+    '중국집',
+    '일식/돈까스',
+    '아시안/양식'
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -101,7 +114,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               deliveredIcon(documentSnapshot),
               Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(60)),
                 color: Colors.pink,
                 child: Container(
                   constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
@@ -141,7 +154,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
+                  borderRadius: BorderRadius.circular(60)),
               color: Colors.white,
               child: Container(
                 constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
@@ -163,25 +176,18 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 공지 말풍선
     documentSnapshot.reference.updateData({'delivered': false});
     return <Widget>[
-      Row(children: [
-        Card(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          color: Colors.grey[200],
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  documentSnapshot.data['text'],
-                  style: text_darkgrey_15(),
-                ),
-              ],
-            ),
+      Card(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(60)),
+        color: Colors.grey[200],
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Text(
+            documentSnapshot.data['text'],
+            style: text_darkgrey_15(),
           ),
         ),
-        // timeStampText(documentSnapshot)
-      ])
+      )
     ];
   }
 
@@ -253,8 +259,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "build => chattingRoom : $_chattingRoomID, userIsHost : $_userIsHost, userphone : $_userPhoneNumber, otherPhone : $_otherPhoneNumber");
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
@@ -310,7 +314,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   }
                   if (_myCompleted && _otherCompleted) {
                     // 둘다 반띵완료를 누른 경우
-                    // boardPage.popUpDialog(context, "반띵이 완료되었어요!");
                     userSnapshot.data.reference.updateData(
                         {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1});
                     List<dynamic> _users = [
@@ -325,10 +328,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                       '주문시간': _orderTime,
                       '만날장소': _meetingPlace,
                       '사용자': _users,
-                      '위치': _userLocation
+                      '위치': _userLocation,
+                      'menuCategory': boardSnapshot.data['menuCategory'],
                     });
                     boardSnapshot.data.reference.delete();
-                    return Container();
+                    Phoenix.rebirth(context);
                   }
                   return Scaffold(
                     backgroundColor: Colors.white,
@@ -410,7 +414,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               controller: _textController,
               onChanged: (String messageText) {
                 setState(() {
-                  _isWritting = messageText.length > 0;
+                  _isWriting = messageText.length > 0;
                 });
               },
               decoration: InputDecoration(
@@ -421,7 +425,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           IconButton(
             icon: Icon(
               Icons.send,
-              color: _isWritting && _otherPhoneNumber != ''
+              color: _isWriting && _otherPhoneNumber != ''
                   ? Colors.pink
                   : Colors.grey[700],
             ),
@@ -524,11 +528,27 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             Container(
               height: 100,
             ),
-            Image.asset('images/halfofthing_logo_red_1024x1024.png',
-            width: 100,
-            height: 100,),
+            Column(
+              children: <Widget>[
+                Image.asset(
+                  'images/food_images' +
+                      boardSnapshot.data['menuCategory'] +
+                      '.png',
+                  width: 100,
+                  height: 100,
+                ),
+                Container(
+                  height: 10,
+                ),
+                Text(
+                  _selectedCategory[
+                  int.parse(boardSnapshot.data['menuCategory'])],
+                  style: text_grey_15(),
+                ),
+              ],
+            ),
             Container(
-              height: 60,
+              height: 30,
             ),
             ListTile(
               leading: Icon(Icons.restaurant, color: Colors.grey[700],),
@@ -547,7 +567,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             ListTile(
               leading: Icon(Icons.place, color: Colors.grey[700],),
               title: Text(
-                '만날 장소 : $_meetingPlace',
+                _meetingPlace,
                 style: text_darkgrey_15(),
               ),
             ),
@@ -585,7 +605,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           // 게시물 삭제
           userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
           boardSnapshot.data.reference.delete();
-          Navigator.pop(context);
+          Phoenix.rebirth(context);
         });
   }
 
@@ -607,8 +627,18 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 Icons.account_circle,
                 color: Colors.grey[700],
               ),
-              title: Text('${_otherNickname}님의 반띵 횟수 : ${_otherOrders}',
-                  style: text_darkgrey_15()));
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('${_otherNickname}님의',
+                      style: text_darkgrey_15()),
+                  Container(
+                    height: 10,
+                  ),
+                  Text('반띵 횟수 : ${_otherOrders}',
+                      style: text_darkgrey_15()),
+                ],
+              ));
         });
   }
 
@@ -659,7 +689,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           '참가자참여시간': '',
           '참가자닉네임': '',
         });
-        Navigator.pop(context);
+        Phoenix.rebirth(context);
       },
     );
   }
@@ -700,7 +730,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
           });
         });
-        Navigator.pop(context);
+        Phoenix.rebirth(context);
       },
     );
   }

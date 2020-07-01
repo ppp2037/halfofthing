@@ -68,7 +68,7 @@ class _Survey_PageState extends State<Survey_Page> {
             children: <Widget>[
               Text(
                 '잘 반띵 했나요?',
-                style: text_grey_20(),
+                style: text_darkgrey_20(),
               ),
               Container(
                 height: 20,
@@ -81,7 +81,7 @@ class _Survey_PageState extends State<Survey_Page> {
                     onLongPress: () => setState(() => _selectedDoneWell = 0),
                     child: Card(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(60)),
                       elevation: 5,
                       color:
                       _selectedDoneWell == 1 ? Colors.pink : Colors.white,
@@ -94,7 +94,7 @@ class _Survey_PageState extends State<Survey_Page> {
                               style: (TextStyle(
                                   color: _selectedDoneWell == 1
                                       ? Colors.white
-                                      : Colors.grey)),
+                                      : Colors.grey[700])),
                               textScaleFactor: 1.0,
                             )),
                       ),
@@ -108,7 +108,7 @@ class _Survey_PageState extends State<Survey_Page> {
                     onLongPress: () => setState(() => _selectedDoneWell = 0),
                     child: Card(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(60)),
                       elevation: 5,
                       color:
                       _selectedDoneWell == 2 ? Colors.pink : Colors.white,
@@ -121,7 +121,7 @@ class _Survey_PageState extends State<Survey_Page> {
                               style: (TextStyle(
                                   color: _selectedDoneWell == 2
                                       ? Colors.white
-                                      : Colors.grey)),
+                                      : Colors.grey[700])),
                               textScaleFactor: 1.0,
                             )),
                       ),
@@ -135,7 +135,7 @@ class _Survey_PageState extends State<Survey_Page> {
             children: <Widget>[
               Text(
                 '반띵 서비스에 얼마나 만족하시나요?',
-                style: text_grey_20(),
+                style: text_darkgrey_20(),
               ),
               Container(
                 height: 20,
@@ -193,6 +193,7 @@ class _Survey_PageState extends State<Survey_Page> {
                       child: Form(
                         key: _feedbackFormKey,
                         child: TextFormField(
+                          style: text_darkgrey_15(),
                           onChanged: (String str) {
                             setState(() {
                               _feedback = str;
@@ -202,9 +203,9 @@ class _Survey_PageState extends State<Survey_Page> {
                           maxLines: null,
                           controller: _feedbackController,
                           decoration: InputDecoration(
-                              hintText: '반띵의 개선사항이 있으면 알려주세요',
+                              hintText: '(선택) 반띵의 개선사항이 있으면 알려주세요',
                               hintStyle: text_grey_15(),
-                              icon: Icon(Icons.edit),
+                              icon: Icon(Icons.edit, color: Colors.grey[700],),
                               border: InputBorder.none),
                         ),
                       ),
@@ -245,7 +246,7 @@ class _Survey_PageState extends State<Survey_Page> {
                   child: Card(
                     color: Colors.pink,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(60)),
                     elevation: 15,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 5, bottom: 5),

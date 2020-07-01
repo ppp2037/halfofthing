@@ -13,7 +13,7 @@ class User_Create_page extends StatefulWidget {
   _User_Create_pageState createState() => _User_Create_pageState();
 }
 
-class _User_Create_pageState extends State<User_Create_page> {
+class _User_Create_pageState extends State<User_Create_page> with TickerProviderStateMixin{
   final GlobalKey<FormState> _restaurantFormKey =
       GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
   final TextEditingController _restaurantController =
@@ -27,6 +27,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   void dispose() {
     _restaurantController.dispose();
     _meetingPlaceController.dispose();
+    _bounceInOutController.dispose();
     super.dispose();
   }
 
@@ -41,6 +42,9 @@ class _User_Create_pageState extends State<User_Create_page> {
 
   bool _isItemSelected = true;
 
+  AnimationController _bounceInOutController;
+  Animation _bounceInOutAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +55,9 @@ class _User_Create_pageState extends State<User_Create_page> {
         _userLocation = prefs.getString('prefsLocation');
       });
     })();
+    _bounceInOutController =
+        AnimationController(duration: Duration(seconds: 2), vsync: this);
+    _bounceInOutController.forward();
   }
 
   int _selectedCategoryNumber = 0;
@@ -69,6 +76,11 @@ class _User_Create_pageState extends State<User_Create_page> {
 
   @override
   Widget build(BuildContext context) {
+    _bounceInOutAnimation = CurvedAnimation(
+        parent: _bounceInOutController, curve: Curves.fastOutSlowIn);
+    _bounceInOutAnimation.addListener(() {
+      setState(() {});
+    });
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: StreamBuilder<DocumentSnapshot>(
@@ -125,8 +137,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images1.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -151,8 +165,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images2.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -185,8 +201,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images3.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -211,8 +229,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images4.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -245,8 +265,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images5.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -271,8 +293,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images6.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -305,8 +329,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images7.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
@@ -331,8 +357,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 children: <Widget>[
                                   Image.asset(
                                     'images/food_images8.png',
-                                    width: 100,
-                                    height: 100,
+                                    width:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                    height:
+                                    Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
                                   ),
                                   Container(
                                     height: 10,
