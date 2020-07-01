@@ -620,17 +620,6 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                             '이용횟수': 0,
                                                             '채팅중인방ID': '',
                                                           });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg: '회원가입에 성공했어요',
-                                                            gravity:
-                                                                ToastGravity
-                                                                    .CENTER,
-                                                            backgroundColor:
-                                                                Colors.white,
-                                                            textColor:
-                                                                Colors.pink,
-                                                          );
                                                           Phoenix.rebirth(
                                                               context);
                                                         },

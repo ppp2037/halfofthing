@@ -89,7 +89,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         children: <Widget>[
           Text(
             documentSnapshot.data['sender_nickname'],
-            style: text_black_15(),
+            style: text_darkgrey_15(),
           ),
           Container(
             height: 5,
@@ -134,7 +134,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(documentSnapshot.data['sender_nickname'],
-              style: text_black_15()),
+              style: text_darkgrey_15()),
           Container(
             height: 5,
           ),
@@ -148,7 +148,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 padding: EdgeInsets.all(10),
                 child: Text(
                   documentSnapshot.data['text'],
-                  style: text_black_15(),
+                  style: text_darkgrey_15(),
                 ),
               ),
             ),
@@ -163,7 +163,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 공지 말풍선
     documentSnapshot.reference.updateData({'delivered': false});
     return <Widget>[
-      new Row(children: [
+      Row(children: [
         Card(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -174,7 +174,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               children: <Widget>[
                 Text(
                   documentSnapshot.data['text'],
-                  style: text_black_15(),
+                  style: text_darkgrey_15(),
                 ),
               ],
             ),
@@ -333,7 +333,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   return Scaffold(
                     backgroundColor: Colors.white,
                     appBar: AppBar(
+                      centerTitle: true,
+                      iconTheme: IconThemeData(color: Colors.grey[700]),
+                      elevation: 0,
                       brightness: Brightness.light,
+                      backgroundColor: Colors.white,
                       title: _otherPhoneNumber == ''
                           ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_darkgrey_15())
                           : (_myCompleted && !_otherCompleted)
@@ -342,9 +346,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                         style: text_darkgrey_15(),
                       )
                           : drawer_completeOrder(context),
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      iconTheme: IconThemeData(color: Colors.grey[700]),
                     ),
                     endDrawer: drawerAll(context),
                     body: Padding(

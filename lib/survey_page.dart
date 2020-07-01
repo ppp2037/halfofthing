@@ -20,9 +20,9 @@ class Survey_Page extends StatefulWidget {
 
 class _Survey_PageState extends State<Survey_Page> {
   final GlobalKey<FormState> _feedbackFormKey =
-  GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+  GlobalKey<FormState>();
   final TextEditingController _feedbackController =
-  TextEditingController(); //컨트롤러 생성
+  TextEditingController();
   @override
   void dispose() {
     _feedbackController.dispose();
@@ -52,10 +52,14 @@ class _Survey_PageState extends State<Survey_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('설문'),
+        title: Text('설문', style: text_pink_20(),),
         centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.grey[700]),
+        elevation: 0,
         brightness: Brightness.light,
+        backgroundColor: Colors.white,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -227,11 +231,6 @@ class _Survey_PageState extends State<Survey_Page> {
                     '사용자핸드폰번호': _userPhoneNumber,
                     '피드백이름': _userPhoneNumber + '_' + _userOrderId,
                   });
-                  Fluttertoast.showToast(
-                      msg: '설문에 답해주셔서 감사합니다',
-                      gravity: ToastGravity.CENTER,
-                      backgroundColor: Colors.pink,
-                      textColor: Colors.white);
                   if (widget.userIsHost) {
                     widget.snapshot_board.data.reference
                         .updateData({'반띵완료_개설자': true});

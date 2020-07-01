@@ -550,36 +550,12 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 '반띵완료_개설자': false,
                                 '반띵완료_참가자': false,
                                 '내보낸사용자': [],
-                                'menuCategory': _selectedCategoryNumber,
+                                'menuCategory': _selectedCategoryNumber.toString(),
                               });
                               Firestore.instance
                                   .collection('사용자')
                                   .document(_userPhoneNumber)
                                   .updateData({'채팅중인방ID': _boardID});
-
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    Future.delayed(Duration(seconds: 2), () {
-                                      Navigator.pop(context);
-                                    });
-                                    return AlertDialog(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                      content: FittedBox(
-                                        fit: BoxFit.contain,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(20),
-                                          child: Center(
-                                              child: Text(
-                                            '새로운 반띵이 등록되었어요',
-                                            style: text_darkgrey_20(),
-                                          )),
-                                        ),
-                                      ),
-                                    );
-                                  });
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (context) => Background_Page()));

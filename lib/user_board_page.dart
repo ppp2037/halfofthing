@@ -20,7 +20,7 @@ class User_Board_Page extends StatefulWidget {
   _User_Board_PageState createState() => _User_Board_PageState();
 }
 
-class _User_Board_PageState extends State<User_Board_Page> {
+class _User_Board_PageState extends State<User_Board_Page> with TickerProviderStateMixin {
   String _userPhoneNumber;
   String _userLocation;
   bool _isNotificationChecked = false;
@@ -39,6 +39,9 @@ class _User_Board_PageState extends State<User_Board_Page> {
     '아시안/양식'
   ];
 
+  AnimationController _bounceInOutController;
+  Animation _bounceInOutAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -50,10 +53,24 @@ class _User_Board_PageState extends State<User_Board_Page> {
         _userLocation = prefs.getString('prefsLocation');
       });
     })();
+    _bounceInOutController =
+        AnimationController(duration: Duration(seconds: 2), vsync: this);
+    _bounceInOutController.forward();
+  }
+
+  @override
+  void dispose() {
+    _bounceInOutController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _bounceInOutAnimation = CurvedAnimation(
+        parent: _bounceInOutController, curve: Curves.bounceInOut);
+    _bounceInOutAnimation.addListener(() {
+      setState(() {});
+    });
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
@@ -359,12 +376,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         padding: const EdgeInsets.only(top: 150),
                         child: Column(
                           children: <Widget>[
-                            Text('반띵중인 사람이 없어요', style: text_darkgrey_15()),
+                            Text('반띵중인 사람이 없어요', style: text_grey_15()),
                             Container(
                               height: 15,
                             ),
                             Text('가운데 시작을 눌러 반띵을 시작해보세요',
-                                style: text_darkgrey_15()),
+                                style: text_grey_15()),
                           ],
                         ),
                       );
@@ -417,6 +434,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
 
   Widget _buildCompletedListItem(
       BuildContext context, DocumentSnapshot completedData) {
+    DateTime orderDate = ((completedData.data['주문시간']) as Timestamp).toDate();
+    String completedDate = DateFormat('MM월 dd일').format(orderDate);
     return GestureDetector(
       onTap: () {
         showDialog(
@@ -442,44 +461,100 @@ class _User_Board_PageState extends State<User_Board_Page> {
               );
             });
       },
-      child: ListTile(
-        title: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Card(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 15,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(
-                        completedData.data['식당이름'],
-                        style: text_darkgrey_20(),
+                      Column(
+                        children: <Widget>[
+                          Image.asset(
+                            'images/food_images' + completedData.data['menuCategory'] + '.png',
+                            width:
+                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
+                            height:
+                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
+                          ),
+                          Container(
+                            height: 10,
+                          ),
+                          Text(
+                            _selectedCategory[int.parse(completedData.data['menuCategory'])],
+                            style: text_grey_10(),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '반띵완료',
-                        style: text_lightGrey_13(),
-                      )
+                      Container(
+                        width: 20,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.restaurant,
+                                color: Colors.grey,
+                              ),
+                              Container(width: 10),
+                              Text(
+                                completedData.data['식당이름'],
+                                style: text_grey_20(),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            height: 15,
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.place,
+                                color: Colors.grey,
+                              ),
+                              Container(width: 10),
+                              Text(completedData.data['만날장소'],
+                                  style: text_grey_15())
+                            ],
+                          ),
+                          Container(
+                            height: 15,
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.grey,
+                                  ),
+                                  Container(width: 10),
+                                  Text(completedDate, style: text_grey_15())
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                  Container(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.place,
-                        color: Colors.grey[700],
-                      ),
-                      Container(width: 5),
-                      Text(completedData.data['만날장소'],
-                          style: text_darkgrey_15())
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 75),
+                    child: Text('반띵완료', style: text_pink_15(),),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -511,134 +586,211 @@ class _User_Board_PageState extends State<User_Board_Page> {
     return GestureDetector(
       onTap: () {
         if (_myRoom) {
-          // 자신이 개설한 게시물인 경우 (나의 게시물) or 자신이 참여중인 게시물인 경우 (내가 참여중)
-          // => 채팅방으로 바로 이동
-          // Navigator.of(context).pop();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => User_Chat_Page()));
-        } else {
-          return showDialog(
+        } else if (_userIsChatting) {
+          showDialog(
               context: context,
               builder: (BuildContext context) {
-                if (_userIsChatting) {
-                  // 사용자가 현재 채팅중일 경우 => 입장 불가 Dialog 띄우기
-                  Future.delayed(Duration(seconds: 1), () {
-                    Navigator.pop(context);
-                  });
-                  return popUpDialog(
-                      context, "현재 진행중인 채팅방이 있기 때문에\n입장하실 수 없어요");
-                } else if (record.phoneNumber2 != '') {
-                  // 다른 사람이 참여중인 게시물인 경우 (반띵중)
-                  Future.delayed(Duration(seconds: 1), () {
-                    Navigator.pop(context);
-                  });
-                  return popUpDialog(context, "이미 반띵중인 게시물이에요.");
-                } else if (record.blockedList.contains(_userPhoneNumber)) {
-                  // 이미 내보낸 사용자인 경우 입장 불가
-                  Future.delayed(Duration(seconds: 1), () {
-                    Navigator.pop(context);
-                  });
-                  return popUpDialog(context, "들어갈 수 없는 게시물이에요ㅜ.ㅜ");
-                } else {
-                  // 사용자가 현재 참여중인 채팅방이 없고, 게시물이 반띵중이 아닌 경우
-                  return AlertDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text('식당 : ' + record.restaurant,
-                            style: text_pink_20()),
-                        Container(
-                          height: 20,
-                        ),
-                        Text(orderTime, style: text_pink_20()),
-                        Container(
-                          height: 20,
-                        ),
-                        Text('장소 : ' + record.meetingPlace,
-                            style: text_pink_20()),
-                        Container(
-                          height: 20,
-                        ),
-                        Text('반띵을 시작하시겠어요?', style: text_grey_15()),
-                        Container(
-                          height: 30,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                elevation: 5,
-                                color: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 25, right: 25, top: 15, bottom: 15),
-                                  child: Center(
-                                    child: Text('취소', style: text_grey_15()),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                // 게시물에 새로 참가하기
-                                String nickName = randomNickname();
-                                data_board.reference.updateData({
-                                  '참가자핸드폰번호': _userPhoneNumber,
-                                  '참가자참여시간': DateTime.now(),
-                                  '참가자닉네임': nickName,
-                                });
-                                data_board.reference
-                                    .collection('messages')
-                                    .add({
-                                  'text': "${nickName}님이 입장하셨습니다.",
-                                  'sender_phone': "공지",
-                                  'sender_nickname': "",
-                                  'time': DateTime.now(),
-                                  'delivered': false,
-                                });
-                                Firestore.instance
-                                    .collection('사용자')
-                                    .document(_userPhoneNumber)
-                                    .updateData({
-                                  '채팅중인방ID': record.boardname,
-                                });
-                                Navigator.of(context).pop();
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => User_Chat_Page()));
-                              },
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                elevation: 5,
-                                color: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 25, right: 25, top: 15, bottom: 15),
-                                  child: Center(
-                                    child: Text('확인', style: text_grey_15()),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
+                Future.delayed(Duration(seconds: 2), () {
+                  Navigator.pop(context);
+                });
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  content: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                          child: Text(
+                        '현재 진행중인 반띵이 있기 때문에\n입장하실 수 없어요',
+                        style: text_darkgrey_20(),
+                      )),
                     ),
-                  );
-                }
+                  ),
+                );
+              });
+        } else if (record.phoneNumber2 != '') {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                Future.delayed(Duration(seconds: 2), () {
+                  Navigator.pop(context);
+                });
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  content: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                          child: Text(
+                        '이미 반띵중인 게시물이에요',
+                        style: text_darkgrey_20(),
+                      )),
+                    ),
+                  ),
+                );
+              });
+        } else if (record.blockedList.contains(_userPhoneNumber)) {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                Future.delayed(Duration(seconds: 2), () {
+                  Navigator.pop(context);
+                });
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  content: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                          child: Text(
+                        '들어갈 수 없는 게시물이에요ㅜ.ㅜ',
+                        style: text_darkgrey_20(),
+                      )),
+                    ),
+                  ),
+                );
+              });
+        } else {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                Future.delayed(Duration(seconds: 2), () {
+                  Navigator.pop(context);
+                });
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text('반띵을 시작하시겠어요?', style: text_pink_20()),
+                      Container(
+                        height: 30,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Icon(
+                            Icons.restaurant,
+                            color: Colors.grey[700],
+                          ),
+                          Container(
+                            width: 15,
+                          ),
+                          Text(record.restaurant, style: text_darkgrey_20()),
+                        ],
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.grey[700],
+                          ),
+                          Container(
+                            width: 15,
+                          ),
+                          Text(record.meetingPlace, style: text_darkgrey_20()),
+                        ],
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.access_time,
+                            color: Colors.grey[700],
+                          ),
+                          Container(
+                            width: 15,
+                          ),
+                          Text(orderTime, style: text_darkgrey_20()),
+                        ],
+                      ),
+                      Container(
+                        height: 30,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60)),
+                              elevation: 5,
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 25, right: 25, top: 15, bottom: 15),
+                                child: Center(
+                                  child: Text('취소', style: text_darkgrey_15()),
+                                ),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              // 게시물에 새로 참가하기
+                              String nickName = randomNickname();
+                              data_board.reference.updateData({
+                                '참가자핸드폰번호': _userPhoneNumber,
+                                '참가자참여시간': DateTime.now(),
+                                '참가자닉네임': nickName,
+                              });
+                              data_board.reference.collection('messages').add({
+                                'text': "${nickName}님이 입장하셨습니다.",
+                                'sender_phone': "공지",
+                                'sender_nickname': "",
+                                'time': DateTime.now(),
+                                'delivered': false,
+                              });
+                              Firestore.instance
+                                  .collection('사용자')
+                                  .document(_userPhoneNumber)
+                                  .updateData({
+                                '채팅중인방ID': record.boardname,
+                              });
+                              Navigator.of(context).pop();
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => User_Chat_Page()));
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60)),
+                              elevation: 5,
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 25, right: 25, top: 15, bottom: 15),
+                                child: Center(
+                                  child: Text('확인', style: text_darkgrey_15()),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                );
               });
         }
       },
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Card(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -655,8 +807,10 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         children: <Widget>[
                           Image.asset(
                             'images/food_images' + record.menuCategory + '.png',
-                            width: 60,
-                            height: 60,
+                            width:
+                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
+                            height:
+                            Tween(begin: 0.0, end: 60.0).evaluate(_bounceInOutAnimation),
                           ),
                           Container(
                             height: 10,
@@ -908,21 +1062,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
       ),
     );
   }
-}
-
-Widget popUpDialog(BuildContext context, String text) {
-  return AlertDialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-    content: SizedBox(
-        width: 270,
-        height: 50,
-        child: Center(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-          ),
-        )),
-  );
 }
 
 class Record {
