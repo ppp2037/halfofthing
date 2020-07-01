@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -21,14 +22,18 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   bool _isRegionSelected = false;
   bool _isPersonalInfoPermission = true;
   bool _isPhoneValidate = false;
+  bool _isPhoneValidateClicked = false;
+  bool _isPhoneValidateDone = false;
 
   final GlobalKey<FormState> _nameFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _phoneNumberFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _phoneNumberValidateFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordCheckFormKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _phoneNumberValidateController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordCheckController =
       TextEditingController();
@@ -37,6 +42,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
   void dispose() {
     _nameController.dispose();
     _phoneNumberController.dispose();
+    _phoneNumberValidateController.dispose();
     _passwordController.dispose();
     _passwordCheckController.dispose();
     super.dispose();
@@ -44,6 +50,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   String _name;
   String _phoneNumber;
+  String _phoneNumberValidate;
   String _password;
   String _passwordCheck;
 
@@ -51,6 +58,40 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   var _ivsalt = make_ivslat();
   var _fortuna_key = make_key();
+
+  String _verificationId;
+  String _phoneNumberForValidate;
+  bool _codeSent = false;
+
+  Future<void> verifyPhone(phoneNo) async {
+    final PhoneVerificationCompleted verified = (AuthCredential authResult) {
+      AuthService().signIn(authResult);
+    };
+
+    final PhoneVerificationFailed verificationfailed =
+        (AuthException authException) {
+      print('${authException.message}');
+    };
+
+    final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
+      this._verificationId = verId;
+      setState(() {
+        this._codeSent = true;
+      });
+    };
+
+    final PhoneCodeAutoRetrievalTimeout autoTimeout = (String verId) {
+      this._verificationId = verId;
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: _phoneNumberForValidate,
+        timeout: const Duration(seconds: 5),
+        verificationCompleted: verified,
+        verificationFailed: verificationfailed,
+        codeSent: smsSent,
+        codeAutoRetrievalTimeout: autoTimeout);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +230,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _nameController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.account_circle),
+                                  icon: Icon(Icons.account_circle, color: Colors.grey[700],),
                                   hintText: '이름',
                                   hintStyle: text_grey_15(),
                                   border: InputBorder.none),
@@ -222,6 +263,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               child: Form(
                                 key: _phoneNumberFormKey,
                                 child: TextFormField(
+                                  enabled: _isPhoneValidateDone? false:true,
                                   style: text_darkgrey_15(),
                                   onChanged: (String str) {
                                     setState(() {
@@ -231,7 +273,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   keyboardType: TextInputType.number,
                                   controller: _phoneNumberController,
                                   decoration: InputDecoration(
-                                      icon: Icon(Icons.phone),
+                                      icon: Icon(Icons.phone, color: Colors.grey[700],),
                                       hintText: '핸드폰번호',
                                       hintStyle: text_grey_15(),
                                       border: InputBorder.none),
@@ -251,20 +293,16 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                           Positioned(
                               top: 25,
                               right: 20,
-                              child: GestureDetector(
-                                onTap: () async {
+                              child: _isPhoneValidateDone? Icon(Icons.check, color: Colors.pink,) :GestureDetector(
+                                onTap: () {
                                   if (_phoneNumberFormKey.currentState
                                       .validate()) {
-                                    final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder:  (context) => AuthService().handleAuth(_phoneNumber))
-                                    );
-
-                                    if(result == "True") {
-                                      _isPhoneValidate = true;
-                                    }
-
-                                  } else {}
+                                    setState(() {
+                                      _isPhoneValidateClicked = !_isPhoneValidateClicked;
+                                    });
+                                    _phoneNumberForValidate = "+82" + _phoneNumber.substring(1, 11);
+                                    verifyPhone(_phoneNumberForValidate);
+                                  }
                                 },
                                 child: Text(
                                   '인증하기',
@@ -272,6 +310,70 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                 ),
                               )),
                         ],
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isPhoneValidateClicked ? true:false,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 40, right: 40, bottom: 20),
+                        child: Stack(
+                          children: <Widget>[
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60)),
+                              elevation: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 15, top: 5, bottom: 5),
+                                child: Form(
+                                  key: _phoneNumberValidateFormKey,
+                                  child: TextFormField(
+                                    style: text_darkgrey_15(),
+                                    onChanged: (String str) {
+                                      setState(() {
+                                        _phoneNumberValidate = str.trim();
+                                      });
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    controller: _phoneNumberValidateController,
+                                    decoration: InputDecoration(
+                                        icon: Icon(Icons.check, color: Colors.grey[700],),
+                                        hintText: '인증번호',
+                                        hintStyle: text_grey_15(),
+                                        border: InputBorder.none),
+                                    validator: (String value) {
+                                      if (value.trim().isEmpty) {
+                                        return '인증번호를 입력해주세요';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                                top: 25,
+                                right: 20,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if(_phoneNumberValidateFormKey.currentState.validate()){
+                                      AuthService().signInWithOTP(
+                                          _phoneNumberValidate, _verificationId);
+                                      AuthService().signOut();
+                                      setState(() {
+                                        _isPhoneValidateClicked = !_isPhoneValidateClicked;
+                                        _isPhoneValidateDone = !_isPhoneValidateDone;
+                                      });
+                                    }
+                                  },
+                                  child: Text(
+                                    '확인',
+                                    style: text_grey_15(),
+                                  ),
+                                )),
+                          ],
+                        ),
                       ),
                     ),
                     Padding(
@@ -288,7 +390,8 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                             key: _passwordFormKey,
                             child: TextFormField(
                               style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular', color: Colors.grey[700]),
+                                  fontFamily: 'Spoqa_Han_Sans_Regular',
+                                  color: Colors.grey[700]),
                               obscureText: true,
                               onChanged: (String str) {
                                 setState(() {
@@ -298,7 +401,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _passwordController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.lock),
+                                  icon: Icon(Icons.lock, color: Colors.grey[700],),
                                   hintText: '비밀번호',
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),
@@ -327,7 +430,8 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                             key: _passwordCheckFormKey,
                             child: TextFormField(
                               style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular', color: Colors.grey[700]),
+                                  fontFamily: 'Spoqa_Han_Sans_Regular',
+                                  color: Colors.grey[700]),
                               obscureText: true,
                               onChanged: (String str) {
                                 setState(() {
@@ -337,7 +441,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               keyboardType: TextInputType.text,
                               controller: _passwordCheckController,
                               decoration: InputDecoration(
-                                  icon: Icon(Icons.lock),
+                                  icon: Icon(Icons.lock, color: Colors.grey[700],),
                                   hintText: '비밀번호 확인',
                                   hintStyle: text_grey_15_for_password(),
                                   border: InputBorder.none),
@@ -435,7 +539,8 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                     height: 40,
                                                   ),
                                                   Text('위의 정보로 등록하시겠어요?',
-                                                      style: text_darkgrey_15()),
+                                                      style:
+                                                          text_darkgrey_15()),
                                                   Container(
                                                     height: 30,
                                                   ),
@@ -496,17 +601,19 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                             '이용횟수': 0,
                                                             '채팅중인방ID': '',
                                                           });
-                                                          Fluttertoast.showToast(
-                                                              msg:
-                                                                  '회원가입에 성공했어요',
-                                                              gravity:
-                                                                  ToastGravity
-                                                                      .CENTER,
-                                                              backgroundColor:
-                                                                  Colors.white,
-                                                              textColor:
-                                                                  Colors.pink,);
-                                                          Phoenix.rebirth(context);
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg: '회원가입에 성공했어요',
+                                                            gravity:
+                                                                ToastGravity
+                                                                    .CENTER,
+                                                            backgroundColor:
+                                                                Colors.white,
+                                                            textColor:
+                                                                Colors.pink,
+                                                          );
+                                                          Phoenix.rebirth(
+                                                              context);
                                                         },
                                                         child: Card(
                                                           shape: RoundedRectangleBorder(

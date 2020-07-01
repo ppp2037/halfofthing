@@ -102,23 +102,24 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                       child: Form(
                         key: _phoneNumberFormKey,
                         child: TextFormField(
+                          style: text_darkgrey_15(),
                           onChanged: (String str) {
                             setState(() {
-                              _phoneNumber = str;
+                              _phoneNumber = str.trim();
                             });
                           },
                           keyboardType: TextInputType.number,
                           controller: _phoneNumberController,
                           decoration: InputDecoration(
-                              icon: Icon(Icons.phone),
+                              icon: Icon(Icons.phone, color: Colors.grey[700],),
                               hintText: '핸드폰번호',
                               hintStyle: text_grey_15(),
                               border: InputBorder.none),
                           validator: (String value) {
-                            if (value.isEmpty) {
+                            if (value.trim().isEmpty) {
                               return '핸드폰번호를 입력해주세요';
                             }
-                            if (value.length != 11) {
+                            if (value.trim().length != 11) {
                               return '올바른 핸드폰번호를 입력해주세요';
                             }
                             return null;
@@ -152,18 +153,18 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                           obscureText: true,
                           onChanged: (String str) {
                             setState(() {
-                              _password = str;
+                              _password = str.trim();
                             });
                           },
                           keyboardType: TextInputType.text,
                           controller: _passwordController,
                           decoration: InputDecoration(
-                              icon: Icon(Icons.lock),
+                              icon: Icon(Icons.lock, color: Colors.grey[700],),
                               hintText: '비밀번호',
                               hintStyle: text_grey_15_for_password(),
                               border: InputBorder.none),
                           validator: (String value) {
-                            if (value.isEmpty) {
+                            if (value.trim().isEmpty) {
                               return '비밀번호를 입력해주세요';
                             }
                             return null;
@@ -280,7 +281,7 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                     child: Center(
                       child: Text(
                         '반띵이 처음이신가요?',
-                        style: text_grey_15(),
+                        style: text_darkgrey_15(),
                       ),
                     )),
               ),
@@ -301,7 +302,7 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                     child: Center(
                       child: Text(
                         '비밀번호 찾기',
-                        style: text_grey_15(),
+                        style: text_darkgrey_15(),
                       ),
                     )),
               ),
