@@ -550,8 +550,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                                 '반띵완료_개설자': false,
                                 '반띵완료_참가자': false,
                                 '내보낸사용자': [],
-                                'menuCategory':
-                                    _selectedCategory[_selectedCategoryNumber],
+                                'menuCategory': _selectedCategoryNumber,
                               });
                               Firestore.instance
                                   .collection('사용자')

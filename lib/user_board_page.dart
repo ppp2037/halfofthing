@@ -2,7 +2,6 @@ import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
 import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +26,18 @@ class _User_Board_PageState extends State<User_Board_Page> {
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
   DateTime currentTime;
+
+  List<String> _selectedCategory = [
+    '미선택',
+    '간식/도시락',
+    '카페/디저트',
+    '분식',
+    '한식',
+    '햄버거',
+    '중국집',
+    '일식/돈까스',
+    '아시안/양식'
+  ];
 
   @override
   void initState() {
@@ -233,7 +244,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                         child: Card(
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(20)),
+                                                  BorderRadius.circular(60)),
                                           elevation: 5,
                                           color: Colors.white,
                                           child: Padding(
@@ -264,7 +275,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                         child: Card(
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(20)),
+                                                  BorderRadius.circular(60)),
                                           elevation: 5,
                                           color: Colors.white,
                                           child: Padding(
@@ -311,7 +322,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 ],
               ),
             ),
-          body: Column(
+            body: Column(
               children: <Widget>[
                 Container(
                     height: 150,
@@ -348,11 +359,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
                         padding: const EdgeInsets.only(top: 150),
                         child: Column(
                           children: <Widget>[
-                            Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                            Text('반띵중인 사람이 없어요', style: text_darkgrey_15()),
                             Container(
                               height: 15,
                             ),
-                            Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                            Text('가운데 시작을 눌러 반띵을 시작해보세요',
+                                style: text_darkgrey_15()),
                           ],
                         ),
                       );
@@ -407,13 +419,27 @@ class _User_Board_PageState extends State<User_Board_Page> {
       BuildContext context, DocumentSnapshot completedData) {
     return GestureDetector(
       onTap: () {
-        return showDialog(
+        showDialog(
             context: context,
             builder: (BuildContext context) {
-              Future.delayed(Duration(seconds: 1), () {
+              Future.delayed(Duration(seconds: 2), () {
                 Navigator.pop(context);
               });
-              return popUpDialog(context, "이미 반띵이 완료된 게시물이에요.");
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                content: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Center(
+                        child: Text(
+                      '이미 반띵이 완료된 게시물이에요',
+                      style: text_darkgrey_20(),
+                    )),
+                  ),
+                ),
+              );
             });
       },
       child: ListTile(
@@ -428,7 +454,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     children: <Widget>[
                       Text(
                         completedData.data['식당이름'],
-                        style: text_grey_20(),
+                        style: text_darkgrey_20(),
                       ),
                       Text(
                         '반띵완료',
@@ -443,17 +469,15 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     children: [
                       Icon(
                         Icons.place,
-                        color: Colors.grey[400],
+                        color: Colors.grey[700],
                       ),
                       Container(width: 5),
-                      Text(completedData.data['만날장소'], style: text_grey_15())
+                      Text(completedData.data['만날장소'],
+                          style: text_darkgrey_15())
                     ],
                   ),
                 ],
               ),
-            ),
-            Divider(
-              thickness: 1,
             ),
           ],
         ),
@@ -613,103 +637,135 @@ class _User_Board_PageState extends State<User_Board_Page> {
               });
         }
       },
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 15,
-        child: ListTile(
-          title: Column(
-            children: <Widget>[
-              Ink(
-                // color: Colors.amber[50],
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Column(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 15,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
                     children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
                         children: <Widget>[
-                          Text(
-                            record.restaurant,
-                            style: text_grey_20(),
+                          Image.asset(
+                            'images/food_images' + record.menuCategory + '.png',
+                            width: 60,
+                            height: 60,
                           ),
-                          _userPhoneNumber == record.phoneNumber
-                              ? Row(
-                                  children: [
-                                    Text(
-                                      'My 주문',
-                                      style: text_red_15_bold(),
-                                    ),
-                                    Container(width: 4),
-                                    IconButton(
-                                        icon: Icon(
-                                          Icons.edit,
-                                          color: Colors.red[300],
-                                        ),
-                                        iconSize: 20,
-                                        onPressed: () {
-                                          return showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return editOrderInfo(
-                                                    context,
-                                                    record.restaurant,
-                                                    record.meetingPlace,
-                                                    data_board);
-                                              });
-                                        }),
-                                  ],
-                                )
-                              : _userPhoneNumber == record.phoneNumber2
-                                  ? Text(
-                                      '내가 참여중',
-                                      style: text_red_15_bold(),
-                                    )
-                                  : record.phoneNumber2 != ''
-                                      // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
-                                      ? Text(
-                                          '반띵중',
-                                          style: text_green_15_bold(),
-                                        )
-                                      : Container(),
+                          Container(
+                            height: 10,
+                          ),
+                          Text(
+                            _selectedCategory[int.parse(record.menuCategory)],
+                            style: text_grey_10(),
+                          ),
                         ],
                       ),
                       Container(
-                        height: 20,
+                        width: 20,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.restaurant,
+                                color: Colors.grey[700],
+                              ),
+                              Container(width: 10),
+                              Text(
+                                record.restaurant,
+                                style: text_darkgrey_20(),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            height: 15,
+                          ),
                           Row(
                             children: [
                               Icon(
                                 Icons.place,
-                                color: Colors.grey[400],
+                                color: Colors.grey[700],
                               ),
-                              Container(width: 5),
-                              Text(record.meetingPlace, style: text_grey_15())
+                              Container(width: 10),
+                              Text(record.meetingPlace,
+                                  style: text_darkgrey_15())
                             ],
                           ),
+                          Container(
+                            height: 15,
+                          ),
                           Row(
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                color: Colors.grey[400],
+                            children: <Widget>[
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.grey[700],
+                                  ),
+                                  Container(width: 10),
+                                  Text(orderTime, style: text_darkgrey_15())
+                                ],
                               ),
-                              Container(width: 5),
-                              Text(orderTime, style: text_grey_15())
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ],
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editOrderInfo(context, record.restaurant,
+                                record.meetingPlace, data_board);
+                          });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 75),
+                      child: _userPhoneNumber == record.phoneNumber
+                          ? Row(
+                              children: [
+                                Text(
+                                  'my 주문',
+                                  style: text_pink_15(),
+                                ),
+                                Container(
+                                  width: 4,
+                                ),
+                                Icon(
+                                  Icons.edit,
+                                  color: Colors.pink,
+                                  size: 20,
+                                ),
+                              ],
+                            )
+                          : _userPhoneNumber == record.phoneNumber2
+                              ? Text(
+                                  '내가 참여중',
+                                  style: text_pink_15(),
+                                )
+                              : record.phoneNumber2 != ''
+                                  // 참가자핸드폰번호에 누군가 있으면 반띵중 문구 표시
+                                  ? Text(
+                                      '반띵중',
+                                      style: text_green_15_bold(),
+                                    )
+                                  : Container(),
+                    ),
+                  ),
+                ],
               ),
-//              Divider(
-//                thickness: 1,
-//              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -725,7 +781,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text('주문 정보 변경하기', style: text_grey_15()),
+          Text('주문 정보 변경하기', style: text_pink_20()),
           Container(
             height: 20,
           ),
@@ -733,12 +789,12 @@ class _User_Board_PageState extends State<User_Board_Page> {
             children: [
               Icon(
                 Icons.restaurant,
-                color: Colors.grey,
+                color: Colors.grey[700],
               ),
               Container(
                 width: 15,
               ),
-              Text(restaurant, style: text_grey_15()),
+              Text(restaurant, style: text_darkgrey_15()),
             ],
           ),
           Container(
@@ -753,13 +809,13 @@ class _User_Board_PageState extends State<User_Board_Page> {
               },
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
-                  icon: Icon(
-                    Icons.place,
-                    color: Colors.pink,
-                  ),
-                  hintText: meetingPlace,
-                  // hintStyle: text_pink_15(),
-                  border: InputBorder.none),
+                icon: Icon(
+                  Icons.place,
+                  color: Colors.pink,
+                ),
+                hintText: meetingPlace,
+                hintStyle: text_grey_15(),
+              ),
             ),
           ),
           Container(
@@ -810,13 +866,14 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 },
                 child: Card(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                      borderRadius: BorderRadius.circular(60)),
                   elevation: 5,
                   color: Colors.white,
                   child: Padding(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.only(
+                        left: 25, right: 25, top: 15, bottom: 15),
                     child: Center(
-                      child: Text('취소', style: text_grey_15()),
+                      child: Text('취소', style: text_darkgrey_15()),
                     ),
                   ),
                 ),
@@ -833,13 +890,14 @@ class _User_Board_PageState extends State<User_Board_Page> {
                 },
                 child: Card(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                      borderRadius: BorderRadius.circular(60)),
                   elevation: 5,
                   color: Colors.white,
                   child: Padding(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.only(
+                        left: 25, right: 25, top: 15, bottom: 15),
                     child: Center(
-                      child: Text('완료', style: text_grey_15()),
+                      child: Text('수정', style: text_darkgrey_15()),
                     ),
                   ),
                 ),
@@ -869,7 +927,7 @@ Widget popUpDialog(BuildContext context, String text) {
 
 class Record {
   final String phoneNumber, phoneNumber2;
-  final String restaurant, location, boardname, meetingPlace;
+  final String restaurant, location, boardname, meetingPlace, menuCategory;
   var orderTime, enteredTime, createdTime;
   final DocumentReference reference;
   final List<dynamic> blockedList;
@@ -883,6 +941,7 @@ class Record {
         assert(map['만날장소'] != null),
         assert(map['게시판이름'] != null),
         assert(map['생성시간'] != null),
+        assert(map['menuCategory'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],
         restaurant = map['식당이름'],
@@ -892,14 +951,15 @@ class Record {
         boardname = map['게시판이름'],
         enteredTime = map['참가자참여시간'],
         createdTime = map['생성시간'],
-        blockedList = map['내보낸사용자'];
+        blockedList = map['내보낸사용자'],
+        menuCategory = map['menuCategory'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
 
   @override
   String toString() =>
-      "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname>";
+      "Record<$phoneNumber:$phoneNumber2:$restaurant:$orderTime:$location:$meetingPlace:$boardname:$menuCategory>";
 }
 
 launchUrl() async {

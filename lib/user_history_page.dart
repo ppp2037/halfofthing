@@ -27,8 +27,14 @@ class _User_History_PageState extends State<User_History_Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('주문내역'),
+        title: Text('주문내역', style: text_pink_20(),),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.grey[700]),
+        elevation: 0,
+        brightness: Brightness.light,
+        backgroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance
@@ -42,7 +48,7 @@ class _User_History_PageState extends State<User_History_Page> {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text('주문 내역이 없어요.', style: text_grey_15()),
+                Text('주문 내역이 없어요', style: text_grey_15()),
                 Container(
                   height: 20,
                 ),
@@ -86,11 +92,11 @@ Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
                 children: <Widget>[
                   Text(
                     record.restaurant,
-                    style: text_grey_20(),
+                    style: text_darkgrey_20(),
                   ),
                   Text(
                     orderDateStr,
-                    style: text_grey_15(),
+                    style: text_darkgrey_15(),
                   ),
                 ],
               ),
@@ -100,7 +106,7 @@ Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(record.meetingPlace, style: text_grey_15()),
+                  Text(record.meetingPlace, style: text_darkgrey_15()),
                 ],
               ),
             ],

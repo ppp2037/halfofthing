@@ -331,24 +331,20 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     return Container();
                   }
                   return Scaffold(
+                    backgroundColor: Colors.white,
                     appBar: AppBar(
                       brightness: Brightness.light,
-//                      leading: IconButton(
-//                          icon: Icon(Icons.arrow_back),
-//                          onPressed: () => Navigator.of(context)
-//                              .pushReplacement(MaterialPageRoute(
-//                              builder: (context) => Background_Page()))),
                       title: _otherPhoneNumber == ''
-                          ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_grey_15())
+                          ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_darkgrey_15())
                           : (_myCompleted && !_otherCompleted)
                           ? Text(
                         '상대방의 완료를 기다리고 있어요!',
-                        style: text_grey_15(),
+                        style: text_darkgrey_15(),
                       )
                           : drawer_completeOrder(context),
-                      backgroundColor: Colors.white10,
+                      backgroundColor: Colors.white,
                       elevation: 0,
-                      iconTheme: IconThemeData(color: Colors.black),
+                      iconTheme: IconThemeData(color: Colors.grey[700]),
                     ),
                     endDrawer: drawerAll(context),
                     body: Padding(
@@ -377,7 +373,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                           ),
                           Card(
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
+                                  borderRadius: BorderRadius.circular(60)),
+                              elevation: 15,
                               color: Colors.white,
                               child: _buildTextComposer()),
                           Container(
@@ -425,7 +422,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               Icons.send,
               color: _isWritting && _otherPhoneNumber != ''
                   ? Colors.pink
-                  : Colors.grey,
+                  : Colors.grey[700],
             ),
             onPressed: _textController.text != ''
                 ? () => onSendMessage(_textController.text, 0)
@@ -522,27 +519,35 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     orderTimeStr = orderTimeStr + format.format(date);
     return Drawer(
       child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Container(
+              height: 100,
+            ),
+            Image.asset('images/halfofthing_logo_red_1024x1024.png',
+            width: 100,
+            height: 100,),
+            Container(
+              height: 60,
+            ),
             ListTile(
-              leading: Icon(Icons.restaurant),
+              leading: Icon(Icons.restaurant, color: Colors.grey[700],),
               title: Text(
                 _restaurant,
-                style: text_grey_20(),
+                style: text_darkgrey_20(),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.access_time),
+              leading: Icon(Icons.access_time, color: Colors.grey[700],),
               title: Text(
                 orderTimeStr,
-                style: text_grey_15(),
+                style: text_darkgrey_15(),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.place),
+              leading: Icon(Icons.place, color: Colors.grey[700],),
               title: Text(
                 '만날 장소 : $_meetingPlace',
-                style: text_grey_15(),
+                style: text_darkgrey_15(),
               ),
             ),
             _otherPhoneNumber == ''
@@ -572,15 +577,14 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     return ListTile(
         leading: Icon(
           Icons.restaurant,
-          color: Colors.grey,
+          color: Colors.grey[700],
         ),
-        title: Text('게시물 삭제하기', style: text_grey_20()),
+        title: Text('게시물 삭제하기', style: text_darkgrey_20()),
         onTap: () {
           // 게시물 삭제
           userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
           boardSnapshot.data.reference.delete();
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => Background_Page()));
+          Navigator.pop(context);
         });
   }
 
@@ -600,10 +604,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           return ListTile(
               leading: Icon(
                 Icons.account_circle,
-                color: Colors.grey,
+                color: Colors.grey[700],
               ),
               title: Text('${_otherNickname}님의 반띵 횟수 : ${_otherOrders}',
-                  style: text_grey_15()));
+                  style: text_darkgrey_15()));
         });
   }
 
@@ -641,9 +645,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     return ListTile(
       leading: Icon(
         Icons.clear,
-        color: Colors.grey,
+        color: Colors.grey[700],
       ),
-      title: Text('다른 반띵하기', style: text_grey_20()),
+      title: Text('다른 반띵하기', style: text_darkgrey_20()),
       onTap: () {
         userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
         setState(() {
@@ -654,8 +658,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           '참가자참여시간': '',
           '참가자닉네임': '',
         });
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => Background_Page()));
+        Navigator.pop(context);
       },
     );
   }
@@ -665,9 +668,9 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     return ListTile(
       leading: Icon(
         Icons.clear,
-        color: Colors.grey,
+        color: Colors.grey[700],
       ),
-      title: Text('참가자 내보내기', style: text_grey_20()),
+      title: Text('참가자 내보내기', style: text_darkgrey_20()),
       onTap: () {
         setState(() {
           // 참가자를 내보냈을 때 :

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,9 +13,9 @@ class User_Settings_Feedback_Page extends StatefulWidget {
 class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Page> {
 
   final GlobalKey<FormState> _feedbackFormKey =
-  GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+  GlobalKey<FormState>();
   final TextEditingController _feedbackController =
-  TextEditingController(); //컨트롤러 생성
+  TextEditingController();
 
   @override
   void dispose() {
@@ -43,10 +42,15 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('개선사항'),
+        title: Text('개선사항', style: text_pink_20(),),
         centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.grey[700]),
+        elevation: 0,
+        brightness: Brightness.light,
+        backgroundColor: Colors.white,
       ),
       body: Column(
         children: <Widget>[
@@ -124,11 +128,6 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
                   '사용자핸드폰번호': _userPhoneNumber,
                   '피드백이름': _userPhoneNumber + '_' + _userOrderId,
                 });
-                Fluttertoast.showToast(
-                    msg: '개선사항에 도움을 주셔서 감사합니다',
-                    gravity: ToastGravity.CENTER,
-                    backgroundColor: Colors.pink,
-                    textColor: Colors.white);
                 Navigator.of(context).pop();
               } else {}
             },
@@ -138,7 +137,7 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
               child: Card(
                 color: Colors.pink,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(60)),
                 elevation: 15,
                 child: Padding(
                   padding: const EdgeInsets.only(

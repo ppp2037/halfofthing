@@ -13,8 +13,14 @@ class _User_Settings_Notice_pageState extends State<User_Settings_Notice_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('공지사항'),
+        title: Text('공지사항', style: text_pink_20(),),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.grey[700]),
+        elevation: 0,
+        brightness: Brightness.light,
+        backgroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance
@@ -58,11 +64,11 @@ Widget _buildListItem(
                   children: <Widget>[
                     Text(
                       record.title,
-                      style: text_grey_20(),
+                      style: text_darkgrey_20(),
                     ),
                     Text(
                       record.date,
-                      style: text_grey_15(),
+                      style: text_darkgrey_15(),
                     ),
                   ],
                 ),
@@ -73,7 +79,7 @@ Widget _buildListItem(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(record.content,
-                        style: text_grey_15()),
+                        style: text_darkgrey_15()),
                   ],
                 ),
               ],

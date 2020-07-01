@@ -12,7 +12,6 @@ import GoogleMaps
     
     GMSServices.provideAPIKey("AIzaSyCWzxQYA-FTQcValD9j90x5_tVRMvSmLU8")
 
-    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
