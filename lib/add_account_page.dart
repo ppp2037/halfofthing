@@ -9,6 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'services/authservice.dart';
 import 'settings/make_password_encryption.dart';
 import 'settings/university_list.dart';
+import 'screens/validation_page.dart';
+import 'services/authservice.dart';
 
 class Add_Account_Page extends StatefulWidget {
   @override
@@ -51,6 +53,9 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   var _ivsalt = make_ivslat();
   var _fortuna_key = make_key();
+
+  // for phone number validation
+  bool _phone_val = false;
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +267,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                 .handleAuth(_phoneNumber)));
 
                                     if (result == "True") {
-                                      _isPhoneValidate = true;
+                                      _phone_val = true;
                                     }
                                   } else {}
                                 },
@@ -362,216 +367,235 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                               if (_passwordCheckFormKey.currentState
                                   .validate()) {
                                 if (_password == _passwordCheck) {
-                                  Firestore.instance
-                                      .collection('사용자')
-                                      .where('핸드폰번호', isEqualTo: _phoneNumber)
-                                      .getDocuments()
-                                      .then((QuerySnapshot ds) {
-                                    ds.documents.forEach((doc) =>
-                                        _comparePhoneNumber = doc['핸드폰번호']);
-                                    if (_comparePhoneNumber != _phoneNumber) {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  Text('회원가입',
-                                                      style: text_pink_20()),
-                                                  Container(
-                                                    height: 30,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('이름 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(_name,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 15,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('핸드폰번호 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(_phoneNumber,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 15,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('위치 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                          _selectedItem
-                                                              .location,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 40,
-                                                  ),
-                                                  Text('위의 정보로 등록하시겠어요?',
-                                                      style:
-                                                          text_darkgrey_15()),
-                                                  Container(
-                                                    height: 30,
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceEvenly,
-                                                    children: <Widget>[
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child: Card(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          60)),
-                                                          elevation: 5,
-                                                          color: Colors.white,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 25,
-                                                                    right: 25,
-                                                                    top: 15,
-                                                                    bottom: 15),
-                                                            child: Center(
-                                                              child: Text('취소',
-                                                                  style:
-                                                                      text_darkgrey_15()),
-                                                            ),
-                                                          ),
+                                  if (_phone_val == true) {
+                                    Firestore.instance
+                                        .collection('users')
+                                        .where('id', isEqualTo: _phoneNumber)
+                                        .getDocuments()
+                                        .then((QuerySnapshot ds) {
+                                      ds.documents.forEach((doc) =>
+                                          _comparePhoneNumber = doc['id']);
+                                      if (_comparePhoneNumber != _phoneNumber) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                content: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: <Widget>[
+                                                    Text('회원가입',
+                                                        style: text_pink_20()),
+                                                    Container(
+                                                      height: 30,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('이름 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
                                                         ),
-                                                      ),
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          Firestore.instance
-                                                              .collection('사용자')
-                                                              .document(
-                                                                  _phoneNumber)
-                                                              .setData({
-                                                            '이름': _name,
-                                                            '핸드폰번호':
-                                                                _phoneNumber,
-                                                            '위치': _selectedItem
+                                                        Text(_name,
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 15,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('핸드폰번호 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
+                                                        ),
+                                                        Text(_phoneNumber,
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 15,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('위치 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                            _selectedItem
                                                                 .location,
-                                                            'ivsalt': _ivsalt,
-                                                            'key': _fortuna_key,
-                                                            '비밀번호':
-                                                                make_encryption(
-                                                                    _password,
-                                                                    _ivsalt,
-                                                                    _fortuna_key),
-                                                            '인증여부': 'N',
-                                                            '이용횟수': 0,
-                                                            '채팅중인방ID': '',
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg: '회원가입에 성공했어요',
-                                                            gravity:
-                                                                ToastGravity
-                                                                    .CENTER,
-                                                            backgroundColor:
-                                                                Colors.white,
-                                                            textColor:
-                                                                Colors.pink,
-                                                          );
-                                                          Phoenix.rebirth(
-                                                              context);
-                                                        },
-                                                        child: Card(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          60)),
-                                                          elevation: 5,
-                                                          color: Colors.white,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 25,
-                                                                    right: 25,
-                                                                    top: 15,
-                                                                    bottom: 15),
-                                                            child: Center(
-                                                              child: Text('확인',
-                                                                  style:
-                                                                      text_darkgrey_15()),
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 40,
+                                                    ),
+                                                    Text('위의 정보로 등록하시겠어요?',
+                                                        style:
+                                                            text_darkgrey_15()),
+                                                    Container(
+                                                      height: 30,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
+                                                      children: <Widget>[
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: Card(
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            60)),
+                                                            elevation: 5,
+                                                            color: Colors.white,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 25,
+                                                                      right: 25,
+                                                                      top: 15,
+                                                                      bottom:
+                                                                          15),
+                                                              child: Center(
+                                                                child: Text(
+                                                                    '취소',
+                                                                    style:
+                                                                        text_darkgrey_15()),
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                            );
-                                          });
-                                    } else {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            Future.delayed(Duration(seconds: 2),
-                                                () {
-                                              Navigator.pop(context);
-                                            });
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              content: FittedBox(
-                                                fit: BoxFit.contain,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(20),
-                                                  child: Center(
-                                                      child: Text(
-                                                    '핸드폰번호가 중복되었어요',
-                                                    style: text_darkgrey_20(),
-                                                  )),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Firestore.instance
+                                                                .collection(
+                                                                    'users')
+                                                                .document(
+                                                                    _phoneNumber)
+                                                                .setData({
+                                                              '이름': _name,
+                                                              'id':
+                                                                  _phoneNumber,
+                                                              '위치':
+                                                                  _selectedItem
+                                                                      .location,
+                                                              'ivsalt': _ivsalt,
+                                                              'key':
+                                                                  _fortuna_key,
+                                                              '비밀번호': make_encryption(
+                                                                  _password,
+                                                                  _ivsalt,
+                                                                  _fortuna_key),
+                                                              '이용횟수': 0,
+                                                              '채팅중인방ID': '',
+                                                              'pushToken': '',
+                                                              'nickname': '',
+                                                            });
+                                                            Fluttertoast
+                                                                .showToast(
+                                                              msg:
+                                                                  '회원가입에 성공했어요',
+                                                              gravity:
+                                                                  ToastGravity
+                                                                      .CENTER,
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                              textColor:
+                                                                  Colors.pink,
+                                                            );
+                                                            Phoenix.rebirth(
+                                                                context);
+                                                          },
+                                                          child: Card(
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            60)),
+                                                            elevation: 5,
+                                                            color: Colors.white,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 25,
+                                                                      right: 25,
+                                                                      top: 15,
+                                                                      bottom:
+                                                                          15),
+                                                              child: Center(
+                                                                child: Text(
+                                                                    '확인',
+                                                                    style:
+                                                                        text_darkgrey_15()),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
                                                 ),
-                                              ),
-                                            );
-                                          });
-                                    }
-                                  });
+                                              );
+                                            });
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              Future.delayed(
+                                                  Duration(seconds: 2), () {
+                                                Navigator.pop(context);
+                                              });
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                content: FittedBox(
+                                                  fit: BoxFit.contain,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            20),
+                                                    child: Center(
+                                                        child: Text(
+                                                      '이미 가입된 사용자입니다.',
+                                                      style: text_darkgrey_20(),
+                                                    )),
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      }
+                                    });
+                                  } else {
+                                    Fluttertoast.showToast(
+                                        msg: '핸드폰 번호가 인증이 되지 않았어요',
+                                        gravity: ToastGravity.CENTER,
+                                        backgroundColor: Colors.pink,
+                                        textColor: Colors.white);
+                                  }
                                 } else {
                                   showDialog(
                                       context: context,
