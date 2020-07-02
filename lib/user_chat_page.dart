@@ -357,38 +357,38 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                       endDrawer: drawerAll(context),
                       body: Padding(
                         padding: const EdgeInsets.all(10),
-                        child: Column(
-                          children: <Widget>[
-                            StreamBuilder<QuerySnapshot>(
-                              stream: Firestore.instance
-                                  .collection('board')
-                                  .document(_chattingRoomID)
-                                  .collection('messages')
-                                  .orderBy('time', descending: true)
-                                  .snapshots(),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                                if (!snapshot.hasData)
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                return Expanded(
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: Firestore.instance
+                              .collection('board')
+                              .document(_chattingRoomID)
+                              .collection('messages')
+                              .orderBy('time', descending: true)
+                              .snapshots(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (!snapshot.hasData)
+                              return Center(
+                                  child: CircularProgressIndicator());
+                            return Column(
+                              children: <Widget>[
+                                Expanded(
                                   child: ListView(
                                     reverse: true,
                                     children: generateMessages(snapshot),
                                   ),
-                                );
-                              },
-                            ),
-                            Card(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(60)),
-                                elevation: 15,
-                                color: Colors.white,
-                                child: _buildTextComposer()),
-                            Container(
-                              height: 20,
-                            )
-                          ],
+                                ),
+                                Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(60)),
+                                    elevation: 15,
+                                    color: Colors.white,
+                                    child: _buildTextComposer()),
+                                Container(
+                                  height: 20,
+                                )
+                              ],
+                            );
+                          },
                         ),
                       ),
                     );

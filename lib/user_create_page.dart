@@ -435,7 +435,7 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                 child: Form(
                                   key: _restaurantFormKey,
                                   child: TextFormField(
-                                    style: text_grey_15(),
+                                    style: text_darkgrey_15(),
                                     onChanged: (String str) {
                                       setState(() {
                                         _restaurant = str;
@@ -474,7 +474,7 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                 child: Form(
                                   key: _meetingPlaceFormKey,
                                   child: TextFormField(
-                                    style: text_grey_15(),
+                                    style: text_darkgrey_15(),
                                     onChanged: (String str) {
                                       setState(() {
                                         _meetingPlace = str;
