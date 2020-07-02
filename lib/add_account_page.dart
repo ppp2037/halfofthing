@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
@@ -45,6 +48,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
     _phoneNumberValidateController.dispose();
     _passwordController.dispose();
     _passwordCheckController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -59,6 +63,17 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
 
   var _ivsalt = make_ivslat();
   var _fortuna_key = make_key();
+
+  Timer _timer;
+  bool _show = true;
+
+  @override
+  void initState() {
+    _timer = Timer.periodic(Duration(milliseconds: 1000), (_) {
+      setState(() => _show = !_show);
+    });
+    super.initState();
+  }
 
   void _requestSMSCodeUsingPhoneNumber() async {
     await FirebaseAuth.instance.verifyPhoneNumber(
@@ -79,250 +94,180 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
         verificationId: _verificationId, smsCode: _phoneNumberValidate);
     final FirebaseUser user =
         (await FirebaseAuth.instance.signInWithCredential(authCreds)).user;
-
 //    setState(() => _verificationId = null);
-//    FocusScope.of(context).requestFocus(FocusNode());
-//    _showSnackBar('Sign up with phone success. Check your firebase.');
+  }
+
+  void _validateUser() async {
+    await FirebaseAuth.instance.currentUser().then((user) {
+      if(user != null) {
+        _isPhoneValidate = !_isPhoneValidate;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text(
-          '회원가입',
-          style: text_pink_20(),
-        ),
-        centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.grey[700]),
-        elevation: 0,
-        brightness: Brightness.light,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-      ),
-      body: _isPersonalInfoPermission
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Text('개인정보 수집 및 이용 동의', style: text_darkgrey_25()),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          height: 20,
-                        ),
-                        Text('1. 수집 목적', style: text_darkgrey_20()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('로그인, 반띵 서비스 이용', style: text_grey_15()),
-                        Container(
-                          height: 30,
-                        ),
-                        Text('2. 수집 항목', style: text_darkgrey_20()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('(필수) 이름, 핸드폰 번호, 암호화된 비밀번호, 학교',
-                            style: text_grey_15()),
-                        Container(
-                          height: 30,
-                        ),
-                        Text('3. 보유기간', style: text_darkgrey_20()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('회원 가입시부터 회원 탈퇴시까지', style: text_grey_15()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('반띵 앱을 이용하기 위한', style: text_grey_15()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('최소한의 개인정보만 수집합니다.', style: text_grey_15()),
-                        Container(
-                          height: 10,
-                        ),
-                        Text('동의를 하면 회원가입이 가능합니다.', style: text_grey_15()),
-                      ],
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isPersonalInfoPermission = !_isPersonalInfoPermission;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    child: Card(
-                      color: Colors.pink,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(60)),
-                      elevation: 15,
-                      child: Container(
-                        height: 60,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text('동의하고 시작하기', style: text_white_20())
-                          ],
-                        ),
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text(
+            '회원가입',
+            style: text_pink_20(),
+          ),
+          centerTitle: true,
+          iconTheme: IconThemeData(color: Colors.grey[700]),
+          elevation: 0,
+          brightness: Brightness.light,
+          backgroundColor: Colors.white,
+        ),
+        body: _isPersonalInfoPermission
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Text('개인정보 수집 및 이용 동의', style: text_darkgrey_25()),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            height: 20,
+                          ),
+                          Text('1. 수집 목적', style: text_darkgrey_20()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('로그인, 반띵 서비스 이용', style: text_grey_15()),
+                          Container(
+                            height: 30,
+                          ),
+                          Text('2. 수집 항목', style: text_darkgrey_20()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('(필수) 이름, 핸드폰 번호, 암호화된 비밀번호, 학교',
+                              style: text_grey_15()),
+                          Container(
+                            height: 30,
+                          ),
+                          Text('3. 보유기간', style: text_darkgrey_20()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('회원 가입시부터 회원 탈퇴시까지', style: text_grey_15()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('반띵 앱을 이용하기 위한', style: text_grey_15()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('최소한의 개인정보만 수집합니다.', style: text_grey_15()),
+                          Container(
+                            height: 10,
+                          ),
+                          Text('동의를 하면 회원가입이 가능합니다.', style: text_grey_15()),
+                        ],
                       ),
-                    ),
+                    ],
                   ),
-                ),
-                GestureDetector(
-                  onTap: launchUrl,
-                  child: Container(
-                    width: 200,
-                    height: 60,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text('개인정보 처리방침', style: text_grey_15()),
-                        Icon(
-                          Icons.keyboard_arrow_right,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : _isRegionSelected
-              ? Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, top: 20, bottom: 20),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isPersonalInfoPermission = !_isPersonalInfoPermission;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
                       child: Card(
+                        color: Colors.pink,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(60)),
                         elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _nameFormKey,
-                            child: TextFormField(
-                              style: text_darkgrey_15(),
-                              onChanged: (String str) {
-                                setState(() {
-                                  _name = str.trim();
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _nameController,
-                              decoration: InputDecoration(
-                                  icon: Icon(
-                                    Icons.account_circle,
-                                    color: Colors.grey[700],
-                                  ),
-                                  hintText: '이름',
-                                  hintStyle: text_grey_15(),
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.trim().isEmpty) {
-                                  return '이름을 입력해주세요';
-                                }
-                                if (value.trim().length == 1) {
-                                  return '올바른 이름을 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
+                        child: Container(
+                          height: 60,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text('동의하고 시작하기', style: text_white_20())
+                            ],
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Stack(
+                  ),
+                  GestureDetector(
+                    onTap: launchUrl,
+                    child: Container(
+                      width: 200,
+                      height: 60,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(60)),
-                            elevation: 15,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 15, top: 5, bottom: 5),
-                              child: Form(
-                                key: _phoneNumberFormKey,
-                                child: TextFormField(
-                                  enabled: _isPhoneValidateDone ? false : true,
-                                  style: text_darkgrey_15(),
-                                  onChanged: (String str) {
-                                    setState(() {
-                                      _phoneNumber = str.trim();
-                                    });
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  controller: _phoneNumberController,
-                                  decoration: InputDecoration(
-                                      icon: Icon(
-                                        Icons.phone,
-                                        color: Colors.grey[700],
-                                      ),
-                                      hintText: '핸드폰번호',
-                                      hintStyle: text_grey_15(),
-                                      border: InputBorder.none),
-                                  validator: (String value) {
-                                    if (value.trim().isEmpty) {
-                                      return '핸드폰번호를 입력해주세요';
-                                    }
-                                    if (value.trim().length != 11) {
-                                      return '올바른 핸드폰번호를 입력해주세요';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ),
+                          Text('개인정보 처리방침', style: text_grey_15()),
+                          Icon(
+                            Icons.keyboard_arrow_right,
+                            color: Colors.grey,
                           ),
-                          _isPhoneValidateDone
-                              ? Positioned(
-                                  top: 20,
-                                  right: 20,
-                                  child: Icon(
-                                    Icons.check,
-                                    color: Colors.pink,
-                                  ))
-                              : Positioned(
-                                  top: 25,
-                                  right: 20,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      if (_phoneNumberFormKey.currentState
-                                          .validate()) {
-                                        setState(() {
-                                          _isPhoneValidateClicked =
-                                              !_isPhoneValidateClicked;
-                                        });
-                                        _phoneNumberForValidate = "+82" +
-                                            _phoneNumber.substring(1, 11);
-                                        _requestSMSCodeUsingPhoneNumber();
-                                      }
-                                    },
-                                    child: Text(
-                                      '인증하기',
-                                      style: text_grey_15(),
-                                    ),
-                                  )),
                         ],
                       ),
                     ),
-                    Visibility(
-                      visible: _isPhoneValidateClicked ? true : false,
-                      child: Padding(
+                  ),
+                ],
+              )
+            : _isRegionSelected
+                ? Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 40, right: 40, top: 20, bottom: 20),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(60)),
+                          elevation: 15,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 15, top: 5, bottom: 5),
+                            child: Form(
+                              key: _nameFormKey,
+                              child: TextFormField(
+                                style: text_darkgrey_15(),
+                                onChanged: (String str) {
+                                  setState(() {
+                                    _name = str.trim();
+                                  });
+                                },
+                                keyboardType: TextInputType.text,
+                                controller: _nameController,
+                                decoration: InputDecoration(
+                                    icon: Icon(
+                                      Icons.account_circle,
+                                      color: Colors.grey[700],
+                                    ),
+                                    hintText: '이름',
+                                    hintStyle: text_grey_15(),
+                                    border: InputBorder.none),
+                                validator: (String value) {
+                                  if (value.trim().isEmpty) {
+                                    return '이름을 입력해주세요';
+                                  }
+                                  if (value.trim().length == 1) {
+                                    return '올바른 이름을 입력해주세요';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
                         padding: const EdgeInsets.only(
                             left: 40, right: 40, bottom: 20),
                         child: Stack(
@@ -335,27 +280,43 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                 padding: const EdgeInsets.only(
                                     left: 15, top: 5, bottom: 5),
                                 child: Form(
-                                  key: _phoneNumberValidateFormKey,
+                                  key: _phoneNumberFormKey,
                                   child: TextFormField(
+                                    enabled: _isPhoneValidateDone ? false : true,
                                     style: text_darkgrey_15(),
                                     onChanged: (String str) {
                                       setState(() {
-                                        _phoneNumberValidate = str.trim();
+                                        _phoneNumber = str.trim();
                                       });
                                     },
                                     keyboardType: TextInputType.number,
-                                    controller: _phoneNumberValidateController,
+                                    controller: _phoneNumberController,
                                     decoration: InputDecoration(
+//                                      icon: CountryCodePicker(
+//                                        onChanged: print,
+//                                        // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
+//                                        initialSelection: 'KR',
+//                                        favorite: ['+82','KR'],
+//                                        // optional. Shows only country name and flag
+//                                        showCountryOnly: true,
+//                                        // optional. Shows only country name and flag when popup is closed.
+//                                        showOnlyCountryWhenClosed: true,
+//                                        // optional. aligns the flag and the Text left
+//                                        alignLeft: false,
+//                                      ),
                                         icon: Icon(
-                                          Icons.check,
+                                          Icons.phone,
                                           color: Colors.grey[700],
                                         ),
-                                        hintText: '인증번호',
+                                        hintText: '핸드폰번호',
                                         hintStyle: text_grey_15(),
                                         border: InputBorder.none),
                                     validator: (String value) {
                                       if (value.trim().isEmpty) {
-                                        return '인증번호를 입력해주세요';
+                                        return '핸드폰번호를 입력해주세요';
+                                      }
+                                      if (value.trim().length != 11) {
+                                        return '올바른 핸드폰번호를 입력해주세요';
                                       }
                                       return null;
                                     },
@@ -363,453 +324,560 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                 ),
                               ),
                             ),
-                            Positioned(
-                                top: 25,
-                                right: 20,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (_phoneNumberValidateFormKey.currentState
-                                        .validate()) {
-                                      setState(() {
-                                        _isPhoneValidateClicked =
-                                            !_isPhoneValidateClicked;
-                                        _isPhoneValidateDone =
-                                            !_isPhoneValidateDone;
-                                      });
-                                      _signInWithPhoneNumberAndSMSCode();
-                                    }
-                                  },
-                                  child: Text(
-                                    '확인',
-                                    style: text_grey_15(),
-                                  ),
-                                )),
+                            _isPhoneValidateDone
+                                ? Positioned(
+                                    top: 20,
+                                    right: 20,
+                                    child: Icon(
+                                      Icons.check,
+                                      color: Colors.pink,
+                                    ))
+                                : Positioned(
+                                    top: 25,
+                                    right: 20,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        if (_phoneNumberFormKey.currentState
+                                            .validate()) {
+                                          setState(() {
+                                            _isPhoneValidateClicked =
+                                                !_isPhoneValidateClicked;
+                                          });
+                                          _phoneNumberForValidate = "+82" +
+                                              _phoneNumber.substring(1, 11);
+                                          _requestSMSCodeUsingPhoneNumber();
+                                        }
+                                      },
+                                      child: Text(
+                                        '인증번호전송',
+                                        style: text_grey_15(),
+                                      ),
+                                    )),
                           ],
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(60)),
-                        elevation: 15,
+                      Visibility(
+                        visible: _isPhoneValidateClicked ? true : false,
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _passwordFormKey,
-                            child: TextFormField(
-                              style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular',
-                                  color: Colors.grey[700]),
-                              obscureText: true,
-                              onChanged: (String str) {
-                                setState(() {
-                                  _password = str.trim();
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _passwordController,
-                              decoration: InputDecoration(
-                                  icon: Icon(
-                                    Icons.lock,
-                                    color: Colors.grey[700],
-                                  ),
-                                  hintText: '비밀번호',
-                                  hintStyle: text_grey_15_for_password(),
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.trim().isEmpty) {
-                                  return '비밀번호를 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(60)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _passwordCheckFormKey,
-                            child: TextFormField(
-                              style: TextStyle(
-                                  fontFamily: 'Spoqa_Han_Sans_Regular',
-                                  color: Colors.grey[700]),
-                              obscureText: true,
-                              onChanged: (String str) {
-                                setState(() {
-                                  _passwordCheck = str.trim();
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _passwordCheckController,
-                              decoration: InputDecoration(
-                                  icon: Icon(
-                                    Icons.lock,
-                                    color: Colors.grey[700],
-                                  ),
-                                  hintText: '비밀번호 확인',
-                                  hintStyle: text_grey_15_for_password(),
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.trim().isEmpty) {
-                                  return '비밀번호를 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (_nameFormKey.currentState.validate()) {
-                          if (_phoneNumberFormKey.currentState.validate()) {
-                            if (_passwordFormKey.currentState.validate()) {
-                              if (_passwordCheckFormKey.currentState
-                                  .validate()) {
-                                if (_password == _passwordCheck) {
-                                  Firestore.instance
-                                      .collection('users')
-                                      .where('id', isEqualTo: _phoneNumber)
-                                      .getDocuments()
-                                      .then((QuerySnapshot ds) {
-                                    ds.documents.forEach((doc) =>
-                                        _comparePhoneNumber = doc['id']);
-                                    if (_comparePhoneNumber != _phoneNumber) {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  Text('회원가입',
-                                                      style: text_pink_20()),
-                                                  Container(
-                                                    height: 30,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('이름 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(_name,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 15,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('핸드폰번호 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(_phoneNumber,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 15,
-                                                  ),
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Text('위치 :',
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                      Container(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                          _selectedItem
-                                                              .location,
-                                                          style:
-                                                              text_darkgrey_15()),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    height: 40,
-                                                  ),
-                                                  Text('위의 정보로 등록하시겠어요?',
-                                                      style:
-                                                          text_darkgrey_15()),
-                                                  Container(
-                                                    height: 30,
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceEvenly,
-                                                    children: <Widget>[
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child: Card(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          60)),
-                                                          elevation: 5,
-                                                          color: Colors.white,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 25,
-                                                                    right: 25,
-                                                                    top: 15,
-                                                                    bottom: 15),
-                                                            child: Center(
-                                                              child: Text('취소',
-                                                                  style:
-                                                                      text_darkgrey_15()),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          Firestore.instance
-                                                              .collection('사용자')
-                                                              .document(
-                                                                  _phoneNumber)
-                                                              .setData({
-                                                            'userName': _name,
-                                                            'id':
-                                                                _phoneNumber,
-                                                            'university': _selectedItem
-                                                                .location,
-                                                            'ivsalt': _ivsalt,
-                                                            'key': _fortuna_key,
-                                                            'password':
-                                                                make_encryption(
-                                                                    _password,
-                                                                    _ivsalt,
-                                                                    _fortuna_key),
-                                                            'orderNum': 0,
-                                                            'nickname': '',
-                                                            'chattingRoomId': '',
-                                                          });
-                                                          Phoenix.rebirth(
-                                                              context);
-                                                        },
-                                                        child: Card(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          60)),
-                                                          elevation: 5,
-                                                          color: Colors.white,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 25,
-                                                                    right: 25,
-                                                                    top: 15,
-                                                                    bottom: 15),
-                                                            child: Center(
-                                                              child: Text('확인',
-                                                                  style:
-                                                                      text_darkgrey_15()),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                            );
-                                          });
-                                    } else {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            Future.delayed(Duration(seconds: 2),
-                                                () {
-                                              Navigator.pop(context);
-                                            });
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              content: FittedBox(
-                                                fit: BoxFit.contain,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(20),
-                                                  child: Center(
-                                                      child: Text(
-                                                    '핸드폰번호가 중복되었어요',
-                                                    style: text_darkgrey_20(),
-                                                  )),
-                                                ),
-                                              ),
-                                            );
-                                          });
-                                    }
-                                  });
-                                } else {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        Future.delayed(Duration(seconds: 2),
-                                            () {
-                                          Navigator.pop(context);
+                              left: 40, right: 40, bottom: 20),
+                          child: Stack(
+                            children: <Widget>[
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                    side: BorderSide(color: _show? Colors.pink : Colors.white, width: 3),
+                                    borderRadius: BorderRadius.circular(60)),
+                                elevation: 15,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 15, top: 5, bottom: 5),
+                                  child: Form(
+                                    key: _phoneNumberValidateFormKey,
+                                    child: TextFormField(
+                                      style: text_darkgrey_15(),
+                                      onChanged: (String str) {
+                                        setState(() {
+                                          _phoneNumberValidate = str.trim();
                                         });
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20)),
-                                          content: FittedBox(
-                                            fit: BoxFit.contain,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(20),
-                                              child: Center(
-                                                  child: Text(
-                                                '비밀번호가 일치하지 않아요',
-                                                style: text_darkgrey_20(),
-                                              )),
-                                            ),
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      controller: _phoneNumberValidateController,
+                                      decoration: InputDecoration(
+                                          icon: Icon(
+                                            Icons.check,
+                                            color: _show? Colors.pink : Colors.grey[700],
                                           ),
-                                        );
-                                      });
-                                }
-                              } else {}
-                            } else {}
-                          } else {}
-                        } else {}
-                      },
-                      child: Padding(
+                                          hintText: '인증번호',
+                                          hintStyle: text_grey_15(),
+                                          border: InputBorder.none),
+                                      validator: (String value) {
+                                        if (value.trim().isEmpty) {
+                                          return '인증번호를 입력해주세요';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                  top: 25,
+                                  right: 20,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (_phoneNumberValidateFormKey.currentState
+                                          .validate()) {
+                                        _signInWithPhoneNumberAndSMSCode();
+                                        _validateUser();
+                                        if(_isPhoneValidate){
+                                          setState(() {
+                                            _isPhoneValidateClicked =
+                                            !_isPhoneValidateClicked;
+                                            _isPhoneValidateDone =
+                                            !_isPhoneValidateDone;
+                                          });
+                                        } else {
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                Future.delayed(Duration(seconds: 2),
+                                                        () {
+                                                      Navigator.pop(context);
+                                                    });
+                                                return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                          20)),
+                                                  content: FittedBox(
+                                                    fit: BoxFit.contain,
+                                                    child: Padding(
+                                                      padding:
+                                                      const EdgeInsets.all(20),
+                                                      child: Center(
+                                                          child: Text(
+                                                            '인증번호가 틀렸어요',
+                                                            style: text_darkgrey_20(),
+                                                          )),
+                                                    ),
+                                                  ),
+                                                );
+                                              });
+                                        }
+                                      }
+                                    },
+                                    child: Text(
+                                      '확인',
+                                      style: text_grey_15(),
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
                         padding: const EdgeInsets.only(
                             left: 40, right: 40, bottom: 20),
                         child: Card(
-                          color: Colors.pink,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(60)),
                           elevation: 15,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: Container(
-                                height: 50,
-                                child: Center(
-                                    child: Text(
-                                  '회원가입',
-                                  style: text_white_20(),
-                                ))),
+                            padding: const EdgeInsets.only(
+                                left: 15, top: 5, bottom: 5),
+                            child: Form(
+                              key: _passwordFormKey,
+                              child: TextFormField(
+                                style: TextStyle(
+                                    fontFamily: 'Spoqa_Han_Sans_Regular',
+                                    color: Colors.grey[700]),
+                                obscureText: true,
+                                onChanged: (String str) {
+                                  setState(() {
+                                    _password = str.trim();
+                                  });
+                                },
+                                keyboardType: TextInputType.text,
+                                controller: _passwordController,
+                                decoration: InputDecoration(
+                                    icon: Icon(
+                                      Icons.lock,
+                                      color: Colors.grey[700],
+                                    ),
+                                    hintText: '비밀번호',
+                                    hintStyle: text_grey_15_for_password(),
+                                    border: InputBorder.none),
+                                validator: (String value) {
+                                  if (value.trim().isEmpty) {
+                                    return '비밀번호를 입력해주세요';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                )
-              : Column(
-                  children: <Widget>[
-                    Container(
-                      height: 50,
-                    ),
-                    Text(
-                      '학교를 선택해주세요',
-                      style: text_darkgrey_15(),
-                    ),
-                    Container(
-                      height: 30,
-                    ),
-                    SearchWidget<LeaderBoard>(
-                      dataList: list,
-                      hideSearchBoxWhenItemSelected: true,
-                      listContainerHeight:
-                          MediaQuery.of(context).size.height / 2,
-                      queryBuilder: (query, list) {
-                        return list
-                            .where((item) => item.location
-                                .toLowerCase()
-                                .contains(query.toLowerCase()))
-                            .toList();
-                      },
-                      popupListItemBuilder: (item) {
-                        return PopupListItemWidget(item);
-                      },
-                      selectedItemBuilder: (selectedItem, deleteSelectedItem) {
-                        return SelectedItemWidget(
-                            selectedItem, deleteSelectedItem);
-                      },
-                      // widget customization
-                      noItemsFoundWidget: NoItemsFound(),
-                      textFieldBuilder: (controller, focusNode) {
-                        return MyTextField(controller, focusNode);
-                      },
-                      onItemSelected: (item) {
-                        setState(() {
-                          _selectedItem = item;
-                          _isItemSelected = !_isItemSelected;
-                        });
-                      },
-                    ),
-                    Container(
-                      height: 30,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isItemSelected
-                              ? _isRegionSelected = !_isRegionSelected
-                              : () {};
-                        });
-                      },
-                      child: FittedBox(
-                        fit: BoxFit.contain,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 40, right: 40, bottom: 20),
                         child: Card(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(60)),
                           elevation: 15,
-                          color: _isItemSelected ? Colors.pink : Colors.grey,
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                left: 35, right: 35, top: 15, bottom: 15),
-                            child: Center(
-                                child: Text(
-                              '확인',
-                              style: text_white_20(),
-                            )),
+                                left: 15, top: 5, bottom: 5),
+                            child: Form(
+                              key: _passwordCheckFormKey,
+                              child: TextFormField(
+                                style: TextStyle(
+                                    fontFamily: 'Spoqa_Han_Sans_Regular',
+                                    color: Colors.grey[700]),
+                                obscureText: true,
+                                onChanged: (String str) {
+                                  setState(() {
+                                    _passwordCheck = str.trim();
+                                  });
+                                },
+                                keyboardType: TextInputType.text,
+                                controller: _passwordCheckController,
+                                decoration: InputDecoration(
+                                    icon: Icon(
+                                      Icons.lock,
+                                      color: Colors.grey[700],
+                                    ),
+                                    hintText: '비밀번호 확인',
+                                    hintStyle: text_grey_15_for_password(),
+                                    border: InputBorder.none),
+                                validator: (String value) {
+                                  if (value.trim().isEmpty) {
+                                    return '비밀번호를 입력해주세요';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      GestureDetector(
+                        onTap: () {
+                          if (_nameFormKey.currentState.validate()) {
+                            if (_phoneNumberFormKey.currentState.validate()) {
+                              if (_passwordFormKey.currentState.validate()) {
+                                if (_passwordCheckFormKey.currentState
+                                    .validate()) {
+                                  if (_password == _passwordCheck) {
+                                    Firestore.instance
+                                        .collection('users')
+                                        .where('id', isEqualTo: _phoneNumber)
+                                        .getDocuments()
+                                        .then((QuerySnapshot ds) {
+                                      ds.documents.forEach((doc) =>
+                                          _comparePhoneNumber = doc['id']);
+                                      if (_comparePhoneNumber != _phoneNumber) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                content: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: <Widget>[
+                                                    Text('회원가입',
+                                                        style: text_pink_20()),
+                                                    Container(
+                                                      height: 30,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('이름 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
+                                                        ),
+                                                        Text(_name,
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 15,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('핸드폰번호 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
+                                                        ),
+                                                        Text(_phoneNumber,
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 15,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Text('위치 :',
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                        Container(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                            _selectedItem
+                                                                .location,
+                                                            style:
+                                                                text_darkgrey_15()),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      height: 40,
+                                                    ),
+                                                    Text('위의 정보로 등록하시겠어요?',
+                                                        style:
+                                                            text_darkgrey_15()),
+                                                    Container(
+                                                      height: 30,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
+                                                      children: <Widget>[
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.of(context)
+                                                                .pop();
+                                                          },
+                                                          child: Card(
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            60)),
+                                                            elevation: 5,
+                                                            color: Colors.white,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 25,
+                                                                      right: 25,
+                                                                      top: 15,
+                                                                      bottom: 15),
+                                                              child: Center(
+                                                                child: Text('취소',
+                                                                    style:
+                                                                        text_darkgrey_15()),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Firestore.instance
+                                                                .collection('users')
+                                                                .document(
+                                                                    _phoneNumber)
+                                                                .setData({
+                                                              'userName': _name,
+                                                              'id':
+                                                                  _phoneNumber,
+                                                              'university': _selectedItem
+                                                                  .location,
+                                                              'ivsalt': _ivsalt,
+                                                              'key': _fortuna_key,
+                                                              'password':
+                                                                  make_encryption(
+                                                                      _password,
+                                                                      _ivsalt,
+                                                                      _fortuna_key),
+                                                              'orderNum': 0,
+                                                              'nickname': '',
+                                                              'chattingRoomId': '',
+                                                            });
+                                                            Phoenix.rebirth(
+                                                                context);
+                                                          },
+                                                          child: Card(
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            60)),
+                                                            elevation: 5,
+                                                            color: Colors.white,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 25,
+                                                                      right: 25,
+                                                                      top: 15,
+                                                                      bottom: 15),
+                                                              child: Center(
+                                                                child: Text('확인',
+                                                                    style:
+                                                                        text_darkgrey_15()),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              );
+                                            });
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              Future.delayed(Duration(seconds: 2),
+                                                  () {
+                                                Navigator.pop(context);
+                                              });
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                content: FittedBox(
+                                                  fit: BoxFit.contain,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(20),
+                                                    child: Center(
+                                                        child: Text(
+                                                      '핸드폰번호가 중복되었어요',
+                                                      style: text_darkgrey_20(),
+                                                    )),
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      }
+                                    });
+                                  } else {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          Future.delayed(Duration(seconds: 2),
+                                              () {
+                                            Navigator.pop(context);
+                                          });
+                                          return AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20)),
+                                            content: FittedBox(
+                                              fit: BoxFit.contain,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(20),
+                                                child: Center(
+                                                    child: Text(
+                                                  '비밀번호가 일치하지 않아요',
+                                                  style: text_darkgrey_20(),
+                                                )),
+                                              ),
+                                            ),
+                                          );
+                                        });
+                                  }
+                                } else {}
+                              } else {}
+                            } else {}
+                          } else {}
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 40, right: 40, bottom: 20),
+                          child: Card(
+                            color: Colors.pink,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)),
+                            elevation: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5, bottom: 5),
+                              child: Container(
+                                  height: 50,
+                                  child: Center(
+                                      child: Text(
+                                    '회원가입',
+                                    style: text_white_20(),
+                                  ))),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: <Widget>[
+                      Container(
+                        height: 50,
+                      ),
+                      Text(
+                        '학교를 선택해주세요',
+                        style: text_darkgrey_15(),
+                      ),
+                      Container(
+                        height: 30,
+                      ),
+                      SearchWidget<LeaderBoard>(
+                        dataList: list,
+                        hideSearchBoxWhenItemSelected: true,
+                        listContainerHeight:
+                            MediaQuery.of(context).size.height / 2,
+                        queryBuilder: (query, list) {
+                          return list
+                              .where((item) => item.location
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()))
+                              .toList();
+                        },
+                        popupListItemBuilder: (item) {
+                          return PopupListItemWidget(item);
+                        },
+                        selectedItemBuilder: (selectedItem, deleteSelectedItem) {
+                          return SelectedItemWidget(
+                              selectedItem, deleteSelectedItem);
+                        },
+                        // widget customization
+                        noItemsFoundWidget: NoItemsFound(),
+                        textFieldBuilder: (controller, focusNode) {
+                          return MyTextField(controller, focusNode);
+                        },
+                        onItemSelected: (item) {
+                          setState(() {
+                            _selectedItem = item;
+                            _isItemSelected = !_isItemSelected;
+                          });
+                        },
+                      ),
+                      Container(
+                        height: 30,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isItemSelected
+                                ? _isRegionSelected = !_isRegionSelected
+                                : () {};
+                          });
+                        },
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)),
+                            elevation: 15,
+                            color: _isItemSelected ? Colors.pink : Colors.grey,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 35, right: 35, top: 15, bottom: 15),
+                              child: Center(
+                                  child: Text(
+                                '확인',
+                                style: text_white_20(),
+                              )),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+      ),
     );
   }
 }

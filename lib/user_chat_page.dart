@@ -259,138 +259,143 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-        stream: Firestore.instance
-            .collection('users')
-            .document(_userPhoneNumber)
-            .snapshots(),
-        builder: (context, userSnapshot) {
-          if (!userSnapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          this.userSnapshot = userSnapshot;
-          if (userSnapshot.data['chattingRoomId'] == '') {
-            // 사용자가 채팅중인 방이 없을 경우
-            return noChattingRoom(context);
-          } else {
-            // 채팅중인 방이 있을 경우
-            _chattingRoomID = userSnapshot.data['chattingRoomId'];
-            _myOrders = userSnapshot.data['orderNum'].toString();
-            return StreamBuilder<DocumentSnapshot>(
-                stream: Firestore.instance
-                    .collection('board')
-                    .document(userSnapshot.data['chattingRoomId'])
-                    .snapshots(),
-                builder: (context, boardSnapshot) {
-                  if (!boardSnapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  this.boardSnapshot = boardSnapshot;
-                  chatReference =
-                      boardSnapshot.data.reference.collection("messages");
-                  _restaurant = boardSnapshot.data['restaurant'];
-                  _orderTime = boardSnapshot.data['orderTime'];
-                  _meetingPlace = boardSnapshot.data['meetingPlace'];
-                  // 사용자가 채팅방의 개설자인지 참여자인지 구분, 자신과 상대방 정보 저장
-                  blockList = List.from(boardSnapshot.data['blockList']);
-                  if (_userPhoneNumber == boardSnapshot.data['hostId']) {
-                    _userIsHost = true;
-                    _myNickname = boardSnapshot.data['hostNickname'];
-                    if ((_otherPhoneNumber = boardSnapshot.data['guestId']) !=
-                        '') {
-                      _otherNickname = boardSnapshot.data['guestNickname'];
-                      _myCompleted = boardSnapshot.data['hostComplete'] as bool;
-                      _otherCompleted = boardSnapshot.data['guestComplete'] as bool;
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: StreamBuilder<DocumentSnapshot>(
+          stream: Firestore.instance
+              .collection('users')
+              .document(_userPhoneNumber)
+              .snapshots(),
+          builder: (context, userSnapshot) {
+            if (!userSnapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            this.userSnapshot = userSnapshot;
+            if (userSnapshot.data['chattingRoomId'] == '') {
+              // 사용자가 채팅중인 방이 없을 경우
+              return noChattingRoom(context);
+            } else {
+              // 채팅중인 방이 있을 경우
+              _chattingRoomID = userSnapshot.data['chattingRoomId'];
+              _myOrders = userSnapshot.data['orderNum'].toString();
+              return StreamBuilder<DocumentSnapshot>(
+                  stream: Firestore.instance
+                      .collection('board')
+                      .document(userSnapshot.data['chattingRoomId'])
+                      .snapshots(),
+                  builder: (context, boardSnapshot) {
+                    if (!boardSnapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
                     }
-                  } else {
-                    _userIsHost = false;
-                    _otherPhoneNumber = boardSnapshot.data['hostId'];
-                    _myNickname = boardSnapshot.data['guestNickname'];
-                    _otherNickname = boardSnapshot.data['hostNickname'];
-                    _myCompleted = boardSnapshot.data['guestComplete'] as bool;
-                    _otherCompleted = boardSnapshot.data['hostComplete'] as bool;
-                    _enteredTime =
-                        ((boardSnapshot.data['guestEnterTime']) as Timestamp).toDate();
-                  }
-                  if (_myCompleted && _otherCompleted) {
-                    // 둘다 반띵완료를 누른 경우
-                    userSnapshot.data.reference.updateData(
-                        {'chattingRoomId': '', 'orderNum': int.parse(_myOrders) + 1});
-                    List<dynamic> _users = [
-                      _userPhoneNumber,
-                      _otherPhoneNumber
-                    ];
-                    Firestore.instance
-                        .collection('history')
-                        .document(_chattingRoomID)
-                        .setData({
-                      'restaurant': _restaurant,
-                      'orderTime': _orderTime,
-                      'meetingPlace': _meetingPlace,
-                      'orderUsers': _users,
-                      'university': _userLocation,
-                      'menuCategory': boardSnapshot.data['menuCategory'],
-                    });
-                    boardSnapshot.data.reference.delete();
-                  }
-                  return Scaffold(
-                    backgroundColor: Colors.white,
-                    appBar: AppBar(
-                      centerTitle: true,
-                      iconTheme: IconThemeData(color: Colors.grey[700]),
-                      elevation: 0,
-                      brightness: Brightness.light,
+                    this.boardSnapshot = boardSnapshot;
+                    chatReference =
+                        boardSnapshot.data.reference.collection("messages");
+                    _restaurant = boardSnapshot.data['restaurant'];
+                    _orderTime = boardSnapshot.data['orderTime'];
+                    _meetingPlace = boardSnapshot.data['meetingPlace'];
+                    // 사용자가 채팅방의 개설자인지 참여자인지 구분, 자신과 상대방 정보 저장
+                    blockList = List.from(boardSnapshot.data['blockList']);
+                    if (_userPhoneNumber == boardSnapshot.data['hostId']) {
+                      _userIsHost = true;
+                      _myNickname = boardSnapshot.data['hostNickname'];
+                      if ((_otherPhoneNumber = boardSnapshot.data['guestId']) !=
+                          '') {
+                        _otherNickname = boardSnapshot.data['guestNickname'];
+                        _myCompleted = boardSnapshot.data['hostComplete'] as bool;
+                        _otherCompleted = boardSnapshot.data['guestComplete'] as bool;
+                      }
+                    } else {
+                      _userIsHost = false;
+                      _otherPhoneNumber = boardSnapshot.data['hostId'];
+                      _myNickname = boardSnapshot.data['guestNickname'];
+                      _otherNickname = boardSnapshot.data['hostNickname'];
+                      _myCompleted = boardSnapshot.data['guestComplete'] as bool;
+                      _otherCompleted = boardSnapshot.data['hostComplete'] as bool;
+                      _enteredTime =
+                          ((boardSnapshot.data['guestEnterTime']) as Timestamp).toDate();
+                    }
+                    if (_myCompleted && _otherCompleted) {
+                      // 둘다 반띵완료를 누른 경우
+                      userSnapshot.data.reference.updateData(
+                          {'chattingRoomId': '', 'orderNum': int.parse(_myOrders) + 1});
+                      List<dynamic> _users = [
+                        _userPhoneNumber,
+                        _otherPhoneNumber
+                      ];
+                      Firestore.instance
+                          .collection('history')
+                          .document(_chattingRoomID)
+                          .setData({
+                        'restaurant': _restaurant,
+                        'orderTime': _orderTime,
+                        'meetingPlace': _meetingPlace,
+                        'orderUsers': _users,
+                        'university': _userLocation,
+                        'menuCategory': boardSnapshot.data['menuCategory'],
+                      });
+                      boardSnapshot.data.reference.delete();
+                    }
+                    return Scaffold(
                       backgroundColor: Colors.white,
-                      title: _otherPhoneNumber == ''
-                          ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_darkgrey_15())
-                          : (_myCompleted && !_otherCompleted)
-                          ? Text(
-                        '상대방의 완료를 기다리고 있어요!',
-                        style: text_darkgrey_15(),
-                      )
-                          : drawer_completeOrder(context),
-                    ),
-                    endDrawer: drawerAll(context),
-                    body: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        children: <Widget>[
-                          StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection('board')
-                                .document(_chattingRoomID)
-                                .collection('messages')
-                                .orderBy('time', descending: true)
-                                .snapshots(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<QuerySnapshot> snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
-                                    child: CircularProgressIndicator());
-                              return Expanded(
-                                child: ListView(
-                                  reverse: true,
-                                  children: generateMessages(snapshot),
-                                ),
-                              );
-                            },
-                          ),
-                          Card(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(60)),
-                              elevation: 15,
-                              color: Colors.white,
-                              child: _buildTextComposer()),
-                          Container(
-                            height: 20,
-                          )
-                        ],
+                      appBar: AppBar(
+                        centerTitle: true,
+                        iconTheme: IconThemeData(color: Colors.grey[700]),
+                        elevation: 0,
+                        brightness: Brightness.light,
+                        backgroundColor: Colors.white,
+                        title: _otherPhoneNumber == ''
+                            ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_darkgrey_15())
+                            : (_myCompleted && !_otherCompleted)
+                            ? Text(
+                          '상대방의 완료를 기다리고 있어요!',
+                          style: text_darkgrey_15(),
+                        )
+                            : drawer_completeOrder(context),
                       ),
-                    ),
-                  );
-                });
-          }
-        });
+                      endDrawer: drawerAll(context),
+                      body: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          children: <Widget>[
+                            StreamBuilder<QuerySnapshot>(
+                              stream: Firestore.instance
+                                  .collection('board')
+                                  .document(_chattingRoomID)
+                                  .collection('messages')
+                                  .orderBy('time', descending: true)
+                                  .snapshots(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                                if (!snapshot.hasData)
+                                  return Center(
+                                      child: CircularProgressIndicator());
+                                return Expanded(
+                                  child: ListView(
+                                    reverse: true,
+                                    children: generateMessages(snapshot),
+                                  ),
+                                );
+                              },
+                            ),
+                            Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(60)),
+                                elevation: 15,
+                                color: Colors.white,
+                                child: _buildTextComposer()),
+                            Container(
+                              height: 20,
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  });
+            }
+          }),
+    );
   }
 
   Widget _buildTextComposer() {

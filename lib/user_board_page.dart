@@ -72,366 +72,371 @@ class _User_Board_PageState extends State<User_Board_Page>
     _bounceInOutAnimation.addListener(() {
       setState(() {});
     });
-    return StreamBuilder<DocumentSnapshot>(
-        stream: Firestore.instance
-            .collection('users')
-            .document(_userPhoneNumber)
-            .snapshots(),
-        builder: (context, snapshot_user) {
-          if (!snapshot_user.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot_user.data['chattingRoomId'] != '') {
-            _userIsChatting = true;
-          }
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              iconTheme: IconThemeData(color: Colors.grey[700]),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: StreamBuilder<DocumentSnapshot>(
+          stream: Firestore.instance
+              .collection('users')
+              .document(_userPhoneNumber)
+              .snapshots(),
+          builder: (context, snapshot_user) {
+            if (!snapshot_user.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (snapshot_user.data['chattingRoomId'] != '') {
+              _userIsChatting = true;
+            }
+            return Scaffold(
               backgroundColor: Colors.white,
-              brightness: Brightness.light,
-              elevation: 0,
-              centerTitle: true,
-              title: Text('반띵', style: text_pink_25()),
-              leading: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => User_Settings_Howto_Page()));
-                  },
-                  child: Icon(Icons.help_outline)),
-            ),
-            endDrawer: Drawer(
-              child: ListView(
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(
-                      Icons.account_circle,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      snapshot_user.data['userName'],
-                      style: text_darkgrey_20(),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.location_on,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      snapshot_user.data['university'],
-                      style: text_darkgrey_20(),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.apps,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '이용횟수  :  ' + snapshot_user.data['orderNum'].toString(),
-                      style: text_darkgrey_15(),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.history,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '주문내역',
-                      style: text_darkgrey_15(),
-                    ),
+              appBar: AppBar(
+                automaticallyImplyLeading: false,
+                iconTheme: IconThemeData(color: Colors.grey[700]),
+                backgroundColor: Colors.white,
+                brightness: Brightness.light,
+                elevation: 0,
+                centerTitle: true,
+                title: Text('반띵', style: text_pink_25()),
+                leading: GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_History_Page()));
+                          builder: (context) => User_Settings_Howto_Page()));
                     },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.notifications,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '공지사항',
-                      style: text_darkgrey_15(),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Settings_Notice_page()));
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.edit,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '개선사항',
-                      style: text_darkgrey_15(),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Settings_Feedback_Page()));
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.help_outline,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '고객지원',
-                      style: text_darkgrey_15(),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => User_Settings_Help_Page()));
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.notifications_active,
-                      color: Colors.grey[700],
-                    ),
-                    title: Row(
-                      children: <Widget>[
-                        Text(
-                          '푸시알림',
-                          style: text_darkgrey_15(),
-                        ),
-                        Container(
-                          width: 30,
-                        ),
-                        Switch(
-                          value: _isNotificationChecked,
-                          onChanged: (value) {
-                            setState(() {
-                              _isNotificationChecked = value;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.lock,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '개인정보 처리방침',
-                      style: text_darkgrey_15(),
-                    ),
-                    onTap: () {
-                      launchUrl();
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.clear,
-                      color: Colors.grey[700],
-                    ),
-                    title: Text(
-                      '로그아웃',
-                      style: text_darkgrey_15(),
-                    ),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Text('로그아웃 하시겠어요?', style: text_pink_20()),
-                                  Container(
-                                    height: 30,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Card(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(60)),
-                                          elevation: 5,
-                                          color: Colors.white,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 25,
-                                                right: 25,
-                                                top: 15,
-                                                bottom: 15),
-                                            child: Center(
-                                              child: Text('취소',
-                                                  style: text_darkgrey_15()),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          (() async {
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-                                            setState(() {
-                                              prefs.clear();
-                                            });
-                                          })();
-                                          Phoenix.rebirth(context);
-                                        },
-                                        child: Card(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(60)),
-                                          elevation: 5,
-                                          color: Colors.white,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 25,
-                                                right: 25,
-                                                top: 15,
-                                                bottom: 15),
-                                            child: Center(
-                                              child: Text('확인',
-                                                  style: text_darkgrey_15()),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            );
-                          });
-                    },
-                  ),
-                  ListTile(
-                    title: Column(
-                      children: <Widget>[
-                        Container(
-                          height: 20,
-                        ),
-                        Text(
-                          'Copyright © 2020 NomadCAT Inc.',
-                          style: text_grey_10(),
-                        ),
-                        Container(
-                          height: 10,
-                        ),
-                        Text(
-                          'All Rights Reserved. Ver 1.0.0',
-                          style: text_grey_10(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                    child: Icon(Icons.help_outline)),
               ),
-            ),
-            body: ListView(
-              children: <Widget>[
-                Container(
-                    height: 150,
-                    child: Carousel(
-                      images: [
-                        Container(
-                          color: Colors.pink,
-                        ),
-                        Container(
-                          color: Colors.lightGreen,
-                        ),
-                        Container(
-                          color: Colors.amber,
-                        ),
-                      ],
-                      dotSize: 4,
-                      dotSpacing: 15,
-                      dotColor: Colors.brown,
-                      dotIncreaseSize: 3,
-                      indicatorBgPadding: 5.0,
-                      dotBgColor: Colors.grey.withOpacity(0.0),
-                      borderRadius: false,
-                    )),
-                StreamBuilder<QuerySnapshot>(
-                  stream: Firestore.instance
-                      .collection('board')
-                      .where('university', isEqualTo: _userLocation)
-                      .snapshots(),
-                  builder: (context, boardSnapshot) {
-                    if (!boardSnapshot.hasData)
-                      return Center(child: CircularProgressIndicator());
-                    if (boardSnapshot.data.documents.isEmpty)
-                      return Column(
+              endDrawer: Drawer(
+                child: ListView(
+                  children: <Widget>[
+                    ListTile(
+                      leading: Icon(
+                        Icons.account_circle,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        snapshot_user.data['userName'],
+                        style: text_darkgrey_20(),
+                      ),
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.location_on,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        snapshot_user.data['university'],
+                        style: text_darkgrey_20(),
+                      ),
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.apps,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '이용횟수  :  ' + snapshot_user.data['orderNum'].toString(),
+                        style: text_darkgrey_15(),
+                      ),
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.history,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '주문내역',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => User_History_Page()));
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.notifications,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '공지사항',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => User_Settings_Notice_page()));
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.edit,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '개선사항',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => User_Settings_Feedback_Page()));
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.help_outline,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '고객지원',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => User_Settings_Help_Page()));
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.notifications_active,
+                        color: Colors.grey[700],
+                      ),
+                      title: Row(
+                        children: <Widget>[
+                          Text(
+                            '푸시알림',
+                            style: text_darkgrey_15(),
+                          ),
+                          Container(
+                            width: 30,
+                          ),
+                          Switch(
+                            value: _isNotificationChecked,
+                            onChanged: (value) {
+                              setState(() {
+                                _isNotificationChecked = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.lock,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '개인정보 처리방침',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        launchUrl();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.clear,
+                        color: Colors.grey[700],
+                      ),
+                      title: Text(
+                        '로그아웃',
+                        style: text_darkgrey_15(),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Text('로그아웃 하시겠어요?', style: text_pink_20()),
+                                    Container(
+                                      height: 30,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Card(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(60)),
+                                            elevation: 5,
+                                            color: Colors.white,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 25,
+                                                  right: 25,
+                                                  top: 15,
+                                                  bottom: 15),
+                                              child: Center(
+                                                child: Text('취소',
+                                                    style: text_darkgrey_15()),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            (() async {
+                                              SharedPreferences prefs =
+                                                  await SharedPreferences
+                                                      .getInstance();
+                                              setState(() {
+                                                prefs.clear();
+                                              });
+                                            })();
+                                            Phoenix.rebirth(context);
+                                          },
+                                          child: Card(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(60)),
+                                            elevation: 5,
+                                            color: Colors.white,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 25,
+                                                  right: 25,
+                                                  top: 15,
+                                                  bottom: 15),
+                                              child: Center(
+                                                child: Text('확인',
+                                                    style: text_darkgrey_15()),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              );
+                            });
+                      },
+                    ),
+                    ListTile(
+                      title: Column(
                         children: <Widget>[
                           Container(
-                            height: 40,
+                            height: 20,
                           ),
-                          Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                          Text(
+                            'Copyright © 2020 NomadCAT Inc.',
+                            style: text_grey_10(),
+                          ),
                           Container(
-                            height: 15,
+                            height: 10,
                           ),
-                          Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                          Text(
+                            'All Rights Reserved. Ver 1.0.0',
+                            style: text_grey_10(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              body: ListView(
+                children: <Widget>[
+                  Container(
+                      height: 150,
+                      child: Carousel(
+                        images: [
                           Container(
-                            height: 40,
+                            color: Colors.pink,
                           ),
-                          StreamBuilder<QuerySnapshot>(
-                              stream: Firestore.instance
-                                  .collection('history')
-                                  .where('university', isEqualTo: _userLocation)
-                                  .snapshots(),
-                              builder: (context, completedSnapshot) {
-                                if (!completedSnapshot.hasData) {
+                          Container(
+                            color: Colors.lightGreen,
+                          ),
+                          Container(
+                            color: Colors.amber,
+                          ),
+                        ],
+                        dotSize: 4,
+                        dotSpacing: 15,
+                        dotColor: Colors.brown,
+                        dotIncreaseSize: 3,
+                        indicatorBgPadding: 5.0,
+                        dotBgColor: Colors.grey.withOpacity(0.0),
+                        borderRadius: false,
+                      )),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                        .collection('board')
+                        .where('university', isEqualTo: _userLocation)
+                        .snapshots(),
+                    builder: (context, boardSnapshot) {
+                      if (!boardSnapshot.hasData)
+                        return Center(child: CircularProgressIndicator());
+                      if (boardSnapshot.data.documents.isEmpty)
+                        return Column(
+                          children: <Widget>[
+                            Container(
+                              height: 40,
+                            ),
+                            Text('반띵중인 사람이 없어요', style: text_grey_15()),
+                            Container(
+                              height: 15,
+                            ),
+                            Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                            Container(
+                              height: 40,
+                            ),
+                            StreamBuilder<QuerySnapshot>(
+                                stream: Firestore.instance
+                                    .collection('history')
+                                    .where('university', isEqualTo: _userLocation)
+                                    .snapshots(),
+                                builder: (context, completedSnapshot) {
+                                  if (!completedSnapshot.hasData) {
+                                    return _buildList(
+                                        context,
+                                        boardSnapshot.data.documents,
+                                        _userPhoneNumber,
+                                        null);
+                                  }
                                   return _buildList(
                                       context,
                                       boardSnapshot.data.documents,
                                       _userPhoneNumber,
-                                      null);
-                                }
-                                return _buildList(
-                                    context,
-                                    boardSnapshot.data.documents,
-                                    _userPhoneNumber,
-                                    completedSnapshot.data.documents);
-                              }),
-                        ],
-                      );
-                    return StreamBuilder<QuerySnapshot>(
-                        stream: Firestore.instance
-                            .collection('history')
-                            .where('university', isEqualTo: _userLocation)
-                            .snapshots(),
-                        builder: (context, completedSnapshot) {
-                          if (!completedSnapshot.hasData) {
+                                      completedSnapshot.data.documents);
+                                }),
+                          ],
+                        );
+                      return StreamBuilder<QuerySnapshot>(
+                          stream: Firestore.instance
+                              .collection('history')
+                              .where('university', isEqualTo: _userLocation)
+                              .snapshots(),
+                          builder: (context, completedSnapshot) {
+                            if (!completedSnapshot.hasData) {
+                              return _buildList(
+                                  context,
+                                  boardSnapshot.data.documents,
+                                  _userPhoneNumber,
+                                  null);
+                            }
                             return _buildList(
                                 context,
                                 boardSnapshot.data.documents,
                                 _userPhoneNumber,
-                                null);
-                          }
-                          return _buildList(
-                              context,
-                              boardSnapshot.data.documents,
-                              _userPhoneNumber,
-                              completedSnapshot.data.documents);
-                        });
-                  },
-                ),
-              ],
-            ),
-          );
-        });
+                                completedSnapshot.data.documents);
+                          });
+                    },
+                  ),
+                ],
+              ),
+            );
+          }),
+    );
   }
 
   Widget _buildList(BuildContext context, List<DocumentSnapshot> boardSnapshot,

@@ -44,6 +44,7 @@ dependencies:
   vibration: 1.4.0
   steel_crypt: 2.0.0
   carousel_pro: 1.0.0
+  country_code_picker: 1.4.0
 
 dev_dependencies:
   flutter_test:

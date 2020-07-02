@@ -41,121 +41,126 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text('개선사항', style: text_pink_20(),),
-        centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.grey[700]),
-        elevation: 0,
-        brightness: Brightness.light,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-      ),
-      body: Column(
-        children: <Widget>[
-          Container(
-            height: 40,
-          ),
-          Column(
-            children: <Widget>[
-              Text(
-                '반띵의 개선사항을 적어주세요',
-                style: text_grey_15(),
-              ),
-              Container(
-                height: 20,
-              ),
-              Text(
-                '여러분의 참여가 큰 도움이 돼요',
-                style: text_grey_15(),
-              ),
-            ],
-          ),
-          Container(
-            height: 40,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 40, right: 40, bottom: 20),
-            child: Container(
-              height: MediaQuery.of(context).size.height / 4,
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                elevation: 15,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      left: 15, top: 5, bottom: 5),
-                  child: Form(
-                    key: _feedbackFormKey,
-                    child: TextFormField(
-                      onChanged: (String str) {
-                        setState(() {
-                          _feedback = str;
-                        });
-                      },
-                      keyboardType: TextInputType.text,
-                      maxLines: null,
-                      controller: _feedbackController,
-                      decoration: InputDecoration(
-                          icon: Icon(Icons.edit),
-                          border: InputBorder.none),
-                      validator: (String value) {
-                        if (value.isEmpty) {
-                          return '개선사항을 입력해주세요';
-                        }
-                        return null;
-                      },
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Text('개선사항', style: text_pink_20(),),
+          centerTitle: true,
+          iconTheme: IconThemeData(color: Colors.grey[700]),
+          elevation: 0,
+          brightness: Brightness.light,
+          backgroundColor: Colors.white,
+        ),
+        body: Column(
+          children: <Widget>[
+            Container(
+              height: 40,
+            ),
+            Column(
+              children: <Widget>[
+                Text(
+                  '반띵의 개선사항을 적어주세요',
+                  style: text_grey_15(),
+                ),
+                Container(
+                  height: 20,
+                ),
+                Text(
+                  '여러분의 참여가 큰 도움이 돼요',
+                  style: text_grey_15(),
+                ),
+              ],
+            ),
+            Container(
+              height: 40,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 40, right: 40, bottom: 20),
+              child: Container(
+                height: MediaQuery.of(context).size.height / 4,
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 15, top: 5, bottom: 5),
+                    child: Form(
+                      key: _feedbackFormKey,
+                      child: TextFormField(
+                        onChanged: (String str) {
+                          setState(() {
+                            _feedback = str;
+                          });
+                        },
+                        keyboardType: TextInputType.text,
+                        maxLines: null,
+                        controller: _feedbackController,
+                        decoration: InputDecoration(
+                            icon: Icon(Icons.edit),
+                            border: InputBorder.none),
+                        validator: (String value) {
+                          if (value.isEmpty) {
+                            return '개선사항을 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              if (_feedbackFormKey.currentState.validate()) {
-                var _currentTime = DateTime.now();
-                var _userOrderId =
-                DateFormat('yyyyMMddHHmmss').format(_currentTime);
-                Firestore.instance
-                    .collection('survey')
-                    .document(_userPhoneNumber + '_' + _userOrderId)
-                    .setData({
-                  'feedback': _feedback,
-                  'university': _userLocation,
-                  'userID': _userPhoneNumber,
-                  'feedbackId': _userPhoneNumber + '_' + _userOrderId,
-                  'rating': '',
-                  'completed': '',
-                });
-                Navigator.of(context).pop();
-              } else {}
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 40, right: 40, bottom: 20),
-              child: Card(
-                color: Colors.pink,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(60)),
-                elevation: 15,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      top: 5, bottom: 5),
-                  child: Container(
-                      height: 50,
-                      child: Center(
-                          child: Text(
-                            '완료',
-                            style: text_white_20(),
-                          ))),
+            GestureDetector(
+              onTap: () {
+                if (_feedbackFormKey.currentState.validate()) {
+                  var _currentTime = DateTime.now();
+                  var _userOrderId =
+                  DateFormat('yyyyMMddHHmmss').format(_currentTime);
+                  Firestore.instance
+                      .collection('survey')
+                      .document(_userPhoneNumber + '_' + _userOrderId)
+                      .setData({
+                    'feedback': _feedback,
+                    'university': _userLocation,
+                    'userID': _userPhoneNumber,
+                    'feedbackId': _userPhoneNumber + '_' + _userOrderId,
+                    'rating': '',
+                    'completed': '',
+                  });
+                  Navigator.of(context).pop();
+                } else {}
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 40, right: 40, bottom: 20),
+                child: Card(
+                  color: Colors.pink,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(60)),
+                  elevation: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 5, bottom: 5),
+                    child: Container(
+                        height: 50,
+                        child: Center(
+                            child: Text(
+                              '완료',
+                              style: text_white_20(),
+                            ))),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
