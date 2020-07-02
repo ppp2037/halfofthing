@@ -2,7 +2,7 @@ import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
 import 'package:halfofthing/user_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +27,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
   bool _isNotificationChecked = false;
   bool _userIsChatting = false; // 사용자가 기존에 참여하고 있는 채팅방이 있는지
   DateTime currentTime;
-
+  DatabaseReference fbRef;
   @override
   void initState() {
     super.initState();
@@ -38,6 +38,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
         _userLocation = prefs.getString('prefsLocation');
       });
+      fbRef = FirebaseDatabase.instance.reference().child("chatting");
     })();
   }
 
@@ -54,7 +55,8 @@ class _User_Board_PageState extends State<User_Board_Page> {
           }
           if (snapshot_user.data['채팅중인방ID'] != '') {
             _userIsChatting = true;
-          }
+          } else
+            _userIsChatting = false;
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
@@ -572,13 +574,16 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                   '참가자참여시간': DateTime.now(),
                                   '참가자닉네임': nickName,
                                 });
-                                data_board.reference
-                                    .collection('messages')
-                                    .add({
+                                fbRef
+                                    .child(record.boardname)
+                                    .child(DateTime.now()
+                                        .millisecondsSinceEpoch
+                                        .toString())
+                                    .set({
                                   'text': "${nickName}님이 입장하셨습니다.",
                                   'sender_phone': "공지",
                                   'sender_nickname': "",
-                                  'time': DateTime.now(),
+                                  'time': DateTime.now().millisecondsSinceEpoch,
                                   'delivered': false,
                                 });
                                 Firestore.instance
@@ -621,7 +626,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
           title: Column(
             children: <Widget>[
               Ink(
-                // color: Colors.amber[50],
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -707,9 +711,6 @@ class _User_Board_PageState extends State<User_Board_Page> {
                   ),
                 ),
               ),
-//              Divider(
-//                thickness: 1,
-//              ),
             ],
           ),
         ),
@@ -882,7 +883,6 @@ class Record {
         assert(map['주문시간'] != null),
         assert(map['위치'] != null),
         assert(map['만날장소'] != null),
-        assert(map['게시판이름'] != null),
         assert(map['생성시간'] != null),
         phoneNumber = map['개설자핸드폰번호'],
         phoneNumber2 = map['참가자핸드폰번호'],

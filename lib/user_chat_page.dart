@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -18,7 +18,6 @@ class User_Chat_Page extends StatefulWidget {
 }
 
 class _User_Chat_PageState extends State<User_Chat_Page> {
-  CollectionReference chatReference;
   final TextEditingController _textController = new TextEditingController();
   bool _isWritting = false;
   String _userPhoneNumber,
@@ -29,7 +28,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       _chattingRoomID = '',
       _myOrders,
       _otherOrders;
-  var _enteredTime;
+  DateTime _enteredTime;
   bool _userIsHost = true; // 사용자가 채팅방 개설자인지
   bool _myCompleted = false, _otherCompleted = false; // 나와 상대방의 반띵완료 클릭 여부 저장
   List<dynamic> blockList;
@@ -38,6 +37,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   AsyncSnapshot<DocumentSnapshot> userSnapshot,
       otherUserSnapshot,
       boardSnapshot;
+  DatabaseReference fbRef, chatRef;
   @override
   void initState() {
     super.initState();
@@ -52,26 +52,20 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         _userLocation = prefs.getString('prefsLocation');
       });
     })();
+    fbRef = FirebaseDatabase.instance.reference().child("chatting");
   }
 
-  Widget timeStampText(DocumentSnapshot documentSnapshot) {
+  Widget timeStampText(var item) {
     var now = DateTime.now();
-    var format = DateFormat('H:mm');
-    DateTime date = (documentSnapshot.data['time']).toDate();
-    var diff = date.difference(now);
+    var format = DateFormat('h:mm');
+    DateTime date = new DateTime.fromMillisecondsSinceEpoch(item['time']);
     var time = '';
-
-    if (diff.inSeconds <= 0 ||
-        diff.inSeconds > 0 && diff.inMinutes == 0 ||
-        diff.inMinutes > 0 && diff.inHours == 0 ||
-        diff.inHours > 0 && diff.inDays == 0) {
-      time = '' + format.format(date);
+    var diffDay = now.day - date.day;
+    if (diffDay > 1) {
+      time = diffDay.toString() + '일 전';
     } else {
-      if (diff.inDays == 1) {
-        time = '어제 ' + format.format(date);
-      } else {
-        time = diff.inDays.toString() + '일 전';
-      }
+      time += diffDay == 1 ? '어제 ' : date.hour >= 12 ? '오후 ' : '오전 ';
+      time += format.format(date);
     }
     return Text(
       time,
@@ -79,8 +73,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     );
   }
 
-  Widget deliveredIcon(DocumentSnapshot documentSnapshot) {
-    return documentSnapshot.data['delivered']
+  Widget deliveredIcon(var item) {
+    return item['delivered']
         ? Container()
         : Icon(
             Icons.fiber_manual_record,
@@ -89,14 +83,14 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           );
   }
 
-  List<Widget> generateSenderLayout(DocumentSnapshot documentSnapshot) {
+  List<Widget> generateSenderLayout(var item) {
     // 나의 말풍선
     return <Widget>[
       Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           Text(
-            documentSnapshot.data['sender_nickname'],
+            item['sender_nickname'],
             style: text_black_15(),
           ),
           Container(
@@ -105,8 +99,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              timeStampText(documentSnapshot),
-              deliveredIcon(documentSnapshot),
+              timeStampText(item),
+              deliveredIcon(item),
               Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
@@ -115,7 +109,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
                   padding: EdgeInsets.all(10),
                   child: Text(
-                    documentSnapshot.data['text'],
+                    item['text'],
                     style: text_white_15(),
                   ),
                 ),
@@ -127,41 +121,17 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     ];
   }
 
-  Future readOtherMessages() {
-    return Firestore.instance.runTransaction((Transaction transaction) async {
-      await Firestore.instance
-          .collection("board")
-          .document(_chattingRoomID)
-          .collection("messages")
-          .where("sender_phone", isEqualTo: _otherPhoneNumber)
-          .where("delivered", isEqualTo: false)
-          .snapshots()
-          .forEach((snapshot) {
-        snapshot.documents.forEach((document) {
-          transaction.update(document.reference, {"delivered": true});
-        });
-      });
-      // print("readOtherMessages");
-    });
-  }
-
-  List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
+  List<Widget> generateReceiverLayout(var item) {
     // 상대방의 말풍선
-    if (documentSnapshot.data['delivered'] as bool == false) {
-      documentSnapshot.reference.updateData({'delivered': true});
-      // Firestore.instance.runTransaction((transaction) async {
-      //   await transaction
-      //       .update(documentSnapshot.reference, {'delivered': true});
-      // });
-      print(
-          "delivered update : ${documentSnapshot.data['text']} from ${documentSnapshot.data['sender_phone']}");
+    if (item['delivered'] as bool == false) {
+      chatRef.child(item['time'].toString()).update({'delivered': true});
+      // print("delivered update : ${item['text']} from ${item['sender_phone']}");
     }
     return <Widget>[
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(documentSnapshot.data['sender_nickname'],
-              style: text_black_15()),
+          Text(item['sender_nickname'], style: text_black_15()),
           Container(
             height: 5,
           ),
@@ -174,21 +144,23 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 constraints: BoxConstraints(minWidth: 10, maxWidth: 250),
                 padding: EdgeInsets.all(10),
                 child: Text(
-                  documentSnapshot.data['text'],
+                  item['text'],
                   style: text_black_15(),
                 ),
               ),
             ),
-            timeStampText(documentSnapshot)
+            timeStampText(item)
           ]),
         ],
       )
     ];
   }
 
-  List<Widget> generateNoticeLayout(DocumentSnapshot documentSnapshot) {
+  List<Widget> generateNoticeLayout(var item) {
     // 공지 말풍선
-    documentSnapshot.reference.updateData({'delivered': false});
+    if (item['delivered'] as bool == false) {
+      chatRef.child(item['time'].toString()).update({'delivered': true});
+    }
     return <Widget>[
       new Row(children: [
         Card(
@@ -200,7 +172,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             child: Column(
               children: <Widget>[
                 Text(
-                  documentSnapshot.data['text'],
+                  item['text'],
                   style: text_black_15(),
                 ),
               ],
@@ -212,76 +184,76 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     ];
   }
 
-  generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
-    // readOtherMessages();
+  generateMessages(List snapshotList) {
     if (_userIsHost) {
-      // 개설자인 경우 : 메세지 전체 출력
-      return snapshot.data.documents
-          .map<Widget>((doc) => doc.data['sender_phone'] == '공지'
-              ?
-              // 공지 메세지인 경우
-              Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: generateNoticeLayout(doc),
-                  ),
-                )
-              : doc.data['sender_phone'] != _userPhoneNumber
-                  ?
-                  // 상대방이 보낸 메세지인 경우
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: generateReceiverLayout(doc),
-                      ),
-                    )
-                  :
-                  // 자신이 보낸 메세지인 경우
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: generateSenderLayout(doc),
-                      ),
-                    ))
-          .toList();
+      return ListView.builder(
+        reverse: true,
+        itemCount: snapshotList.length,
+        itemBuilder: (context, index) {
+          if (snapshotList[index]['sender_phone'] == '공지') {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: generateNoticeLayout(snapshotList[index]),
+              ),
+            );
+          } else if (snapshotList[index]['sender_phone'] != _userPhoneNumber) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: generateReceiverLayout(snapshotList[index]),
+              ),
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: generateSenderLayout(snapshotList[index]),
+              ),
+            );
+          }
+        },
+      );
     } else {
-      // 참가자인 경우 : 참여시간 이후의 메세지만 출력
-      return snapshot.data.documents
-          .map<Widget>((doc) =>
-              ((doc.data['time']).toDate().difference(_enteredTime).inSeconds) >
-                      0
-                  // 메세지 받은 시간 - 참여시간 > 0 인 경우에만 출력
-                  ? doc.data['sender_phone'] != _userPhoneNumber
-                      ?
-                      // 상대방이 보낸 메세지인 경우
-                      Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: generateReceiverLayout(doc),
-                          ),
-                        )
-                      :
-                      // 자신이 보낸 메세지인 경우
-                      Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: generateSenderLayout(doc),
-                          ),
-                        )
-                  : Container())
-          .toList();
+      return ListView.builder(
+        reverse: true,
+        itemCount: snapshotList.length,
+        itemBuilder: (context, index) {
+          DateTime snapshotTime = new DateTime.fromMillisecondsSinceEpoch(
+              snapshotList[index]['time']);
+          if ((snapshotTime.difference(_enteredTime).inSeconds) > 0) {
+            print(
+                "snapshotTime : ${snapshotTime}, enterTime : ${_enteredTime}, diff : ${snapshotTime.difference(_enteredTime).inSeconds}");
+            if (snapshotList[index]['sender_phone'] != _userPhoneNumber) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: generateReceiverLayout(snapshotList[index]),
+                ),
+              );
+            } else {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: generateSenderLayout(snapshotList[index]),
+                ),
+              );
+            }
+          } else {
+            Container();
+          }
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "build => chattingRoom : $_chattingRoomID, userIsHost : $_userIsHost, userphone : $_userPhoneNumber, otherPhone : $_otherPhoneNumber");
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('users')
@@ -299,6 +271,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             // 채팅중인 방이 있을 경우
             _chattingRoomID = userSnapshot.data['채팅중인방ID'];
             _myOrders = userSnapshot.data['이용횟수'].toString();
+            chatRef = fbRef.child(_chattingRoomID);
             return StreamBuilder<DocumentSnapshot>(
                 stream: Firestore.instance
                     .collection('board')
@@ -309,8 +282,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                     return Center(child: CircularProgressIndicator());
                   }
                   this.boardSnapshot = boardSnapshot;
-                  chatReference =
-                      boardSnapshot.data.reference.collection("messages");
                   _restaurant = boardSnapshot.data['식당이름'];
                   _orderTime = boardSnapshot.data['주문시간'];
                   _meetingPlace = boardSnapshot.data['만날장소'];
@@ -358,6 +329,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                       '위치': _userLocation
                     });
                     boardSnapshot.data.reference.delete();
+                    chatRef.remove();
                     return Container();
                   }
                   return Scaffold(
@@ -385,24 +357,23 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                       padding: const EdgeInsets.all(10),
                       child: Column(
                         children: <Widget>[
-                          StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection("board")
-                                .document(_chattingRoomID)
-                                .collection('messages')
-                                .orderBy('time', descending: true)
-                                .snapshots(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<QuerySnapshot> snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
-                                    child: CircularProgressIndicator());
-                              return Expanded(
-                                child: ListView(
-                                  reverse: true,
-                                  children: generateMessages(snapshot),
-                                ),
-                              );
+                          StreamBuilder(
+                            stream: chatRef.onValue,
+                            builder: (context, AsyncSnapshot<Event> snap) {
+                              if (snap.hasData &&
+                                  !snap.hasError &&
+                                  snap.data.snapshot.value != null) {
+                                Map<dynamic, dynamic> map =
+                                    snap.data.snapshot.value;
+                                List<dynamic> list = map.values.toList()
+                                  ..sort(
+                                      (a, b) => b['time'].compareTo(a['time']));
+                                return Expanded(child: generateMessages(list));
+                              } else {
+                                return Expanded(
+                                  child: Container(),
+                                );
+                              }
                             },
                           ),
                           Card(
@@ -470,20 +441,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // type: 0 = 일반 메세지, 1 = 공지 메세지
     if (text.isNotEmpty) {
       _textController.clear();
-      var documentReference = chatReference
-          .document(DateTime.now().millisecondsSinceEpoch.toString());
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction.set(
-          documentReference,
-          {
-            'text': text,
-            'sender_phone': type == 1 ? '공지' : _userPhoneNumber,
-            'sender_nickname': type == 1 ? '' : _myNickname,
-            'time': DateTime.now(),
-            'delivered': false,
-          },
-        );
-        print("onSendMessage - transaction");
+      chatRef.child(DateTime.now().millisecondsSinceEpoch.toString()).set({
+        'text': text,
+        'sender_phone': type == 1 ? '공지' : _userPhoneNumber,
+        'sender_nickname': type == 1 ? '' : _myNickname,
+        'time': DateTime.now().millisecondsSinceEpoch,
+        'delivered': false,
       });
     }
   }
@@ -511,7 +474,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                 height: 20,
               ),
               Text(
-                '가운데 시작을 눌러 반띵을 시작해보세요',
+                '가운데 시작을 눌러 반띵�� 시작해보세요',
                 style: text_grey_15(),
               ),
             ],
@@ -539,18 +502,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     DateTime date = _orderTime.toDate();
     var now = DateTime.now();
     var diff = now.difference(date);
-    if (diff.inDays > 0) {
-      orderTimeStr = orderTimeStr + '내일';
-    } else {
-      orderTimeStr = orderTimeStr + '오늘';
-    }
-    if (date.hour > 12) {
-      orderTimeStr = orderTimeStr + ' 오후';
-    } else {
-      orderTimeStr = orderTimeStr + ' 오전';
-    }
-    var format = DateFormat(' h:mm 주문예정');
-    orderTimeStr = orderTimeStr + format.format(date);
+    var format = DateFormat('h:mm 주문예정');
+    orderTimeStr += diff.inDays > 0 ? '내일 ' : '오늘 ';
+    orderTimeStr += date.hour > 12 ? '오후 ' : '오전 ';
+    orderTimeStr += format.format(date);
     return Drawer(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -611,6 +566,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           userSnapshot.data.reference
               .updateData({'채팅중인방ID': '', 'nickname': ''});
           boardSnapshot.data.reference.delete();
+          chatRef.remove();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Background_Page()));
         });
@@ -702,32 +658,32 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       title: Text('참가자 내보내기', style: text_grey_20()),
       onTap: () {
         setState(() {
-          // 참가자를 내보냈을 때 :
+          // TODO: 참가자를 내보냈을 때 :
           // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
-          chatReference
-              .where('sender_phone', isEqualTo: _userPhoneNumber)
-              .where('delivered', isEqualTo: false)
-              .getDocuments()
-              .then((QuerySnapshot ds) {
-            ds.documents.forEach((doc) {
-              Firestore.instance.runTransaction((transaction) async {
-                await transaction.update(doc.reference, {'delivered': true});
-                print("참가자 내보냄 - 내 메세지 delivered 값 변경");
-              });
-            });
 
-            blockList.add(_otherPhoneNumber);
-            onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
+          // chatReference
+          //     .where('sender_phone', isEqualTo: _userPhoneNumber)
+          //     .where('delivered', isEqualTo: false)
+          //     .getDocuments()
+          //     .then((QuerySnapshot ds) {
+          //   ds.documents.forEach((doc) {
+          //     Firestore.instance.runTransaction((transaction) async {
+          //       await transaction.update(doc.reference, {'delivered': true});
+          //       print("참가자 내보냄 - 내 메세지 delivered 값 변경");
+          //     });
+          //   });
 
-            boardSnapshot.data.reference.updateData({
-              '참가자핸드폰번호': '',
-              '참가자참여시간': '',
-              '참가자닉네임': '',
-              '내보낸사용자': FieldValue.arrayUnion(blockList)
-            });
-            otherUserSnapshot.data.reference
-                .updateData({'채팅중인방ID': '', 'nickname': ''});
+          blockList.add(_otherPhoneNumber);
+          onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
+
+          boardSnapshot.data.reference.updateData({
+            '참가자핸드폰번호': '',
+            '참가자참여시간': '',
+            '참가자닉네임': '',
+            '내보낸사용자': FieldValue.arrayUnion(blockList)
           });
+          otherUserSnapshot.data.reference
+              .updateData({'채팅중인방ID': '', 'nickname': ''});
         });
         Navigator.pop(context);
       },

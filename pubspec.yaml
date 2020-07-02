@@ -14,7 +14,7 @@ description: halfofthing
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.6.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -45,6 +45,8 @@ dependencies:
   vibration: 1.4.0
   steel_crypt: 2.0.0
   carousel_pro: 1.0.0
+  firebase_database: ^3.1.6
+  firebase_analytics: ^1.0.4
   flutter_local_notifications:
 
 dev_dependencies:

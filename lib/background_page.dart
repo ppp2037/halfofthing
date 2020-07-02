@@ -5,6 +5,7 @@ import 'package:halfofthing/settings/styles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_board_page.dart';
 import 'user_chat_page.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'user_create_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,11 +21,9 @@ class _Background_PageState extends State<Background_Page> {
   static List<Widget> _widgetOptions = <Widget>[
     User_Board_Page(),
     User_Create_page(),
-    // User_Chat_Page(),
   ];
 
   String _userPhoneNumber;
-  String _otherPhoneNumber;
   String _chattingRoomID;
   int unreadMessages = 0;
 
@@ -113,35 +112,41 @@ class _Background_PageState extends State<Background_Page> {
             .snapshots(),
         builder: (context, snapshot_board) {
           if (!snapshot_board.hasData) return Icon(Icons.chat);
-          if (_userPhoneNumber == snapshot_board.data['개설자핸드폰번호']) {
-            _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
-          } else {
-            _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
-          }
-          return StreamBuilder<QuerySnapshot>(
-            stream: Firestore.instance
-                .collection('board')
-                .document(_chattingRoomID)
-                .collection('messages')
-                .where('sender_phone', isEqualTo: _otherPhoneNumber)
-                .where('delivered', isEqualTo: false)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return Icon(Icons.chat);
-              if (snapshot.data.documents.length.toString() == '0')
-                return Icon(Icons.chat);
-              return Badge(
-                  animationType: BadgeAnimationType.slide,
-                  shape: BadgeShape.circle,
-                  position: BadgePosition.topRight(top: -15),
-                  badgeColor: Colors.pink,
-                  badgeContent: Text(
-                    snapshot.data.documents.length.toString(),
-                    style: text_white_15(),
-                  ),
-                  child: Icon(Icons.chat));
-            },
-          );
+          var onValue2 = FirebaseDatabase.instance
+              .reference()
+              .child("chatting")
+              .child(_chattingRoomID)
+              .orderByChild("delivered")
+              .equalTo(false)
+              .onValue;
+          return StreamBuilder(
+              stream: onValue2,
+              builder: (context, AsyncSnapshot<Event> snap) {
+                if (snap.hasData &&
+                    !snap.hasError &&
+                    snap.data.snapshot.value != null) {
+                  Map<dynamic, dynamic> map = snap.data.snapshot.value;
+                  List<dynamic> list = map.values
+                      .where((element) =>
+                          element['sender_phone'] != _userPhoneNumber)
+                      .toList();
+                  if (list.length.toString() == '0') {
+                    return Icon(Icons.chat);
+                  }
+                  return Badge(
+                      animationType: BadgeAnimationType.slide,
+                      shape: BadgeShape.circle,
+                      position: BadgePosition.topRight(top: -15),
+                      badgeColor: Colors.pink,
+                      badgeContent: Text(
+                        list.length.toString(),
+                        style: text_white_15(),
+                      ),
+                      child: Icon(Icons.chat));
+                } else {
+                  return Icon(Icons.chat);
+                }
+              });
         });
   }
 }
