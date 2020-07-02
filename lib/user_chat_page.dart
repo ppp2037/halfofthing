@@ -353,12 +353,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   return Scaffold(
                     appBar: AppBar(
                       brightness: Brightness.light,
-                      automaticallyImplyLeading: false,
-                      leading: IconButton(
-                          icon: Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                                  builder: (context) => Background_Page()))),
+//                      leading: IconButton(
+//                          icon: Icon(Icons.arrow_back),
+//                          onPressed: () => Navigator.of(context)
+//                              .pushReplacement(MaterialPageRoute(
+//                              builder: (context) => Background_Page()))),
                       title: _otherPhoneNumber == ''
                           ? Text('참여중인 사람이 없어요 ㅜ.ㅜ', style: text_grey_15())
                           : (_myCompleted && !_otherCompleted)
@@ -481,32 +480,44 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
 
   Widget noChattingRoom(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        brightness: Brightness.light,
-        backgroundColor: Colors.white10,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.white,
+      body: Stack(
         children: <Widget>[
-          Text(
-            '현재 진행중인 반띵이 없어요',
-            style: text_grey_15(),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                '현재 진행중인 반띵이 없어요',
+                style: text_grey_15(),
+              ),
+              Container(
+                height: 60,
+              ),
+              Text(
+                '왼쪽 다른 반띵에 참가하거나',
+                style: text_grey_15(),
+              ),
+              Container(
+                height: 20,
+              ),
+              Text(
+                '가운데 시작을 눌러 반띵을 시작해보세요',
+                style: text_grey_15(),
+              ),
+            ],
           ),
-          Container(
-            height: 60,
-          ),
-          Text(
-            '왼쪽 다른 반띵에 참가하거나',
-            style: text_grey_15(),
-          ),
-          Container(
-            height: 20,
-          ),
-          Text(
-            '가운데 시작을 눌러 반띵을 시작해보세요',
-            style: text_grey_15(),
+          Positioned(
+            left: 20,
+            top: 40,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: Colors.grey[700],
+              ),
+            ),
           ),
         ],
       ),
@@ -596,7 +607,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Widget drawer_otherOrderCount(BuildContext context) {
-    // ���대방의 주문횟수
+    // 상대방의 주문횟수
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')

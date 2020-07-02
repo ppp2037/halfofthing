@@ -71,7 +71,7 @@ class _HalfofthingState extends State<Halfofthing> {
       title: '반띵',
       theme: ThemeData(
           primarySwatch: Colors.pink,
-          fontFamily: 'Spoqa_Han_Sans_Regular',
+          fontFamily: 'BMEULJIROTTF',
           brightness: Brightness.light),
       // darkTheme: ThemeData(
       //     primarySwatch: Colors.pink,

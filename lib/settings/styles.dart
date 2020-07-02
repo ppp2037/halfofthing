@@ -115,6 +115,50 @@ TextStyle text_grey_40() {
   );
 }
 
+TextStyle text_darkgrey_10() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 10,
+  );
+}
+
+TextStyle text_darkgrey_15() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 15,
+  );
+}
+
+TextStyle text_darkgrey_20() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 20,
+    // fontWeight: FontWeight.bold,
+  );
+}
+
+TextStyle text_darkgrey_25() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 25,
+    // fontWeight: FontWeight.bold,
+  );
+}
+
+TextStyle text_darkgrey_30() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 30,
+  );
+}
+
+TextStyle text_darkrey_40() {
+  return TextStyle(
+    color: Colors.grey[700],
+    fontSize: 40,
+  );
+}
+
 TextStyle text_pink_10() {
   return TextStyle(
     color: Colors.pink,
@@ -170,5 +214,13 @@ TextStyle text_green_15_bold() {
     color: Colors.green[300],
     fontSize: 15,
     fontWeight: FontWeight.bold,
+  );
+}
+
+TextStyle text_grey_15_for_password() {
+  return TextStyle(
+    color: Colors.grey,
+    fontSize: 15,
+    fontFamily: 'BMEULJIROTTF',
   );
 }

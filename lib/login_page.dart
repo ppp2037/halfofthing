@@ -20,14 +20,10 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
   String _comparePhoneNumber;
   String _comparePassword;
 
-  final GlobalKey<FormState> _phoneNumberFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
-  final GlobalKey<FormState> _passwordFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 이름 폼 키 생성
-  final TextEditingController _phoneNumberController =
-      TextEditingController(); //컨트롤러 생성
-  final TextEditingController _passwordController =
-      TextEditingController(); //컨트롤러 생성
+  final GlobalKey<FormState> _phoneNumberFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -38,8 +34,8 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  String _phoneNumber; // 사용자가 입력한 핸드폰번호 값
-  String _password; // 사용자가 입력한 비밀번호 값
+  String _phoneNumber;
+  String _password;
 
   String _iv_salt;
   String _fortuna_key;
@@ -80,27 +76,25 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Image.asset(
-            'images/halfofthing_logo.png',
-            color: Colors.pink,
+            'images/halfofthing_logo_red_1024x1024.png',
             width:
-                Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                Tween(begin: 0.0, end: 140.0).evaluate(_bounceInOutAnimation),
             height:
-                Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                Tween(begin: 0.0, end: 140.0).evaluate(_bounceInOutAnimation),
           ),
           Column(
             children: <Widget>[
               Container(
-                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-                    .evaluate(_fastOutSlowInAnimation),
-                height: Tween(
-                        begin: 0.0, end: MediaQuery.of(context).size.height / 8)
+//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
+//                    .evaluate(_fastOutSlowInAnimation),
+                height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_fastOutSlowInAnimation),
                 child: Padding(
                   padding:
                       const EdgeInsets.only(left: 40, right: 40, bottom: 20),
                   child: Card(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(60)),
                     elevation: 15,
                     child: Padding(
                       padding:
@@ -136,17 +130,16 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                 ),
               ),
               Container(
-                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-                    .evaluate(_fastOutSlowInAnimation),
-                height: Tween(
-                        begin: 0.0, end: MediaQuery.of(context).size.height / 8)
+//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
+//                    .evaluate(_fastOutSlowInAnimation),
+                height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_fastOutSlowInAnimation),
                 child: Padding(
                   padding:
                       const EdgeInsets.only(left: 40, right: 40, bottom: 20),
                   child: Card(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(60)),
                     elevation: 15,
                     child: Padding(
                       padding:
@@ -154,6 +147,8 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                       child: Form(
                         key: _passwordFormKey,
                         child: TextFormField(
+                          style:
+                              TextStyle(fontFamily: 'Spoqa_Han_Sans_Regular'),
                           obscureText: true,
                           onChanged: (String str) {
                             setState(() {
@@ -165,7 +160,7 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                           decoration: InputDecoration(
                               icon: Icon(Icons.lock),
                               hintText: '비밀번호',
-                              hintStyle: text_grey_15(),
+                              hintStyle: text_grey_15_for_password(),
                               border: InputBorder.none),
                           validator: (String value) {
                             if (value.isEmpty) {
@@ -180,10 +175,9 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                 ),
               ),
               Container(
-                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-                    .evaluate(_bounceInOutAnimation),
-                height: Tween(
-                        begin: 0.0, end: MediaQuery.of(context).size.height / 8)
+//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
+//                    .evaluate(_bounceInOutAnimation),
+                height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_bounceInOutAnimation),
                 child: GestureDetector(
                   onTap: () {
@@ -202,7 +196,9 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                             _fortuna_key = doc['key'];
                           });
                           if (_comparePhoneNumber == _phoneNumber &&
-                              _comparePassword == make_encryption(_password, _iv_salt, _fortuna_key)) {
+                              _comparePassword ==
+                                  make_encryption(
+                                      _password, _iv_salt, _fortuna_key)) {
                             (() async {
                               SharedPreferences prefs =
                                   await SharedPreferences.getInstance();
@@ -212,20 +208,33 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                                 prefs.setString('prefsLocation', _userLocation);
                               });
                             })();
-                            Fluttertoast.showToast(
-                                msg: '로그인 되었어요',
-                                gravity: ToastGravity.CENTER,
-                                backgroundColor: Colors.pink,
-                                textColor: Colors.white);
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (context) => Background_Page()));
                           } else {
-                            Fluttertoast.showToast(
-                                msg: '로그인정보가 일치하지 않아요',
-                                gravity: ToastGravity.CENTER,
-                                backgroundColor: Colors.pink,
-                                textColor: Colors.white);
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  Future.delayed(Duration(seconds: 2), () {
+                                    Navigator.pop(context);
+                                  });
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    content: FittedBox(
+                                      fit: BoxFit.contain,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Center(
+                                            child: Text(
+                                          '로그인정보가 일치하지 않아요',
+                                          style: text_darkgrey_20(),
+                                        )),
+                                      ),
+                                    ),
+                                  );
+                                });
                           }
                         });
                       } else {}
@@ -237,7 +246,7 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                     child: Card(
                       color: Colors.pink,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(60)),
                       elevation: 15,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 5, bottom: 5),

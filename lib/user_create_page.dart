@@ -37,6 +37,9 @@ class _User_Create_pageState extends State<User_Create_page> {
 
   String _userPhoneNumber;
   String _userLocation;
+  String _userSelectedCategory;
+
+  bool _isItemSelected = true;
 
   @override
   void initState() {
@@ -50,9 +53,19 @@ class _User_Create_pageState extends State<User_Create_page> {
     })();
   }
 
-//  int _selectedMenuNumber = 0;
+  int _selectedCategoryNumber = 0;
 
-//  List<String> _selectedMenu = ['미선택', '한식', '중식', '일식', '분식', '음료', '패스트푸드'];
+  List<String> _selectedCategory = [
+    '미선택',
+    '간식/도시락',
+    '카페/디저트',
+    '분식',
+    '한식',
+    '햄버거',
+    '중국집',
+    '일식/돈까스',
+    '아시안/양식'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -90,210 +103,512 @@ class _User_Create_pageState extends State<User_Create_page> {
                     ),
                   ],
                 )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Center(
-                        child: Text(
-                          '반띵할 사람이 생기면 알림으로 알려드려요',
-                          style: text_grey_15(),
+              : _isItemSelected
+                  ? ListView(
+                      children: <Widget>[
+                        Container(
+                          height: 40,
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _restaurantFormKey,
-                            child: TextFormField(
-                              onChanged: (String str) {
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 1;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
                                 setState(() {
-                                  _restaurant = str;
+                                  _isItemSelected = !_isItemSelected;
                                 });
                               },
-                              keyboardType: TextInputType.text,
-                              controller: _restaurantController,
-                              decoration: InputDecoration(
-                                  icon: Icon(Icons.restaurant),
-                                  hintText: '식당 이름',
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.isEmpty) {
-                                  return '식당 이름을 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 15, top: 5, bottom: 5),
-                          child: Form(
-                            key: _meetingPlaceFormKey,
-                            child: TextFormField(
-                              onChanged: (String str) {
-                                setState(() {
-                                  _meetingPlace = str;
-                                });
-                              },
-                              keyboardType: TextInputType.text,
-                              controller: _meetingPlaceController,
-                              decoration: InputDecoration(
-                                  icon: Icon(Icons.place),
-                                  hintText: '만날 장소',
-                                  border: InputBorder.none),
-                              validator: (String value) {
-                                if (value.isEmpty) {
-                                  return '만날 장소를 입력해주세요';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 40, right: 40, bottom: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            children: <Widget>[
-                              Row(
+                              child: Column(
                                 children: <Widget>[
-                                  Icon(
-                                    Icons.access_time,
-                                    color: Colors.grey,
+                                  Image.asset(
+                                    'images/food_images1.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '간식/도시락',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 2;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
+                                setState(() {
+                                  _isItemSelected = !_isItemSelected;
+                                });
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images2.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '카페/디저트',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 3;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
+                                setState(() {
+                                  _isItemSelected = !_isItemSelected;
+                                });
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images3.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '분식',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 4;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
+                                setState(() {
+                                  _isItemSelected = !_isItemSelected;
+                                });
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images4.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '한식',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 10,
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  _selectedCategoryNumber = 5;
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
+                                  setState(() {
+                                    _isItemSelected = !_isItemSelected;
+                                  });
+                                },
+                                child: Column(
+                                  children: <Widget>[
+                                    Image.asset(
+                                      'images/food_images5.png',
+                                      width: 100,
+                                      height: 100,
+                                    ),
+                                    Container(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      '햄버거',
+                                      style: text_darkgrey_15(),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _selectedCategoryNumber = 6;
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
+                                  setState(() {
+                                    _isItemSelected = !_isItemSelected;
+                                  });
+                                },
+                                child: Column(
+                                  children: <Widget>[
+                                    Image.asset(
+                                      'images/food_images6.png',
+                                      width: 100,
+                                      height: 100,
+                                    ),
+                                    Container(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      '중국집',
+                                      style: text_darkgrey_15(),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ]),
+                        Container(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 7;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
+                                setState(() {
+                                  _isItemSelected = !_isItemSelected;
+                                });
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images7.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '일식/돈까스',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _selectedCategoryNumber = 8;
+                                _userSelectedCategory =
+                                    _selectedCategory[_selectedCategoryNumber];
+                                setState(() {
+                                  _isItemSelected = !_isItemSelected;
+                                });
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images8.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Container(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '아시안/양식',
+                                    style: text_darkgrey_15(),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Stack(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(top: 30),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/food_images' +
+                                        _selectedCategoryNumber.toString() +
+                                        '.png',
+                                    width: 50,
+                                    height: 50,
                                   ),
                                   Container(
                                     width: 10,
                                   ),
                                   Text(
-                                    '받을 시간',
-                                    style: text_grey_15(),
+                                    _userSelectedCategory,
+                                    style: text_darkgrey_15(),
                                   ),
                                 ],
                               ),
-                              Flexible(
-                                child: TimePickerSpinner(
-                                  is24HourMode: true,
-                                  normalTextStyle: text_grey_15(),
-                                  highlightedTextStyle: text_pink_20(),
-                                  spacing: 20,
-                                  itemHeight: 50,
-                                  itemWidth: 40,
-                                  isForce2Digits: true,
-                                  minutesInterval: 10,
-                                  onTimeChange: (time) {
+                            ),
+                            Positioned(
+                              left: 15,
+                              top: 15,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isItemSelected = !_isItemSelected;
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.arrow_back_ios,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 40, right: 40, bottom: 20),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)),
+                            elevation: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 15, top: 5, bottom: 5),
+                              child: Form(
+                                key: _restaurantFormKey,
+                                child: TextFormField(
+                                  onChanged: (String str) {
                                     setState(() {
-                                      _orderTime = time;
+                                      _restaurant = str;
                                     });
+                                  },
+                                  keyboardType: TextInputType.text,
+                                  controller: _restaurantController,
+                                  decoration: InputDecoration(
+                                      icon: Icon(
+                                        Icons.restaurant,
+                                        color: Colors.grey[700],
+                                      ),
+                                      hintText: '식당 이름',
+                                      border: InputBorder.none),
+                                  validator: (String value) {
+                                    if (value.isEmpty) {
+                                      return '식당 이름을 입력해주세요';
+                                    }
+                                    return null;
                                   },
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (_restaurantFormKey.currentState.validate()) {
-                          var _currentTime = DateTime.now();
-                          var _userOrderId =
-                              DateFormat('yyyyMMddHHmmss').format(_currentTime);
-                          var _boardID = _userPhoneNumber + '_' + _userOrderId;
-                          var now = DateTime.now();
-                          // 현재 시각 - time 시각 >0 이면 다음날로 설정
-                          if (now.hour > _orderTime.hour) {
-                            _orderTime = _orderTime.add(new Duration(days: 1));
-                          }
-                          String randomNickname;
-                          Firestore.instance
-                              .collection('게시판')
-                              .document(_userPhoneNumber + '_' + _userOrderId)
-                              .setData({
-                            '식당이름': _restaurant,
-                            '주문시간': Timestamp.fromDate(_orderTime),
-                            '위치': _userLocation,
-                            '만날장소': _meetingPlace,
-                            '개설자핸드폰번호': _userPhoneNumber,
-                            '참가자핸드폰번호': '',
-                            '게시판이름': _boardID,
-                            '참가자참여시간': '',
-                            '개설자닉네임': randomNickname,
-                            '참가자닉네임': '',
-                            '생성시간': DateTime.now(),
-                            '반띵완료_개설자': false,
-                            '반띵완료_참가자': false,
-                            '내보낸사용자': []
-                          });
-                          Firestore.instance
-                              .collection('사용자')
-                              .document(_userPhoneNumber)
-                              .updateData({
-                            '채팅중인방ID': _boardID,
-                            'nickname': randomNickname
-                          });
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 40, right: 40, bottom: 20),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)),
+                            elevation: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 15, top: 5, bottom: 5),
+                              child: Form(
+                                key: _meetingPlaceFormKey,
+                                child: TextFormField(
+                                  onChanged: (String str) {
+                                    setState(() {
+                                      _meetingPlace = str;
+                                    });
+                                  },
+                                  keyboardType: TextInputType.text,
+                                  controller: _meetingPlaceController,
+                                  decoration: InputDecoration(
+                                      icon: Icon(
+                                        Icons.place,
+                                        color: Colors.grey[700],
+                                      ),
+                                      hintText: '만날 장소',
+                                      border: InputBorder.none),
+                                  validator: (String value) {
+                                    if (value.isEmpty) {
+                                      return '만날 장소를 입력해주세요';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 40, right: 40, bottom: 20),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            elevation: 15,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Row(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.access_time,
+                                        color: Colors.grey[700],
+                                      ),
+                                      Container(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        '받을 시간',
+                                        style: text_darkgrey_15(),
+                                      ),
+                                    ],
+                                  ),
+                                  Flexible(
+                                    child: TimePickerSpinner(
+                                      is24HourMode: true,
+                                      normalTextStyle: text_grey_15(),
+                                      highlightedTextStyle: text_pink_20(),
+                                      spacing: 20,
+                                      itemHeight: 50,
+                                      itemWidth: 40,
+                                      isForce2Digits: true,
+                                      minutesInterval: 10,
+                                      onTimeChange: (time) {
+                                        setState(() {
+                                          _orderTime = time;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            if (_restaurantFormKey.currentState.validate()) {
+                              var _currentTime = DateTime.now();
+                              var _userOrderId = DateFormat('yyyyMMddHHmmss')
+                                  .format(_currentTime);
+                              var _boardID =
+                                  _userPhoneNumber + '_' + _userOrderId;
+                              var now = DateTime.now();
+                              // 현재 시각 - time 시각 >0 이면 다음날로 설정
+                              if (now.hour > _orderTime.hour) {
+                                _orderTime =
+                                    _orderTime.add(new Duration(days: 1));
+                              }
+                              Firestore.instance
+                                  .collection('게시판')
+                                  .document(
+                                      _userPhoneNumber + '_' + _userOrderId)
+                                  .setData({
+                                '식당이름': _restaurant,
+                                '주문시간': Timestamp.fromDate(_orderTime),
+                                '위치': _userLocation,
+                                '만날장소': _meetingPlace,
+                                '개설자핸드폰번호': _userPhoneNumber,
+                                '참가자핸드폰번호': '',
+                                '게시판이름': _boardID,
+                                '참가자참여시간': '',
+                                '개설자닉네임': randomNickname(),
+                                '참가자닉네임': '',
+                                '생성시간': DateTime.now(),
+                                '반띵완료_개설자': false,
+                                '반띵완료_참가자': false,
+                                '내보낸사용자': [],
+                                'menuCategory':
+                                    _selectedCategory[_selectedCategoryNumber],
+                              });
+                              Firestore.instance
+                                  .collection('사용자')
+                                  .document(_userPhoneNumber)
+                                  .updateData({'채팅중인방ID': _boardID});
 
-                          Fluttertoast.showToast(
-                              msg: '새로운 반띵이 등록되었어요',
-                              gravity: ToastGravity.CENTER,
-                              backgroundColor: Colors.pink,
-                              textColor: Colors.white);
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) => Background_Page()));
-                        } else {}
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 40, right: 40, bottom: 20),
-                        child: Card(
-                          color: Colors.pink,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                          elevation: 15,
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    Future.delayed(Duration(seconds: 2), () {
+                                      Navigator.pop(context);
+                                    });
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      content: FittedBox(
+                                        fit: BoxFit.contain,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20),
+                                          child: Center(
+                                              child: Text(
+                                            '새로운 반띵이 등록되었어요',
+                                            style: text_darkgrey_20(),
+                                          )),
+                                        ),
+                                      ),
+                                    );
+                                  });
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) => Background_Page()));
+                            } else {}
+                          },
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                left: 15, top: 5, bottom: 5),
-                            child: Container(
-                                height: 50,
-                                child: Center(
-                                    child: Text(
-                                  '반띵하기',
-                                  style: text_white_20(),
-                                ))),
+                                left: 40, right: 40, bottom: 20),
+                            child: Card(
+                              color: Colors.pink,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60)),
+                              elevation: 15,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 5, bottom: 5),
+                                child: Container(
+                                    height: 50,
+                                    child: Center(
+                                        child: Text(
+                                      '반띵하기',
+                                      style: text_white_20(),
+                                    ))),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                );
+                      ],
+                    );
         },
       ),
     );
