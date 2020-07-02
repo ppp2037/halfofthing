@@ -261,7 +261,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, userSnapshot) {
@@ -269,17 +269,17 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             return Center(child: CircularProgressIndicator());
           }
           this.userSnapshot = userSnapshot;
-          if (userSnapshot.data['채팅중인방ID'] == '') {
+          if (userSnapshot.data['chattingRoomId'] == '') {
             // 사용자가 채팅중인 방이 없을 경우
             return noChattingRoom(context);
           } else {
             // 채팅중인 방이 있을 경우
-            _chattingRoomID = userSnapshot.data['채팅중인방ID'];
-            _myOrders = userSnapshot.data['이용횟수'].toString();
+            _chattingRoomID = userSnapshot.data['chattingRoomId'];
+            _myOrders = userSnapshot.data['orderNum'].toString();
             return StreamBuilder<DocumentSnapshot>(
                 stream: Firestore.instance
-                    .collection('게시판')
-                    .document(userSnapshot.data['채팅중인방ID'])
+                    .collection('board')
+                    .document(userSnapshot.data['chattingRoomId'])
                     .snapshots(),
                 builder: (context, boardSnapshot) {
                   if (!boardSnapshot.hasData) {
@@ -288,51 +288,50 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   this.boardSnapshot = boardSnapshot;
                   chatReference =
                       boardSnapshot.data.reference.collection("messages");
-                  _restaurant = boardSnapshot.data['식당이름'];
-                  _orderTime = boardSnapshot.data['주문시간'];
-                  _meetingPlace = boardSnapshot.data['만날장소'];
+                  _restaurant = boardSnapshot.data['restaurant'];
+                  _orderTime = boardSnapshot.data['orderTime'];
+                  _meetingPlace = boardSnapshot.data['meetingPlace'];
                   // 사용자가 채팅방의 개설자인지 참여자인지 구분, 자신과 상대방 정보 저장
-                  blockList = List.from(boardSnapshot.data['내보낸사용자']);
-                  if (_userPhoneNumber == boardSnapshot.data['개설자핸드폰번호']) {
+                  blockList = List.from(boardSnapshot.data['blockList']);
+                  if (_userPhoneNumber == boardSnapshot.data['hostId']) {
                     _userIsHost = true;
-                    _myNickname = boardSnapshot.data['개설자닉네임'];
-                    if ((_otherPhoneNumber = boardSnapshot.data['참가자핸드폰번호']) !=
+                    _myNickname = boardSnapshot.data['hostNickname'];
+                    if ((_otherPhoneNumber = boardSnapshot.data['guestId']) !=
                         '') {
-                      _otherNickname = boardSnapshot.data['참가자닉네임'];
-                      _myCompleted = boardSnapshot.data['반띵완료_개설자'] as bool;
-                      _otherCompleted = boardSnapshot.data['반띵완료_참가자'] as bool;
+                      _otherNickname = boardSnapshot.data['guestNickname'];
+                      _myCompleted = boardSnapshot.data['hostComplete'] as bool;
+                      _otherCompleted = boardSnapshot.data['guestComplete'] as bool;
                     }
                   } else {
                     _userIsHost = false;
-                    _otherPhoneNumber = boardSnapshot.data['개설자핸드폰번호'];
-                    _myNickname = boardSnapshot.data['참가자닉네임'];
-                    _otherNickname = boardSnapshot.data['개설자닉네임'];
-                    _myCompleted = boardSnapshot.data['반띵완료_참가자'] as bool;
-                    _otherCompleted = boardSnapshot.data['반띵완료_개설자'] as bool;
+                    _otherPhoneNumber = boardSnapshot.data['hostId'];
+                    _myNickname = boardSnapshot.data['guestNickname'];
+                    _otherNickname = boardSnapshot.data['hostNickname'];
+                    _myCompleted = boardSnapshot.data['guestComplete'] as bool;
+                    _otherCompleted = boardSnapshot.data['hostComplete'] as bool;
                     _enteredTime =
-                        ((boardSnapshot.data['참가자참여시간']) as Timestamp).toDate();
+                        ((boardSnapshot.data['guestEnterTime']) as Timestamp).toDate();
                   }
                   if (_myCompleted && _otherCompleted) {
                     // 둘다 반띵완료를 누른 경우
                     userSnapshot.data.reference.updateData(
-                        {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1});
+                        {'chattingRoomId': '', 'orderNum': int.parse(_myOrders) + 1});
                     List<dynamic> _users = [
                       _userPhoneNumber,
                       _otherPhoneNumber
                     ];
                     Firestore.instance
-                        .collection('완료내역')
+                        .collection('history')
                         .document(_chattingRoomID)
                         .setData({
-                      '식당이름': _restaurant,
-                      '주문시간': _orderTime,
-                      '만날장소': _meetingPlace,
-                      '사용자': _users,
-                      '위치': _userLocation,
+                      'restaurant': _restaurant,
+                      'orderTime': _orderTime,
+                      'meetingPlace': _meetingPlace,
+                      'orderUsers': _users,
+                      'university': _userLocation,
                       'menuCategory': boardSnapshot.data['menuCategory'],
                     });
                     boardSnapshot.data.reference.delete();
-                    Phoenix.rebirth(context);
                   }
                   return Scaffold(
                     backgroundColor: Colors.white,
@@ -358,7 +357,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                         children: <Widget>[
                           StreamBuilder<QuerySnapshot>(
                             stream: Firestore.instance
-                                .collection("게시판")
+                                .collection('board')
                                 .document(_chattingRoomID)
                                 .collection('messages')
                                 .orderBy('time', descending: true)
@@ -455,7 +454,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             'delivered': false,
           },
         );
-        print("onSendMessage - transaction");
       });
     }
   }
@@ -603,7 +601,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         title: Text('게시물 삭제하기', style: text_darkgrey_20()),
         onTap: () {
           // 게시물 삭제
-          userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+          userSnapshot.data.reference.updateData({'chattingRoomId': ''});
           boardSnapshot.data.reference.delete();
           Phoenix.rebirth(context);
         });
@@ -613,7 +611,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 상대방의 주문횟수
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_otherPhoneNumber)
             .snapshots(),
         builder: (context, otherUserSnapshot) {
@@ -621,7 +619,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             return Center(child: CircularProgressIndicator());
           }
           this.otherUserSnapshot = otherUserSnapshot;
-          _otherOrders = otherUserSnapshot.data['이용횟수'].toString();
+          _otherOrders = otherUserSnapshot.data['orderNum'].toString();
           return ListTile(
               leading: Icon(
                 Icons.account_circle,
@@ -680,14 +678,14 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('다른 반띵하기', style: text_darkgrey_20()),
       onTap: () {
-        userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+        userSnapshot.data.reference.updateData({'chattingRoomId': ''});
         setState(() {
           onSendMessage('${_otherNickname}님이 반띵을 취소하였습니다.', 1);
         });
         boardSnapshot.data.reference.updateData({
-          '참가자핸드폰번호': '',
-          '참가자참여시간': '',
-          '참가자닉네임': '',
+          'guestId': '',
+          'guestEnterTime': '',
+          'guestNickname': '',
         });
         Phoenix.rebirth(context);
       },
@@ -714,7 +712,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             ds.documents.forEach((doc) {
               Firestore.instance.runTransaction((transaction) async {
                 await transaction.update(doc.reference, {'delivered': true});
-                print("참가자 내보냄 - 내 메세지 delivered 값 변경");
               });
             });
 
@@ -722,12 +719,12 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             onSendMessage('${_otherNickname}님을 내보냈습니다.', 1);
 
             boardSnapshot.data.reference.updateData({
-              '참가자핸드폰번호': '',
-              '참가자참여시간': '',
-              '참가자닉네임': '',
-              '내보낸사용자': FieldValue.arrayUnion(blockList)
+              'guestId': '',
+              'guestEnterTime': '',
+              'guestNickname': '',
+              'blockList': FieldValue.arrayUnion(blockList)
             });
-            otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+            otherUserSnapshot.data.reference.updateData({'chattingRoomId': ''});
           });
         });
         Phoenix.rebirth(context);

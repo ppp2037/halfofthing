@@ -65,14 +65,14 @@ class _Background_PageState extends State<Background_Page> {
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
             stream: Firestore.instance
-                .collection('사용자')
+                .collection('users')
                 .document(_userPhoneNumber)
                 .snapshots(),
             builder: (context, snapshot_user) {
               if (!snapshot_user.hasData) {
                 return Container();
               }
-              _chattingRoomID = snapshot_user.data['채팅중인방ID'];
+              _chattingRoomID = snapshot_user.data['chattingRoomId'];
               return Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: WillPopScope(
@@ -108,19 +108,19 @@ class _Background_PageState extends State<Background_Page> {
     // _chattingRoomID !=''일 경우에만 수행
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('게시판')
+            .collection('board')
             .document(_chattingRoomID)
             .snapshots(),
         builder: (context, snapshot_board) {
           if (!snapshot_board.hasData) return Icon(Icons.chat);
-          if (_userPhoneNumber == snapshot_board.data['개설자핸드폰번호']) {
-            _otherPhoneNumber = snapshot_board.data['참가자핸드폰번호'];
+          if (_userPhoneNumber == snapshot_board.data['hostId']) {
+            _otherPhoneNumber = snapshot_board.data['guestId'];
           } else {
-            _otherPhoneNumber = snapshot_board.data['개설자핸드폰번호'];
+            _otherPhoneNumber = snapshot_board.data['hostId'];
           }
           return StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance
-                .collection('게시판').document(_chattingRoomID).collection('messages')
+                .collection('board').document(_chattingRoomID).collection('messages')
                 .where('sender_phone', isEqualTo: _otherPhoneNumber)
                 .where('delivered', isEqualTo: false)
                 .snapshots(),

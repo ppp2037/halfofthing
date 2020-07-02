@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/settings/styles.dart';
 import 'package:search_widget/search_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -484,12 +483,12 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   .validate()) {
                                 if (_password == _passwordCheck) {
                                   Firestore.instance
-                                      .collection('사용자')
-                                      .where('핸드폰번호', isEqualTo: _phoneNumber)
+                                      .collection('users')
+                                      .where('id', isEqualTo: _phoneNumber)
                                       .getDocuments()
                                       .then((QuerySnapshot ds) {
                                     ds.documents.forEach((doc) =>
-                                        _comparePhoneNumber = doc['핸드폰번호']);
+                                        _comparePhoneNumber = doc['id']);
                                     if (_comparePhoneNumber != _phoneNumber) {
                                       showDialog(
                                           context: context,
@@ -604,21 +603,21 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                               .document(
                                                                   _phoneNumber)
                                                               .setData({
-                                                            '이름': _name,
-                                                            '핸드폰번호':
+                                                            'userName': _name,
+                                                            'id':
                                                                 _phoneNumber,
-                                                            '위치': _selectedItem
+                                                            'university': _selectedItem
                                                                 .location,
                                                             'ivsalt': _ivsalt,
                                                             'key': _fortuna_key,
-                                                            '비밀번호':
+                                                            'password':
                                                                 make_encryption(
                                                                     _password,
                                                                     _ivsalt,
                                                                     _fortuna_key),
-                                                            '인증여부': 'N',
-                                                            '이용횟수': 0,
-                                                            '채팅중인방ID': '',
+                                                            'orderNum': 0,
+                                                            'nickname': '',
+                                                            'chattingRoomId': '',
                                                           });
                                                           Phoenix.rebirth(
                                                               context);

@@ -85,8 +85,6 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
           Column(
             children: <Widget>[
               Container(
-//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-//                    .evaluate(_fastOutSlowInAnimation),
                 height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_fastOutSlowInAnimation),
                 child: Padding(
@@ -131,8 +129,6 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                 ),
               ),
               Container(
-//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-//                    .evaluate(_fastOutSlowInAnimation),
                 height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_fastOutSlowInAnimation),
                 child: Padding(
@@ -176,8 +172,6 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                 ),
               ),
               Container(
-//                width: Tween(begin: 0.0, end: MediaQuery.of(context).size.width)
-//                    .evaluate(_bounceInOutAnimation),
                 height: Tween(begin: 0.0, end: 90.0)
                     .evaluate(_bounceInOutAnimation),
                 child: GestureDetector(
@@ -185,14 +179,14 @@ class _Login_PageState extends State<Login_Page> with TickerProviderStateMixin {
                     if (_phoneNumberFormKey.currentState.validate()) {
                       if (_passwordFormKey.currentState.validate()) {
                         Firestore.instance
-                            .collection('사용자')
-                            .where('핸드폰번호', isEqualTo: _phoneNumber)
+                            .collection('users')
+                            .where('id', isEqualTo: _phoneNumber)
                             .getDocuments()
                             .then((QuerySnapshot ds) {
                           ds.documents.forEach((doc) {
-                            _comparePhoneNumber = doc['핸드폰번호'];
-                            _comparePassword = doc['비밀번호'];
-                            _userLocation = doc['위치'];
+                            _comparePhoneNumber = doc['id'];
+                            _comparePassword = doc['password'];
+                            _userLocation = doc['university'];
                             _iv_salt = doc['ivsalt'];
                             _fortuna_key = doc['key'];
                           });

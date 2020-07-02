@@ -120,13 +120,15 @@ class _User_Settings_Feedback_PageState extends State<User_Settings_Feedback_Pag
                 var _userOrderId =
                 DateFormat('yyyyMMddHHmmss').format(_currentTime);
                 Firestore.instance
-                    .collection('피드백')
+                    .collection('survey')
                     .document(_userPhoneNumber + '_' + _userOrderId)
                     .setData({
-                  '피드백': _feedback,
-                  '위치': _userLocation,
-                  '사용자핸드폰번호': _userPhoneNumber,
-                  '피드백이름': _userPhoneNumber + '_' + _userOrderId,
+                  'feedback': _feedback,
+                  'university': _userLocation,
+                  'userID': _userPhoneNumber,
+                  'feedbackId': _userPhoneNumber + '_' + _userOrderId,
+                  'rating': '',
+                  'completed': '',
                 });
                 Navigator.of(context).pop();
               } else {}

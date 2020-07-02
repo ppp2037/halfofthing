@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'settings/styles.dart';
-import 'user_chat_page.dart';
 import 'package:intl/intl.dart';
 
 class User_History_Page extends StatefulWidget {
@@ -13,6 +11,7 @@ class User_History_Page extends StatefulWidget {
 
 class _User_History_PageState extends State<User_History_Page> {
   String _userPhoneNumber;
+
   @override
   void initState() {
     super.initState();
@@ -29,7 +28,10 @@ class _User_History_PageState extends State<User_History_Page> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('주문내역', style: text_pink_20(),),
+        title: Text(
+          '주문내역',
+          style: text_pink_20(),
+        ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.grey[700]),
         elevation: 0,
@@ -38,22 +40,14 @@ class _User_History_PageState extends State<User_History_Page> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance
-            .collection('완료내역')
-            .where('사용자', arrayContains: _userPhoneNumber)
+            .collection('history')
+            .where('orderUsers', arrayContains: _userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
             return Center(child: CircularProgressIndicator());
           if (snapshot.data.documents.isEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('주문 내역이 없어요', style: text_grey_15()),
-                Container(
-                  height: 20,
-                ),
-              ],
-            );
+            return Center(child: Text('주문 내역이 없어요', style: text_grey_15()));
           }
           return _buildList(context, snapshot.data.documents);
         },
@@ -128,12 +122,12 @@ class Record {
   final DocumentReference reference;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
-      : assert(map['식당이름'] != null),
-        assert(map['주문시간'] != null),
-        assert(map['만날장소'] != null),
-        restaurant = map['식당이름'],
-        meetingPlace = map['만날장소'],
-        orderDate = map['주문시간'];
+      : assert(map['restaurant'] != null),
+        assert(map['orderTime'] != null),
+        assert(map['meetingPlace'] != null),
+        restaurant = map['restaurant'],
+        meetingPlace = map['meetingPlace'],
+        orderDate = map['orderTime'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);

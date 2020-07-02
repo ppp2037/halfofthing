@@ -73,10 +73,6 @@ class _HalfofthingState extends State<Halfofthing> {
           primarySwatch: Colors.pink,
           fontFamily: 'BMEULJIROTTF',
           brightness: Brightness.light),
-      // darkTheme: ThemeData(
-      //     primarySwatch: Colors.pink,
-      //     fontFamily: 'Spoqa_Han_Sans_Regular',
-      //     brightness: Brightness.dark),
       home: _userIsLogin ? Login_Page() : Background_Page(),
     );
   }

@@ -222,22 +222,22 @@ class _Survey_PageState extends State<Survey_Page> {
                   var _userOrderId =
                   DateFormat('yyyyMMddHHmmss').format(_currentTime);
                   Firestore.instance
-                      .collection('설문조사')
+                      .collection('survey')
                       .document(_userPhoneNumber + '_' + _userOrderId)
                       .setData({
-                    '피드백': _feedback ?? '',
-                    '잘반띵여부': _doneWell[_selectedDoneWell],
-                    '만족도': _value,
-                    '위치': _userLocation,
-                    '사용자핸드폰번호': _userPhoneNumber,
-                    '피드백이름': _userPhoneNumber + '_' + _userOrderId,
+                    'feedback': _feedback ?? '',
+                    'completed': _doneWell[_selectedDoneWell],
+                    'rating': _value,
+                    'university': _userLocation,
+                    'userID': _userPhoneNumber,
+                    'feedbackId': _userPhoneNumber + '_' + _userOrderId,
                   });
                   if (widget.userIsHost) {
                     widget.snapshot_board.data.reference
-                        .updateData({'반띵완료_개설자': true});
+                        .updateData({'hostComplete': true});
                   } else {
                     widget.snapshot_board.data.reference
-                        .updateData({'반띵완료_참가자': true});
+                        .updateData({'guestComplete': true});
                   }
                   Navigator.of(context).pop();
                 },

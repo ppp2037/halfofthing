@@ -15,13 +15,13 @@ class User_Create_page extends StatefulWidget {
 
 class _User_Create_pageState extends State<User_Create_page> with TickerProviderStateMixin{
   final GlobalKey<FormState> _restaurantFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+      GlobalKey<FormState>();
   final TextEditingController _restaurantController =
-      TextEditingController(); //컨트롤러 생성
+      TextEditingController();
   final GlobalKey<FormState> _meetingPlaceFormKey =
-      GlobalKey<FormState>(); //글로벌 키 => 핸드폰번호 폼 키 생성
+      GlobalKey<FormState>();
   final TextEditingController _meetingPlaceController =
-      TextEditingController(); //컨트롤러 생성
+      TextEditingController();
 
   @override
   void dispose() {
@@ -85,13 +85,13 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
       resizeToAvoidBottomInset: false,
       body: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData)
             return Center(child: CircularProgressIndicator());
-          return snapshot.data['채팅중인방ID'] != ''
+          return snapshot.data['chattingRoomId'] != ''
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -433,6 +433,7 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               child: Form(
                                 key: _restaurantFormKey,
                                 child: TextFormField(
+                                  style: text_grey_15(),
                                   onChanged: (String str) {
                                     setState(() {
                                       _restaurant = str;
@@ -471,6 +472,7 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               child: Form(
                                 key: _meetingPlaceFormKey,
                                 child: TextFormField(
+                                  style: text_grey_15(),
                                   onChanged: (String str) {
                                     setState(() {
                                       _meetingPlace = str;
@@ -560,30 +562,30 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                     _orderTime.add(new Duration(days: 1));
                               }
                               Firestore.instance
-                                  .collection('게시판')
+                                  .collection('board')
                                   .document(
                                       _userPhoneNumber + '_' + _userOrderId)
                                   .setData({
-                                '식당이름': _restaurant,
-                                '주문시간': Timestamp.fromDate(_orderTime),
-                                '위치': _userLocation,
-                                '만날장소': _meetingPlace,
-                                '개설자핸드폰번호': _userPhoneNumber,
-                                '참가자핸드폰번호': '',
-                                '게시판이름': _boardID,
-                                '참가자참여시간': '',
-                                '개설자닉네임': randomNickname(),
-                                '참가자닉네임': '',
-                                '생성시간': DateTime.now(),
-                                '반띵완료_개설자': false,
-                                '반띵완료_참가자': false,
-                                '내보낸사용자': [],
+                                'restaurant': _restaurant,
+                                'orderTime': Timestamp.fromDate(_orderTime),
+                                'university': _userLocation,
+                                'meetingPlace': _meetingPlace,
+                                'hostId': _userPhoneNumber,
+                                'guestId': '',
+                                'boardName': _boardID,
+                                'guestEnterTime': '',
+                                'hostNickname': randomNickname(),
+                                'guestNickname': '',
+                                'createTime': DateTime.now(),
+                                'hostComplete': false,
+                                'guestComplete': false,
+                                'blockList': [],
                                 'menuCategory': _selectedCategoryNumber.toString(),
                               });
                               Firestore.instance
-                                  .collection('사용자')
+                                  .collection('users')
                                   .document(_userPhoneNumber)
-                                  .updateData({'채팅중인방ID': _boardID});
+                                  .updateData({'chattingRoomId': _boardID});
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (context) => Background_Page()));

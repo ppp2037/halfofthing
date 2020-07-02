@@ -24,8 +24,8 @@ class _User_Settings_Notice_pageState extends State<User_Settings_Notice_page> {
       ),
       body: StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance
-        .collection('공지사항')
-        .where('출력', isEqualTo: 'Y')
+        .collection('notice')
+        .where('print', isEqualTo: true)
         .snapshots(),
     builder: (context, snapshot) {
     if (!snapshot.hasData)
@@ -101,12 +101,12 @@ class Record {
   final DocumentReference reference;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
-      : assert(map['날짜'] != null),
-        assert(map['내용'] != null),
-        assert(map['제목'] != null),
-        date = map['날짜'],
-        content = map['내용'],
-        title = map['제목']
+      : assert(map['date'] != null),
+        assert(map['content'] != null),
+        assert(map['title'] != null),
+        date = map['date'],
+        content = map['content'],
+        title = map['title']
         ;
 
   Record.fromSnapshot(DocumentSnapshot snapshot)

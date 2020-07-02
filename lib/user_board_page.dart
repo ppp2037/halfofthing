@@ -74,14 +74,14 @@ class _User_Board_PageState extends State<User_Board_Page>
     });
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot_user) {
           if (!snapshot_user.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-          if (snapshot_user.data['채팅중인방ID'] != '') {
+          if (snapshot_user.data['chattingRoomId'] != '') {
             _userIsChatting = true;
           }
           return Scaffold(
@@ -110,7 +110,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                       color: Colors.grey[700],
                     ),
                     title: Text(
-                      snapshot_user.data['이름'],
+                      snapshot_user.data['userName'],
                       style: text_darkgrey_20(),
                     ),
                   ),
@@ -120,7 +120,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                       color: Colors.grey[700],
                     ),
                     title: Text(
-                      snapshot_user.data['위치'],
+                      snapshot_user.data['university'],
                       style: text_darkgrey_20(),
                     ),
                   ),
@@ -130,7 +130,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                       color: Colors.grey[700],
                     ),
                     title: Text(
-                      '이용횟수  :  ' + snapshot_user.data['이용횟수'].toString(),
+                      '이용횟수  :  ' + snapshot_user.data['orderNum'].toString(),
                       style: text_darkgrey_15(),
                     ),
                   ),
@@ -340,7 +340,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                 ],
               ),
             ),
-            body: Column(
+            body: ListView(
               children: <Widget>[
                 Container(
                     height: 150,
@@ -366,8 +366,8 @@ class _User_Board_PageState extends State<User_Board_Page>
                     )),
                 StreamBuilder<QuerySnapshot>(
                   stream: Firestore.instance
-                      .collection('게시판')
-                      .where('위치', isEqualTo: _userLocation)
+                      .collection('board')
+                      .where('university', isEqualTo: _userLocation)
                       .snapshots(),
                   builder: (context, boardSnapshot) {
                     if (!boardSnapshot.hasData)
@@ -388,8 +388,8 @@ class _User_Board_PageState extends State<User_Board_Page>
                           ),
                           StreamBuilder<QuerySnapshot>(
                               stream: Firestore.instance
-                                  .collection('완료내역')
-                                  .where('위치', isEqualTo: _userLocation)
+                                  .collection('history')
+                                  .where('university', isEqualTo: _userLocation)
                                   .snapshots(),
                               builder: (context, completedSnapshot) {
                                 if (!completedSnapshot.hasData) {
@@ -409,8 +409,8 @@ class _User_Board_PageState extends State<User_Board_Page>
                       );
                     return StreamBuilder<QuerySnapshot>(
                         stream: Firestore.instance
-                            .collection('완료내역')
-                            .where('위치', isEqualTo: _userLocation)
+                            .collection('history')
+                            .where('university', isEqualTo: _userLocation)
                             .snapshots(),
                         builder: (context, completedSnapshot) {
                           if (!completedSnapshot.hasData) {
@@ -456,7 +456,7 @@ class _User_Board_PageState extends State<User_Board_Page>
 
   Widget _buildCompletedListItem(
       BuildContext context, DocumentSnapshot completedData) {
-    DateTime orderDate = ((completedData.data['주문시간']) as Timestamp).toDate();
+    DateTime orderDate = ((completedData.data['orderTime']) as Timestamp).toDate();
     String completedDate = DateFormat('MM월 dd일').format(orderDate);
     return GestureDetector(
       onTap: () {
@@ -532,7 +532,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                               ),
                               Container(width: 10),
                               Text(
-                                completedData.data['식당이름'],
+                                completedData.data['restaurant'],
                                 style: text_grey_20(),
                               ),
                             ],
@@ -547,7 +547,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                                 color: Colors.grey,
                               ),
                               Container(width: 10),
-                              Text(completedData.data['만날장소'],
+                              Text(completedData.data['meetingPlace'],
                                   style: text_grey_15())
                             ],
                           ),
@@ -771,9 +771,9 @@ class _User_Board_PageState extends State<User_Board_Page>
                               // 게시물에 새로 참가하기
                               String nickName = randomNickname();
                               data_board.reference.updateData({
-                                '참가자핸드폰번호': _userPhoneNumber,
-                                '참가자참여시간': DateTime.now(),
-                                '참가자닉네임': nickName,
+                                'guestId': _userPhoneNumber,
+                                'guestEnterTime': DateTime.now(),
+                                'guestNickname': nickName,
                               });
                               data_board.reference.collection('messages').add({
                                 'text': "${nickName}님이 입장하셨습니다",
@@ -783,10 +783,10 @@ class _User_Board_PageState extends State<User_Board_Page>
                                 'delivered': false,
                               });
                               Firestore.instance
-                                  .collection('사용자')
+                                  .collection('users')
                                   .document(_userPhoneNumber)
                                   .updateData({
-                                '채팅중인방ID': record.boardname,
+                                'chattingRoomId': record.boardname,
                               });
                               Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
@@ -1062,8 +1062,8 @@ class _User_Board_PageState extends State<User_Board_Page>
                   if (_editMeetingPlace == null)
                     _editMeetingPlace = meetingPlace;
                   boardSnapshot.reference.updateData({
-                    '만날장소': _editMeetingPlace,
-                    '주문시간': Timestamp.fromDate(_editOrderTime)
+                    'meetingPlace': _editMeetingPlace,
+                    'orderTime': Timestamp.fromDate(_editOrderTime)
                   });
                   Navigator.of(context).pop();
                 },
@@ -1097,25 +1097,25 @@ class Record {
   final List<dynamic> blockedList;
 
   Record.fromMap(Map<String, dynamic> map, {this.reference})
-      : assert(map['개설자핸드폰번호'] != null),
-        assert(map['참가자핸드폰번호'] != null),
-        assert(map['식당이름'] != null),
-        assert(map['주문시간'] != null),
-        assert(map['위치'] != null),
-        assert(map['만날장소'] != null),
-        assert(map['게시판이름'] != null),
-        assert(map['생성시간'] != null),
+      : assert(map['hostId'] != null),
+        assert(map['guestId'] != null),
+        assert(map['restaurant'] != null),
+        assert(map['orderTime'] != null),
+        assert(map['university'] != null),
+        assert(map['meetingPlace'] != null),
+        assert(map['boardName'] != null),
+        assert(map['createTime'] != null),
         assert(map['menuCategory'] != null),
-        phoneNumber = map['개설자핸드폰번호'],
-        phoneNumber2 = map['참가자핸드폰번호'],
-        restaurant = map['식당이름'],
-        orderTime = map['주문시간'],
-        location = map['위치'],
-        meetingPlace = map['만날장소'],
-        boardname = map['게시판이름'],
-        enteredTime = map['참가자참여시간'],
-        createdTime = map['생성시간'],
-        blockedList = map['내보낸사용자'],
+        phoneNumber = map['hostId'],
+        phoneNumber2 = map['guestId'],
+        restaurant = map['restaurant'],
+        orderTime = map['orderTime'],
+        location = map['university'],
+        meetingPlace = map['meetingPlace'],
+        boardname = map['boardName'],
+        enteredTime = map['guestEnterTime'],
+        createdTime = map['createTime'],
+        blockedList = map['blockList'],
         menuCategory = map['menuCategory'];
 
   Record.fromSnapshot(DocumentSnapshot snapshot)
