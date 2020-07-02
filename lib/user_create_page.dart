@@ -232,6 +232,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                           if (now.hour > _orderTime.hour) {
                             _orderTime = _orderTime.add(new Duration(days: 1));
                           }
+                          String randomNickname;
                           Firestore.instance
                               .collection('게시판')
                               .document(_userPhoneNumber + '_' + _userOrderId)
@@ -244,7 +245,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                             '참가자핸드폰번호': '',
                             '게시판이름': _boardID,
                             '참가자참여시간': '',
-                            '개설자닉네임': randomNickname(),
+                            '개설자닉네임': randomNickname,
                             '참가자닉네임': '',
                             '생성시간': DateTime.now(),
                             '반띵완료_개설자': false,
@@ -254,7 +255,10 @@ class _User_Create_pageState extends State<User_Create_page> {
                           Firestore.instance
                               .collection('사용자')
                               .document(_userPhoneNumber)
-                              .updateData({'채팅중인방ID': _boardID});
+                              .updateData({
+                            '채팅중인방ID': _boardID,
+                            'nickname': randomNickname
+                          });
 
                           Fluttertoast.showToast(
                               msg: '새로운 반띵이 등록되었어요',

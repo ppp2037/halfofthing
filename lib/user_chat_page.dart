@@ -1,13 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:halfofthing/user_board_page.dart' as boardPage;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'background_page.dart';
 import 'settings/styles.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'survey_page.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 
 class User_Chat_Page extends StatefulWidget {
   @override
@@ -120,15 +117,34 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     ];
   }
 
+  Future readOtherMessages() {
+    return Firestore.instance.runTransaction((Transaction transaction) async {
+      await Firestore.instance
+          .collection("게시판")
+          .document(_chattingRoomID)
+          .collection("messages")
+          .where("sender_phone", isEqualTo: _otherPhoneNumber)
+          .where("delivered", isEqualTo: false)
+          .snapshots()
+          .forEach((snapshot) {
+        snapshot.documents.forEach((document) {
+          transaction.update(document.reference, {"delivered": true});
+        });
+      });
+      // print("readOtherMessages");
+    });
+  }
+
   List<Widget> generateReceiverLayout(DocumentSnapshot documentSnapshot) {
     // 상대방의 말풍선
     if (documentSnapshot.data['delivered'] as bool == false) {
+      documentSnapshot.reference.updateData({'delivered': true});
+      // Firestore.instance.runTransaction((transaction) async {
+      //   await transaction
+      //       .update(documentSnapshot.reference, {'delivered': true});
+      // });
       print(
           "delivered update : ${documentSnapshot.data['text']} from ${documentSnapshot.data['sender_phone']}");
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction
-            .update(documentSnapshot.reference, {'delivered': true});
-      });
     }
     return <Widget>[
       Column(
@@ -187,6 +203,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   generateMessages(AsyncSnapshot<QuerySnapshot> snapshot) {
+    // readOtherMessages();
     if (_userIsHost) {
       // 개설자인 경우 : 메세지 전체 출력
       return snapshot.data.documents
@@ -226,7 +243,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           .map<Widget>((doc) =>
               ((doc.data['time']).toDate().difference(_enteredTime).inSeconds) >
                       0
-
                   // 메세지 받은 시간 - 참여시간 > 0 인 경우에만 출력
                   ? doc.data['sender_phone'] != _userPhoneNumber
                       ?
@@ -312,8 +328,11 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   if (_myCompleted && _otherCompleted) {
                     // 둘다 반띵완료를 누른 경우
                     // boardPage.popUpDialog(context, "반띵이 완료되었어요!");
-                    userSnapshot.data.reference.updateData(
-                        {'채팅중인방ID': '', '이용횟수': int.parse(_myOrders) + 1});
+                    userSnapshot.data.reference.updateData({
+                      '채팅중인방ID': '',
+                      '이용횟수': int.parse(_myOrders) + 1,
+                      'nickname': ''
+                    });
                     List<dynamic> _users = [
                       _userPhoneNumber,
                       _otherPhoneNumber
@@ -334,6 +353,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                   return Scaffold(
                     appBar: AppBar(
                       brightness: Brightness.light,
+                      automaticallyImplyLeading: false,
                       leading: IconButton(
                           icon: Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context)
@@ -463,10 +483,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     return Scaffold(
       appBar: AppBar(
         brightness: Brightness.light,
-        leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => Background_Page()))),
         backgroundColor: Colors.white10,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
@@ -571,7 +587,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         title: Text('게시물 삭제하기', style: text_grey_20()),
         onTap: () {
           // 게시물 삭제
-          userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+          userSnapshot.data.reference
+              .updateData({'채팅중인방ID': '', 'nickname': ''});
           boardSnapshot.data.reference.delete();
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Background_Page()));
@@ -579,7 +596,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   }
 
   Widget drawer_otherOrderCount(BuildContext context) {
-    // 상대방의 주문횟수
+    // ���대방의 주문횟수
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
             .collection('사용자')
@@ -639,7 +656,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('다른 반띵하기', style: text_grey_20()),
       onTap: () {
-        userSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+        userSnapshot.data.reference.updateData({'채팅중인방ID': '', 'nickname': ''});
         setState(() {
           onSendMessage('${_otherNickname}님이 반띵을 취소하였습니다.', 1);
         });
@@ -687,7 +704,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               '참가자닉네임': '',
               '내보낸사용자': FieldValue.arrayUnion(blockList)
             });
-            otherUserSnapshot.data.reference.updateData({'채팅중인방ID': ''});
+            otherUserSnapshot.data.reference
+                .updateData({'채팅중인방ID': '', 'nickname': ''});
           });
         });
         Navigator.pop(context);

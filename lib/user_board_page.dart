@@ -58,6 +58,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
             appBar: AppBar(
               iconTheme: IconThemeData(color: Colors.black),
               backgroundColor: Colors.white10,
+              automaticallyImplyLeading: false,
               brightness: Brightness.light,
               elevation: 0,
               title: Text(
@@ -507,6 +508,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                     .document(_userPhoneNumber)
                                     .updateData({
                                   '채팅중인방ID': record.boardname,
+                                  'nickname': nickName
                                 });
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(
