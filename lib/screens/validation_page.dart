@@ -4,12 +4,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/services/authservice.dart';
 
 class LoginPage extends StatefulWidget {
-
   String origin_phoneNo;
   LoginPage(origin_phoneNo) {
     this.origin_phoneNo = origin_phoneNo;
   }
-
 
   @override
   _LoginPageState createState() => _LoginPageState(origin_phoneNo);
@@ -19,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final formKey = new GlobalKey<FormState>();
   String origin_phoneNo;
 
-  _LoginPageState(origin_phoneNo){
+  _LoginPageState(origin_phoneNo) {
     this.origin_phoneNo = origin_phoneNo;
   }
 
@@ -42,7 +40,8 @@ class _LoginPageState extends State<LoginPage> {
                   padding: EdgeInsets.only(left: 25.0, right: 25.0),
                   child: TextFormField(
                     keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(hintText: '\'-\'를 사용하지 않고 핸드폰 번호를 입력해주세요'),
+                    decoration: InputDecoration(
+                        hintText: '\'-\'를 사용하지 않고 핸드폰 번호를 입력해주세요'),
                     onChanged: (val) {
                       setState(() {
                         this.pre_phoneNo = val;
@@ -50,23 +49,29 @@ class _LoginPageState extends State<LoginPage> {
                       });
                     },
                   )),
-              codeSent ? Padding(
-                  padding: EdgeInsets.only(left: 25.0, right: 25.0),
-                  child: TextFormField(
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(hintText: '인증번호 6자리를 입력해주세요'),
-                    onChanged: (val) {
-                      setState(() {
-                        this.smsCode = val;
-                      });
-                    },
-                  )) : Container(),
+              codeSent
+                  ? Padding(
+                      padding: EdgeInsets.only(left: 25.0, right: 25.0),
+                      child: TextFormField(
+                        keyboardType: TextInputType.phone,
+                        decoration:
+                            InputDecoration(hintText: '인증번호 6자리를 입력해주세요'),
+                        onChanged: (val) {
+                          setState(() {
+                            this.smsCode = val;
+                          });
+                        },
+                      ))
+                  : Container(),
               Padding(
                   padding: EdgeInsets.only(left: 25.0, right: 25.0),
                   child: RaisedButton(
-                      child: Center(child: codeSent ? Text('인증번호 입력후 눌러주세요'):Text('인증번호 받기')),
+                      child: Center(
+                          child: codeSent
+                              ? Text('인증번호 입력후 눌러주세요')
+                              : Text('인증번호 받기')),
                       onPressed: () {
-                        if(origin_phoneNo != pre_phoneNo) {
+                        if (origin_phoneNo != pre_phoneNo) {
                           Fluttertoast.showToast(
                               msg: '전에 입력하신 핸드폰 번호와 달라요!',
                               gravity: ToastGravity.CENTER,
@@ -77,8 +82,10 @@ class _LoginPageState extends State<LoginPage> {
 
                         //}
                         else {
-                          codeSent ? AuthService().signInWithOTP(
-                              smsCode, verificationId) : verifyPhone(phoneNo);
+                          codeSent
+                              ? AuthService()
+                                  .signInWithOTP(smsCode, verificationId)
+                              : verifyPhone(phoneNo);
                         }
                       }))
             ],

@@ -65,7 +65,7 @@ class _Background_PageState extends State<Background_Page> {
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, userSnapshot) {
@@ -108,7 +108,7 @@ class _Background_PageState extends State<Background_Page> {
     // _chattingRoomID !=''일 경우에만 수행
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('게시판')
+            .collection('board')
             .document(_chattingRoomID)
             .snapshots(),
         builder: (context, snapshot_board) {
@@ -120,7 +120,7 @@ class _Background_PageState extends State<Background_Page> {
           }
           return StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance
-                .collection('게시판')
+                .collection('board')
                 .document(_chattingRoomID)
                 .collection('messages')
                 .where('sender_phone', isEqualTo: _otherPhoneNumber)

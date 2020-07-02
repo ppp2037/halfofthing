@@ -4,8 +4,6 @@ import 'package:halfofthing/screens/validation_complete.dart';
 import 'package:halfofthing/screens/validation_page.dart';
 
 class AuthService {
-
-
   //final String origin_phoneNo;
 
   //Handles Auth

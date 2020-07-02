@@ -45,7 +45,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot_user) {
@@ -337,7 +337,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                     )),
                 StreamBuilder<QuerySnapshot>(
                   stream: Firestore.instance
-                      .collection('게시판')
+                      .collection('board')
                       .where('위치', isEqualTo: _userLocation)
                       .snapshots(),
                   builder: (context, boardSnapshot) {
@@ -582,7 +582,7 @@ class _User_Board_PageState extends State<User_Board_Page> {
                                   'delivered': false,
                                 });
                                 Firestore.instance
-                                    .collection('사용자')
+                                    .collection('users')
                                     .document(_userPhoneNumber)
                                     .updateData({
                                   '채팅중인방ID': record.boardname,

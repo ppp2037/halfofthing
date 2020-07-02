@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'background_page.dart';
 import 'settings/styles.dart';
 import 'survey_page.dart';
+import 'dart:io';
 
 class User_Chat_Page extends StatefulWidget {
   @override
@@ -35,6 +41,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   @override
   void initState() {
     super.initState();
+
+    // for push notification
+    registerNotification();
+    configLocalNotification();
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
@@ -120,7 +130,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   Future readOtherMessages() {
     return Firestore.instance.runTransaction((Transaction transaction) async {
       await Firestore.instance
-          .collection("게시판")
+          .collection("board")
           .document(_chattingRoomID)
           .collection("messages")
           .where("sender_phone", isEqualTo: _otherPhoneNumber)
@@ -274,7 +284,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         "build => chattingRoom : $_chattingRoomID, userIsHost : $_userIsHost, userphone : $_userPhoneNumber, otherPhone : $_otherPhoneNumber");
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, userSnapshot) {
@@ -291,7 +301,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             _myOrders = userSnapshot.data['이용횟수'].toString();
             return StreamBuilder<DocumentSnapshot>(
                 stream: Firestore.instance
-                    .collection('게시판')
+                    .collection('board')
                     .document(userSnapshot.data['채팅중인방ID'])
                     .snapshots(),
                 builder: (context, boardSnapshot) {
@@ -377,7 +387,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
                         children: <Widget>[
                           StreamBuilder<QuerySnapshot>(
                             stream: Firestore.instance
-                                .collection("게시판")
+                                .collection("board")
                                 .document(_chattingRoomID)
                                 .collection('messages')
                                 .orderBy('time', descending: true)
@@ -610,7 +620,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
     // 상대방의 주문횟수
     return StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_otherPhoneNumber)
             .snapshots(),
         builder: (context, otherUserSnapshot) {
@@ -722,5 +732,73 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         Navigator.pop(context);
       },
     );
+  }
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  void registerNotification() {
+    firebaseMessaging.requestNotificationPermissions();
+
+    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      //print('onMessage: $message');
+      //Platform.isAndroid ? showNotification(message['notification']) : showNotification(message['aps']['alert']);
+      //return;
+    }, onResume: (Map<String, dynamic> message) {
+      print('onResume: $message');
+      return;
+    }, onLaunch: (Map<String, dynamic> message) {
+      print('onLaunch: $message');
+      return;
+    });
+
+    firebaseMessaging.getToken().then((token) {
+      print('token: $token');
+      Firestore.instance
+          .collection('users')
+          .document(_userPhoneNumber)
+          .updateData({'pushToken': token});
+    }).catchError((err) {
+      Fluttertoast.showToast(msg: err.message.toString());
+    });
+  }
+
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid
+          ? 'com.halfofthing.halfofthing'
+          : 'com.halfofthing.halfofthing',
+      'Flutter chat demo',
+      'your channel description',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    print(message);
+//    print(message['body'].toString());
+//    print(json.encode(message));
+
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
+
+//    await flutterLocalNotificationsPlugin.show(
+//        0, 'plain title', 'plain body', platformChannelSpecifics,
+//        payload: 'item x');
   }
 }

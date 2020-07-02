@@ -40,6 +40,7 @@ class _User_Create_pageState extends State<User_Create_page> {
   String _userSelectedCategory;
 
   bool _isItemSelected = true;
+  String _randomNickNmae = randomNickname();
 
   @override
   void initState() {
@@ -73,7 +74,7 @@ class _User_Create_pageState extends State<User_Create_page> {
       resizeToAvoidBottomInset: false,
       body: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
-            .collection('사용자')
+            .collection('users')
             .document(_userPhoneNumber)
             .snapshots(),
         builder: (context, snapshot) {
@@ -531,7 +532,7 @@ class _User_Create_pageState extends State<User_Create_page> {
                                     _orderTime.add(new Duration(days: 1));
                               }
                               Firestore.instance
-                                  .collection('게시판')
+                                  .collection('board')
                                   .document(
                                       _userPhoneNumber + '_' + _userOrderId)
                                   .setData({
@@ -553,9 +554,12 @@ class _User_Create_pageState extends State<User_Create_page> {
                                     _selectedCategory[_selectedCategoryNumber],
                               });
                               Firestore.instance
-                                  .collection('사용자')
+                                  .collection('users')
                                   .document(_userPhoneNumber)
-                                  .updateData({'채팅중인방ID': _boardID});
+                                  .updateData({
+                                '채팅중인방ID': _boardID,
+                                'nickname': _randomNickNmae,
+                              });
 
                               showDialog(
                                   context: context,

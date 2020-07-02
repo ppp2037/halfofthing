@@ -494,21 +494,23 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                                 .document(
                                                                     _phoneNumber)
                                                                 .setData({
-                                                              '이름': _name,
+                                                              'userName': _name,
                                                               'id':
                                                                   _phoneNumber,
-                                                              '위치':
+                                                              'university':
                                                                   _selectedItem
                                                                       .location,
                                                               'ivsalt': _ivsalt,
                                                               'key':
                                                                   _fortuna_key,
-                                                              '비밀번호': make_encryption(
-                                                                  _password,
-                                                                  _ivsalt,
-                                                                  _fortuna_key),
-                                                              '이용횟수': 0,
-                                                              '채팅중인방ID': '',
+                                                              'password':
+                                                                  make_encryption(
+                                                                      _password,
+                                                                      _ivsalt,
+                                                                      _fortuna_key),
+                                                              'orderNum': 0,
+                                                              'chattingRoomId':
+                                                                  '',
                                                               'pushToken': '',
                                                               'nickname': '',
                                                             });

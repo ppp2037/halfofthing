@@ -11,6 +11,7 @@ import 'login_page.dart';
 final FirebaseMessaging fcm = FirebaseMessaging();
 
 void main() => runApp(Phoenix(child: Halfofthing()));
+//void main() => runApp(PushMessagingExample());
 
 class Halfofthing extends StatefulWidget {
   @override
