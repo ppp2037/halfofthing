@@ -1,5 +1,6 @@
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:halfofthing/settings/nickname_list.dart';
@@ -42,6 +43,11 @@ class _User_Board_PageState extends State<User_Board_Page>
 
   AnimationController _bounceInOutController;
   Animation _bounceInOutAnimation;
+
+//  FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
+//  String _bannerImageURL = '';
+//  StorageReference storageReference =
+//  _firebaseStorage.ref().child('banner/');
 
   @override
   void initState() {
@@ -177,7 +183,8 @@ class _User_Board_PageState extends State<User_Board_Page>
                       ),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => User_Settings_Feedback_Page()));
+                            builder: (context) =>
+                                User_Settings_Feedback_Page()));
                       },
                     ),
                     ListTile(
@@ -346,28 +353,55 @@ class _User_Board_PageState extends State<User_Board_Page>
               ),
               body: ListView(
                 children: <Widget>[
-                  Container(
-                      height: 150,
-                      child: Carousel(
-                        images: [
-                          Container(
-                            color: Colors.pink,
-                          ),
-                          Container(
-                            color: Colors.lightGreen,
-                          ),
-                          Container(
-                            color: Colors.amber,
-                          ),
-                        ],
-                        dotSize: 4,
-                        dotSpacing: 15,
-                        dotColor: Colors.brown,
-                        dotIncreaseSize: 3,
-                        indicatorBgPadding: 5.0,
-                        dotBgColor: Colors.grey.withOpacity(0.0),
-                        borderRadius: false,
-                      )),
+                  StreamBuilder<DocumentSnapshot>(
+                      stream: Firestore.instance
+                          .collection('banner')
+                          .document('banner')
+                          .snapshots(),
+                      builder: (context, bannerSnapshot) {
+                        if (!bannerSnapshot.hasData) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        return Container(
+                            height: 150,
+                            child: Carousel(
+                              images: [
+                                Stack(children: <Widget>[
+                                  Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  Center(
+                                      child: Image.network(
+                                          bannerSnapshot.data['url1']))
+                                ]),
+                                Stack(children: <Widget>[
+                                  Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  Center(
+                                      child: Image.network(
+                                          bannerSnapshot.data['url2']))
+                                ]),
+                                Stack(children: <Widget>[
+                                  Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  Center(
+                                      child: Image.network(
+                                          bannerSnapshot.data['url3']))
+                                ]),
+                              ],
+                              dotSize: 4,
+                              dotSpacing: 15,
+                              dotColor: Colors.brown,
+                              dotIncreaseSize: 3,
+                              indicatorBgPadding: 5.0,
+                              dotBgColor: Colors.grey.withOpacity(0.0),
+                              borderRadius: false,
+                            ));
+                      }),
                   StreamBuilder<QuerySnapshot>(
                     stream: Firestore.instance
                         .collection('board')
@@ -386,14 +420,16 @@ class _User_Board_PageState extends State<User_Board_Page>
                             Container(
                               height: 15,
                             ),
-                            Text('가운데 시작을 눌러 반띵을 시작해보세요', style: text_grey_15()),
+                            Text('가운데 시작을 눌러 반띵을 시작해보세요',
+                                style: text_grey_15()),
                             Container(
                               height: 40,
                             ),
                             StreamBuilder<QuerySnapshot>(
                                 stream: Firestore.instance
                                     .collection('history')
-                                    .where('university', isEqualTo: _userLocation)
+                                    .where('university',
+                                        isEqualTo: _userLocation)
                                     .snapshots(),
                                 builder: (context, completedSnapshot) {
                                   if (!completedSnapshot.hasData) {
@@ -461,7 +497,8 @@ class _User_Board_PageState extends State<User_Board_Page>
 
   Widget _buildCompletedListItem(
       BuildContext context, DocumentSnapshot completedData) {
-    DateTime orderDate = ((completedData.data['orderTime']) as Timestamp).toDate();
+    DateTime orderDate =
+        ((completedData.data['orderTime']) as Timestamp).toDate();
     String completedDate = DateFormat('MM월 dd일').format(orderDate);
     return GestureDetector(
       onTap: () {
