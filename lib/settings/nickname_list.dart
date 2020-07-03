@@ -10,7 +10,7 @@ String randomNickname() {
   List<String> foodList = foods.split("/");
   var random = Random();
 
-  var nickName = adjList[random.nextInt(adjList.length)] +
+  var nickName = adjList[random.nextInt(adjList.length)] + ' ' +
       foodList[random.nextInt(foodList.length)];
   print("닉네임 : $nickName");
   return nickName;

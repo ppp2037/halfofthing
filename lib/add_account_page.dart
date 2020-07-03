@@ -336,18 +336,18 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                     top: 25,
                                     right: 20,
                                     child: GestureDetector(
-                                      onTap: () {
-                                        if (_phoneNumberFormKey.currentState
-                                            .validate()) {
-                                          setState(() {
-                                            _isPhoneValidateClicked =
-                                                !_isPhoneValidateClicked;
-                                          });
-                                          _phoneNumberForValidate = "+82" +
-                                              _phoneNumber.substring(1, 11);
-                                          _requestSMSCodeUsingPhoneNumber();
-                                        }
-                                      },
+//                                      onTap: () {
+//                                        if (_phoneNumberFormKey.currentState
+//                                            .validate()) {
+//                                          setState(() {
+//                                            _isPhoneValidateClicked =
+//                                                !_isPhoneValidateClicked;
+//                                          });
+//                                          _phoneNumberForValidate = "+82" +
+//                                              _phoneNumber.substring(1, 11);
+//                                          _requestSMSCodeUsingPhoneNumber();
+//                                        }
+//                                      },
                                       child: Text(
                                         '인증번호전송',
                                         style: text_grey_15(),
@@ -404,48 +404,48 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                   top: 25,
                                   right: 20,
                                   child: GestureDetector(
-                                    onTap: () {
-                                      if (_phoneNumberValidateFormKey.currentState
-                                          .validate()) {
-                                        _signInWithPhoneNumberAndSMSCode();
-                                        _validateUser();
-                                        if(_isPhoneValidate){
-                                          setState(() {
-                                            _isPhoneValidateClicked =
-                                            !_isPhoneValidateClicked;
-                                            _isPhoneValidateDone =
-                                            !_isPhoneValidateDone;
-                                          });
-                                        } else {
-                                          showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                Future.delayed(Duration(seconds: 2),
-                                                        () {
-                                                      Navigator.pop(context);
-                                                    });
-                                                return AlertDialog(
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                                  content: FittedBox(
-                                                    fit: BoxFit.contain,
-                                                    child: Padding(
-                                                      padding:
-                                                      const EdgeInsets.all(20),
-                                                      child: Center(
-                                                          child: Text(
-                                                            '인증번호가 틀렸어요',
-                                                            style: text_darkgrey_20(),
-                                                          )),
-                                                    ),
-                                                  ),
-                                                );
-                                              });
-                                        }
-                                      }
-                                    },
+//                                    onTap: () {
+//                                      if (_phoneNumberValidateFormKey.currentState
+//                                          .validate()) {
+//                                        _signInWithPhoneNumberAndSMSCode();
+//                                        _validateUser();
+//                                        if(_isPhoneValidate){
+//                                          setState(() {
+//                                            _isPhoneValidateClicked =
+//                                            !_isPhoneValidateClicked;
+//                                            _isPhoneValidateDone =
+//                                            !_isPhoneValidateDone;
+//                                          });
+//                                        } else {
+//                                          showDialog(
+//                                              context: context,
+//                                              builder: (BuildContext context) {
+//                                                Future.delayed(Duration(seconds: 2),
+//                                                        () {
+//                                                      Navigator.pop(context);
+//                                                    });
+//                                                return AlertDialog(
+//                                                  shape: RoundedRectangleBorder(
+//                                                      borderRadius:
+//                                                      BorderRadius.circular(
+//                                                          20)),
+//                                                  content: FittedBox(
+//                                                    fit: BoxFit.contain,
+//                                                    child: Padding(
+//                                                      padding:
+//                                                      const EdgeInsets.all(20),
+//                                                      child: Center(
+//                                                          child: Text(
+//                                                            '인증번호가 틀렸어요',
+//                                                            style: text_darkgrey_20(),
+//                                                          )),
+//                                                    ),
+//                                                  ),
+//                                                );
+//                                              });
+//                                        }
+//                                      }
+//                                    },
                                     child: Text(
                                       '확인',
                                       style: text_grey_15(),
@@ -685,6 +685,7 @@ class _Add_Account_PageState extends State<Add_Account_Page> {
                                                               'orderNum': 0,
                                                               'nickname': '',
                                                               'chattingRoomId': '',
+                                                              'pushToken': '',
                                                             });
                                                             Phoenix.rebirth(
                                                                 context);

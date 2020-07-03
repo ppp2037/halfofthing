@@ -12,15 +12,12 @@ class User_Create_page extends StatefulWidget {
   _User_Create_pageState createState() => _User_Create_pageState();
 }
 
-class _User_Create_pageState extends State<User_Create_page> with TickerProviderStateMixin{
-  final GlobalKey<FormState> _restaurantFormKey =
-      GlobalKey<FormState>();
-  final TextEditingController _restaurantController =
-      TextEditingController();
-  final GlobalKey<FormState> _meetingPlaceFormKey =
-      GlobalKey<FormState>();
-  final TextEditingController _meetingPlaceController =
-      TextEditingController();
+class _User_Create_pageState extends State<User_Create_page>
+    with TickerProviderStateMixin {
+  final GlobalKey<FormState> _restaurantFormKey = GlobalKey<FormState>();
+  final TextEditingController _restaurantController = TextEditingController();
+  final GlobalKey<FormState> _meetingPlaceFormKey = GlobalKey<FormState>();
+  final TextEditingController _meetingPlaceController = TextEditingController();
 
   @override
   void dispose() {
@@ -37,6 +34,7 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
   String _userPhoneNumber;
   String _userLocation;
   String _userSelectedCategory;
+  String _randomNickname = randomNickname();
 
   bool _isItemSelected = true;
 
@@ -129,8 +127,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 1;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -139,10 +137,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images1.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -157,8 +155,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 2;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -167,10 +165,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images2.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -193,8 +191,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 3;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -203,10 +201,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images3.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -221,8 +219,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 4;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -231,10 +229,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images4.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -257,8 +255,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 5;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -267,10 +265,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images5.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -285,8 +283,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 6;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -295,10 +293,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images6.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -321,8 +319,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 7;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -331,10 +329,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images7.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -349,8 +347,8 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                               GestureDetector(
                                 onTap: () {
                                   _selectedCategoryNumber = 8;
-                                  _userSelectedCategory =
-                                      _selectedCategory[_selectedCategoryNumber];
+                                  _userSelectedCategory = _selectedCategory[
+                                      _selectedCategoryNumber];
                                   setState(() {
                                     _isItemSelected = !_isItemSelected;
                                   });
@@ -359,10 +357,10 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   children: <Widget>[
                                     Image.asset(
                                       'images/food_images8.png',
-                                      width:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
-                                      height:
-                                      Tween(begin: 0.0, end: 100.0).evaluate(_bounceInOutAnimation),
+                                      width: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
+                                      height: Tween(begin: 0.0, end: 100.0)
+                                          .evaluate(_bounceInOutAnimation),
                                     ),
                                     Container(
                                       height: 10,
@@ -576,21 +574,26 @@ class _User_Create_pageState extends State<User_Create_page> with TickerProvider
                                   'guestId': '',
                                   'boardName': _boardID,
                                   'guestEnterTime': '',
-                                  'hostNickname': randomNickname(),
+                                  'hostNickname': _randomNickname,
                                   'guestNickname': '',
                                   'createTime': DateTime.now(),
                                   'hostComplete': false,
                                   'guestComplete': false,
                                   'blockList': [],
-                                  'menuCategory': _selectedCategoryNumber.toString(),
+                                  'menuCategory':
+                                      _selectedCategoryNumber.toString(),
                                 });
                                 Firestore.instance
                                     .collection('users')
                                     .document(_userPhoneNumber)
-                                    .updateData({'chattingRoomId': _boardID});
+                                    .updateData({
+                                  'chattingRoomId': _boardID,
+                                  'nickname': _randomNickname,
+                                });
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
-                                        builder: (context) => Background_Page()));
+                                        builder: (context) =>
+                                            Background_Page()));
                               } else {}
                             },
                             child: Padding(

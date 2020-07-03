@@ -93,6 +93,8 @@ class _User_Board_PageState extends State<User_Board_Page>
             }
             if (snapshot_user.data['chattingRoomId'] != '') {
               _userIsChatting = true;
+            }else{
+              _userIsChatting = false;
             }
             return Scaffold(
               backgroundColor: Colors.white,
@@ -829,6 +831,7 @@ class _User_Board_PageState extends State<User_Board_Page>
                                   .document(_userPhoneNumber)
                                   .updateData({
                                 'chattingRoomId': record.boardname,
+                                'nickname': nickName,
                               });
                               Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(

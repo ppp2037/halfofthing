@@ -1,5 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:halfofthing/user_board_page.dart' as boardPage;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -50,6 +56,10 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
   @override
   void initState() {
     super.initState();
+
+    registerNotification();
+    configLocalNotification();
+
     (() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
@@ -457,6 +467,8 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
             'sender_nickname': type == 1 ? '' : _myNickname,
             'time': DateTime.now(),
             'delivered': false,
+            'idFrom': _userPhoneNumber,
+            'idTo': _otherPhoneNumber,
           },
         );
       });
@@ -606,7 +618,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
         title: Text('게시물 삭제하기', style: text_darkgrey_20()),
         onTap: () {
           // 게시물 삭제
-          userSnapshot.data.reference.updateData({'chattingRoomId': ''});
+          userSnapshot.data.reference.updateData({'chattingRoomId': '','nickname': ''});
           boardSnapshot.data.reference.delete();
           Phoenix.rebirth(context);
         });
@@ -683,7 +695,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('다른 반띵하기', style: text_darkgrey_20()),
       onTap: () {
-        userSnapshot.data.reference.updateData({'chattingRoomId': ''});
+        userSnapshot.data.reference.updateData({'chattingRoomId': '','nickname': ''});
         setState(() {
           onSendMessage('${_otherNickname}님이 반띵을 취소하였습니다.', 1);
         });
@@ -692,7 +704,7 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
           'guestEnterTime': '',
           'guestNickname': '',
         });
-        Phoenix.rebirth(context);
+        Navigator.pop(context);
       },
     );
   }
@@ -706,7 +718,6 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
       ),
       title: Text('참가자 내보내기', style: text_darkgrey_20()),
       onTap: () {
-        setState(() {
           // 참가자를 내보냈을 때 :
           // 참가자가 내가 보낸 채팅을 읽지 않았을 경우 delivered = true 로 변경 => 나중에 다른 참가자가 입장했을 때 읽지 않은 메시지 수를 정확하게 출력하기 위함.
           chatReference
@@ -729,11 +740,70 @@ class _User_Chat_PageState extends State<User_Chat_Page> {
               'guestNickname': '',
               'blockList': FieldValue.arrayUnion(blockList)
             });
-            otherUserSnapshot.data.reference.updateData({'chattingRoomId': ''});
+            otherUserSnapshot.data.reference.updateData({'chattingRoomId': '', 'nickname': ''});
           });
-        });
-        Phoenix.rebirth(context);
       },
     );
   }
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  void registerNotification() {
+    firebaseMessaging.requestNotificationPermissions();
+
+    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      //print('onMessage: $message');
+      //Platform.isAndroid ? showNotification(message['notification']) : showNotification(message['aps']['alert']);
+      //return;
+    },onResume: (Map<String, dynamic> message) {
+      print('onResume: $message');
+      return;
+    }, onLaunch: (Map<String, dynamic> message) {
+      print('onLaunch: $message');
+      return;
+    });
+
+    firebaseMessaging.getToken().then((token) {
+      print('token: $token');
+      Firestore.instance.collection('users').document(_userPhoneNumber).updateData({'pushToken': token});
+    }).catchError((err) {
+      Fluttertoast.showToast(msg: err.message.toString());
+    });
+  }
+
+  void configLocalNotification() {
+    var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid ? 'com.nomadcat.halfofthing' : 'com.nomadcat.halfofthing',
+      'Flutter chat demo',
+      'your channel description',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics =
+    new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    print(message);
+//    print(message['body'].toString());
+//    print(json.encode(message));
+
+    await flutterLocalNotificationsPlugin.show(
+        0, message['title'].toString(), message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
+
+//    await flutterLocalNotificationsPlugin.show(
+//        0, 'plain title', 'plain body', platformChannelSpecifics,
+//        payload: 'item x');
+  }
+
 }
