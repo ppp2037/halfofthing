@@ -15,6 +15,8 @@ import 'user_settings_howto_page.dart';
 import 'user_settings_notice_page.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
+import 'package:firebase_database/firebase_database.dart';
+
 
 class User_Board_Page extends StatefulWidget {
   @override
@@ -48,6 +50,7 @@ class _User_Board_PageState extends State<User_Board_Page>
 //  String _bannerImageURL = '';
 //  StorageReference storageReference =
 //  _firebaseStorage.ref().child('banner/');
+  DatabaseReference fbRef;
 
   @override
   void initState() {
@@ -59,6 +62,8 @@ class _User_Board_PageState extends State<User_Board_Page>
         _userPhoneNumber = prefs.getString('prefsPhoneNumber');
         _userLocation = prefs.getString('prefsLocation');
       });
+      fbRef = FirebaseDatabase.instance.reference().child("chatting");
+
     })();
     _bounceInOutController =
         AnimationController(duration: Duration(seconds: 2), vsync: this);
@@ -819,11 +824,16 @@ class _User_Board_PageState extends State<User_Board_Page>
                                 'guestEnterTime': DateTime.now(),
                                 'guestNickname': nickName,
                               });
-                              data_board.reference.collection('messages').add({
-                                'text': "${nickName}님이 입장하셨습니다",
+                              fbRef
+                                  .child(record.boardname)
+                                  .child(DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString())
+                                  .set({
+                                'text': "${nickName}님이 입장하셨습니다.",
                                 'sender_phone': "공지",
                                 'sender_nickname': "",
-                                'time': DateTime.now(),
+                                'time': DateTime.now().millisecondsSinceEpoch,
                                 'delivered': false,
                               });
                               Firestore.instance

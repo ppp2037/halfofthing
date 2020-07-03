@@ -183,6 +183,9 @@ PODS:
     - FirebaseAnalytics (= 6.4.1)
   - Firebase/CoreOnly (6.22.0):
     - FirebaseCore (= 6.6.6)
+  - Firebase/Database (6.22.0):
+    - Firebase/CoreOnly
+    - FirebaseDatabase (~> 6.1.4)
   - Firebase/Firestore (6.22.0):
     - Firebase/CoreOnly
     - FirebaseFirestore (~> 1.12.0)
@@ -192,6 +195,9 @@ PODS:
   - Firebase/Storage (6.22.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 3.6.0)
+  - firebase_analytics (0.0.1):
+    - Firebase/Core
+    - Flutter
   - firebase_auth (0.0.1):
     - Firebase/Auth (~> 6.3)
     - Firebase/Core
@@ -202,6 +208,9 @@ PODS:
     - Firebase/Core
     - Flutter
   - firebase_core_web (0.1.0):
+    - Flutter
+  - firebase_database (0.0.1):
+    - Firebase/Database
     - Flutter
   - firebase_messaging (0.0.1):
     - Firebase/Core
@@ -239,6 +248,10 @@ PODS:
     - GoogleUtilities/Logger (~> 6.5)
     - nanopb (~> 0.3.901)
   - FirebaseCoreDiagnosticsInterop (1.2.0)
+  - FirebaseDatabase (6.1.4):
+    - FirebaseAuthInterop (~> 1.0)
+    - FirebaseCore (~> 6.0)
+    - leveldb-library (~> 1.22)
   - FirebaseFirestore (1.12.0):
     - abseil/algorithm (= 0.20190808)
     - abseil/base (= 0.20190808)
@@ -384,10 +397,12 @@ PODS:
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - cloud_firestore_web (from `.symlinks/plugins/cloud_firestore_web/ios`)
+  - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_auth_web (from `.symlinks/plugins/firebase_auth_web/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_core_web (from `.symlinks/plugins/firebase_core_web/ios`)
+  - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
@@ -422,6 +437,7 @@ SPEC REPOS:
     - FirebaseCore
     - FirebaseCoreDiagnostics
     - FirebaseCoreDiagnosticsInterop
+    - FirebaseDatabase
     - FirebaseFirestore
     - FirebaseInstallations
     - FirebaseInstanceID
@@ -447,6 +463,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   cloud_firestore_web:
     :path: ".symlinks/plugins/cloud_firestore_web/ios"
+  firebase_analytics:
+    :path: ".symlinks/plugins/firebase_analytics/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_auth_web:
@@ -455,6 +473,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_core_web:
     :path: ".symlinks/plugins/firebase_core_web/ios"
+  firebase_database:
+    :path: ".symlinks/plugins/firebase_database/ios"
   firebase_messaging:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   firebase_storage:
@@ -503,10 +523,12 @@ SPEC CHECKSUMS:
   cloud_firestore: 2a4f8f802fb0b701cf809b283b6bec7477ebaa6f
   cloud_firestore_web: 9ec3dc7f5f98de5129339802d491c1204462bfec
   Firebase: 32f9520684e87c7af3f0704f7f88042626d6b536
+  firebase_analytics: bd50d8f5d3f42dcab6da67944a849062470b0a19
   firebase_auth: af8784c4d8d87c36f730a305f97bfbcb24db024b
   firebase_auth_web: 0955c07bcc06e84af76b9d4e32e6f31518f2d7de
   firebase_core: 335c02abd48672b7c83c683df833d0488a72e73e
   firebase_core_web: d501d8b946b60c8af265428ce483b0fff5ad52d1
+  firebase_database: 88085c38a41ad0b5c3c611ede7205831a2ece844
   firebase_messaging: 21344b3b3a7d9d325d63a70e3750c0c798fe1e03
   firebase_storage: 22966fce4aa6e8848cbaa017df62107cee29f327
   FirebaseAnalytics: 83f822fd0d33a46f49f89b8c3ab16ab4d89df08a
@@ -516,6 +538,7 @@ SPEC CHECKSUMS:
   FirebaseCore: 9aca0f1fffb405176ba15311a5621fcde4106fcf
   FirebaseCoreDiagnostics: 13a6564cd6d5375066bbc8940cc1753af24497f3
   FirebaseCoreDiagnosticsInterop: 296e2c5f5314500a850ad0b83e9e7c10b011a850
+  FirebaseDatabase: 0144e0706a4761f1b0e8679572eba8095ddb59be
   FirebaseFirestore: a750487e2019ac35464c78311dcf2fde9d817c52
   FirebaseInstallations: acb3216eb9784d3b1d2d2d635ff74fa892cc0c44
   FirebaseInstanceID: cef67c4967c7cecb56ea65d8acbb4834825c587b
